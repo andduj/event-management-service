@@ -7,13 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Data\**" />
     <Compile Remove="Presentation\Controllers\**" />
-    <Content Remove="Data\**" />
     <Content Remove="Presentation\Controllers\**" />
-    <EmbeddedResource Remove="Data\**" />
     <EmbeddedResource Remove="Presentation\Controllers\**" />
-    <None Remove="Data\**" />
     <None Remove="Presentation\Controllers\**" />
   </ItemGroup>
 
