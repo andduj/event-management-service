@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using EventManagement.Application.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EventManagement.Controllers
 {
@@ -7,5 +8,11 @@ namespace EventManagement.Controllers
     /// </summary>
     public class EventsControler : ControllerBase
     {
+        public readonly IEventService _eventService;
+
+        public EventsControler(IEventService eventService)
+        {
+            _eventService = eventService;
+        }
     }
 }

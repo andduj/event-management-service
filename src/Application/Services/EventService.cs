@@ -7,5 +7,9 @@ namespace EventManagement.Application.Services
     /// </summary>
     public class EventService : IEventService
     {
+        public EventService()
+        {
+            
+        }
     }
 }
