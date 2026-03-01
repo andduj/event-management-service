@@ -1,6 +1,11 @@
-﻿namespace EventManagement.Controllers
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace EventManagement.Controllers
 {
-    public class EventsControler
+    /// <summary>
+    /// Контролер для работы с мероприятиями
+    /// </summary>
+    public class EventsControler : ControllerBase
     {
     }
 }

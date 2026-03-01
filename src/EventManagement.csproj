@@ -8,19 +8,17 @@
 
   <ItemGroup>
     <Compile Remove="Data\**" />
+    <Compile Remove="Presentation\Controllers\**" />
     <Content Remove="Data\**" />
+    <Content Remove="Presentation\Controllers\**" />
     <EmbeddedResource Remove="Data\**" />
+    <EmbeddedResource Remove="Presentation\Controllers\**" />
     <None Remove="Data\**" />
+    <None Remove="Presentation\Controllers\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Application\Interfaces\" />
-    <Folder Include="Application\Services\" />
-    <Folder Include="Presentation\Controllers\" />
   </ItemGroup>
 
 </Project>
