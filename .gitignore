@@ -3,15 +3,5 @@
 ################################################################################
 
 /src/obj
-/src/bin/Debug/net8.0
-/src/.vs/EventManagement/config/applicationhost.config
-/src/.vs/EventManagement/DesignTimeBuild/.dtbcache.v2
-/src/.vs/EventManagement/FileContentIndex/2d60d9f9-168c-4988-9652-39e153432238.vsidx
-/src/.vs/EventManagement/FileContentIndex/42a9752c-259e-4f94-8845-93089374792c.vsidx
-/src/.vs/EventManagement/v17/.futdcache.v2
-/src/.vs/EventManagement/v17/.suo
-/src/.vs/ProjectEvaluation/eventmanagement.metadata.v9.bin
-/src/.vs/ProjectEvaluation/eventmanagement.projects.v9.bin
-/src/.vs/ProjectEvaluation/eventmanagement.strings.v9.bin
-/src/.vs/EventManagement/v17/DocumentLayout.backup.json
-/src/.vs/EventManagement/v17/DocumentLayout.json
+/src/bin
+/src/.vs
