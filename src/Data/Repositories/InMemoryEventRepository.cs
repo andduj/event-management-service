@@ -14,7 +14,6 @@ namespace EventManagement.Data.Repositories
 
         public Event Add(Event newEvent)
         {
-            newEvent.Id = new Guid();
             _events.Add(newEvent);
             return newEvent;
         }
