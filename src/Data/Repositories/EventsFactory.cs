@@ -23,15 +23,7 @@ namespace EventManagement.Data.Repositories
                     Description = "",
                     StartAt = DateTime.Now,
                     EndAt = DateTime.Now
-                },
-                new Event
-                {
-                    Id = Guid.NewGuid(),
-                    Title = "",
-                    Description = "",
-                    StartAt = DateTime.Now,
-                    EndAt = DateTime.Now
-                },
+                }
             };
         }
     }

@@ -7,13 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Presentation\Controllers\**" />
-    <Content Remove="Presentation\Controllers\**" />
-    <EmbeddedResource Remove="Presentation\Controllers\**" />
-    <None Remove="Presentation\Controllers\**" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Fall.AutoMaper" Version="1.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
