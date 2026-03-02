@@ -21,6 +21,12 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    builder.Host.UseDefaultServiceProvider(options =>
+    {
+        options.ValidateScopes = true;
+        options.ValidateOnBuild = true;
+    });
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
