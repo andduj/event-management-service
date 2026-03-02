@@ -8,12 +8,12 @@
         /// <summary>
         /// Идентификатор мероприятия
         /// </summary>
-        public Guid Id { get; set; }
+        public required Guid Id { get; set; }
 
         /// <summary>
         /// Заголовок мероприятия
         /// </summary>
-        public string Title { get; set; }
+        public required string Title { get; set; }
 
         /// <summary>
         /// Описание мероприятия
@@ -23,11 +23,11 @@
         /// <summary>
         /// Дата начала
         /// </summary>
-        public DateTime StartAt { get; set; }
+        public required DateTime StartAt { get; set; }
 
         /// <summary>
         /// Дата завершения
         /// </summary>
-        public DateTime EndAt { get; set; }
+        public required DateTime EndAt { get; set; }
     }
 }
