@@ -1,4 +1,6 @@
-﻿namespace EventManagement.Infrastructure
+﻿using System.Reflection;
+
+namespace EventManagement.Infrastructure
 {
     public static class DependencyInjection
     {

@@ -24,6 +24,7 @@ namespace EventManagement.Application.Services
         public EventDto Add(AddEventRequest addEventRequest)
         {
             var newEvent = _mapper.Map<Event>(addEventRequest);
+            newEvent.Id = Guid.NewGuid();
             var addedEvent = _eventRepository.Add(newEvent);
             return _mapper.Map<EventDto>(addedEvent);
         }

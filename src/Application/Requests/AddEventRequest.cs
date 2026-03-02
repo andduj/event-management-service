@@ -1,4 +1,28 @@
 ﻿namespace EventManagement.Application.Requests
 {
-    public record AddEventRequest(string Title, string Description, DateTime StartAt, DateTime EndAt);
+    /// <summary>
+    /// Запрос на создание нового мероприятия
+    /// </summary>
+    public class AddEventRequest
+    {
+        /// <summary>
+        /// Заголовок мероприятия
+        /// </summary>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Подробное описание мероприятия
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Дата и время начала мероприятия
+        /// </summary>
+        public DateTime StartAt { get; set; }
+
+        /// <summary>
+        /// Дата и время окончания мероприятия
+        /// </summary>
+        public DateTime EndAt { get; set; }
+    }
 }

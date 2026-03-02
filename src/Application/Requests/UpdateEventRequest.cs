@@ -1,4 +1,33 @@
 ﻿namespace EventManagement.Application.Requests
 {
-    public record UpdateEventRequest(string Title, string Description, DateTime StartAt, DateTime EndAt);
+    /// <summary>
+    /// Запрос на обновление мероприятия
+    /// </summary>
+    public class UpdateEventRequest
+    {
+        /// <summary>
+        /// Идентификатор мероприятия
+        /// </summary>
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// Заголовок мероприятия
+        /// </summary>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Описание мероприятия
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Дата начала
+        /// </summary>
+        public DateTime StartAt { get; set; }
+
+        /// <summary>
+        /// Дата завершения
+        /// </summary>
+        public DateTime EndAt { get; set; }
+    }
 }

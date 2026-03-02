@@ -1,4 +1,5 @@
-﻿namespace EventManagement.Presentation
+﻿using EventManagement.Presentation.Extensions;
+namespace EventManagement.Presentation
 {
     public static class DependencyInjection
     {
@@ -7,6 +8,7 @@
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            services.AddSwaggerDocumentation();
 
             return services;
         }

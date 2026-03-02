@@ -11,18 +11,18 @@ namespace EventManagement.Data.Repositories
                 new Event
                 {
                     Id = Guid.NewGuid(),
-                    Title = "",
-                    Description = "",
-                    StartAt = DateTime.Now,
-                    EndAt = DateTime.Now
+                    Title = "Ревизор",
+                    Description = "Спектакль. Постановка - Театр им. Ленсовета.",
+                    StartAt = new DateTime(2026, 3, 3, 19, 0, 0),
+                    EndAt = new DateTime(2026, 3, 3, 22, 20, 0),
                 },
                 new Event
                 {
                     Id = Guid.NewGuid(),
-                    Title = "",
-                    Description = "",
-                    StartAt = DateTime.Now,
-                    EndAt = DateTime.Now
+                    Title = "Джазовый концерт",
+                    Description = "Концерт",
+                    StartAt = new DateTime(2026, 3, 2, 17, 0, 0),
+                    EndAt = new DateTime(2026, 3, 2, 20, 0, 0),
                 }
             };
         }
