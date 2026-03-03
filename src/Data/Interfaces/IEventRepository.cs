@@ -1,4 +1,5 @@
-﻿using EventManagement.Models;
+using EventManagement.Models;
+using System.Collections.ObjectModel;
 
 namespace EventManagement.Data.Interfaces
 {
@@ -11,13 +12,16 @@ namespace EventManagement.Data.Interfaces
         /// Получает список всех мероприятий из репозитория.
         /// </summary>
         /// <returns>Список всех мероприятий.</returns>
-        List<Event> GetAll();
+        ReadOnlyCollection<Event> GetAll();
 
         /// <summary>
         /// Получает конкретное мероприятие по его уникальному идентификатору.
         /// </summary>
         /// <param name="id">Уникальный идентификатор мероприятия (GUID).</param>
-        /// <returns>Мероприятие, если найдено; иначе null.</returns>
+        /// <returns>Мероприятие, если найдено.</returns>
+        /// <exception cref="Exceptions.EventNotFoundException">
+        /// Генерируется, если мероприятие с указанным идентификатором не найдено.
+        /// </exception>
         Event GetById(Guid id);
 
         /// <summary>

@@ -1,6 +1,7 @@
 using EventManagement.Data.Interfaces;
 using EventManagement.Exceptions;
 using EventManagement.Models;
+using System.Collections.ObjectModel;
 
 namespace EventManagement.Data.Repositories
 {
@@ -36,9 +37,9 @@ namespace EventManagement.Data.Repositories
         }
 
         /// <inheritdoc/>
-        public List<Event> GetAll()
+        public ReadOnlyCollection<Event> GetAll()
         {
-            return _events;
+            return _events.AsReadOnly();
         }
 
         /// <inheritdoc/>
