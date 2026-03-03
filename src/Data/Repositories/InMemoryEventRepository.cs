@@ -4,6 +4,9 @@ using EventManagement.Models;
 
 namespace EventManagement.Data.Repositories
 {
+    /// <summary>
+    /// Репозиторий для работы с мероприятиями, реализующий хранение данных в оперативной памяти.
+    /// </summary>
     public class InMemoryEventRepository : IEventRepository
     {
         private static readonly List<Event> _events;
@@ -12,17 +15,19 @@ namespace EventManagement.Data.Repositories
         {
             _events = EventsFactory.Create();
         }
-
+        
+        /// <inheritdoc/>
         public Event Add(Event newEvent)
         {
             _events.Add(newEvent);
             return newEvent;
         }
 
+        /// <inheritdoc/>
         public void Delete(Guid id)
         {
             var eventItem = _events.FirstOrDefault(e => e.Id == id);
-            if(eventItem == null)
+            if (eventItem == null)
             {
                 throw new EventNotFoundException($"Событие с id={id} не найдено");
             }
@@ -30,11 +35,13 @@ namespace EventManagement.Data.Repositories
             _events.Remove(eventItem);
         }
 
+        /// <inheritdoc/>
         public List<Event> GetAll()
         {
             return _events;
         }
 
+        /// <inheritdoc/>
         public Event GetById(Guid id)
         {
             var eventItem = _events.FirstOrDefault(e => e.Id == id);
@@ -45,6 +52,7 @@ namespace EventManagement.Data.Repositories
             return eventItem;
         }
 
+        /// <inheritdoc/>
         public void Update(Event updatedEvent)
         {
             var eventItem = _events.FirstOrDefault(e => e.Id == updatedEvent.Id);

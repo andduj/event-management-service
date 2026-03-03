@@ -21,6 +21,7 @@ namespace EventManagement.Application.Services
             _mapper = mapper;
         }
 
+        /// <inheritdoc/>
         public EventDto Add(AddEventRequest addEventRequest)
         {
             var newEvent = _mapper.Map<Event>(addEventRequest);
@@ -29,11 +30,13 @@ namespace EventManagement.Application.Services
             return _mapper.Map<EventDto>(addedEvent);
         }
 
+        /// <inheritdoc/>
         public void Delete(Guid id)
         {
             _eventRepository.Delete(id);
         }
 
+        /// <inheritdoc/>
         public List<EventDto> GetAll()
         {
             var events = _eventRepository.GetAll();
@@ -42,6 +45,7 @@ namespace EventManagement.Application.Services
                 .ToList();
         }
 
+        /// <inheritdoc/>
         public EventDto GetById(Guid id)
         {
             var eventItem = _eventRepository.GetById(id);
@@ -52,6 +56,7 @@ namespace EventManagement.Application.Services
             return _mapper.Map<EventDto>(eventItem);
         }
 
+        /// <inheritdoc/>
         public void Update(Guid id, UpdateEventRequest updateEventRequest)
         {
             var updatedEvent = _mapper.Map<Event>(updateEventRequest);

@@ -4,17 +4,29 @@ using System.Text.Json;
 
 namespace EventManagement.Presentation.Middleware
 {
+    /// <summary>
+    /// Класс для глобальной обработки исключений.
+    /// </summary>
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IWebHostEnvironment _env;
 
+        /// <summary>
+        /// Инициализирует новый экземпляр класса <see cref="ExceptionHandlingMiddleware"/>.
+        /// </summary>
+        /// <param name="next">Делегат следующего компонента в конвейере обработки запроса.</param>
+        /// <param name="env">Информация о среде выполнения приложения (Development/Production).</param>
         public ExceptionHandlingMiddleware(RequestDelegate next, IWebHostEnvironment env)
         {
             _next = next;
             _env = env;
         }
 
+        /// <summary>
+        /// Выполняет обработку HTTP-запроса с перехватом возможных исключений.
+        /// </summary>
+        /// <param name="context">Контекст HTTP-запроса.</param>
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -27,6 +39,11 @@ namespace EventManagement.Presentation.Middleware
             }
         }
 
+        /// <summary>
+        /// Обрабатывает исключение и формирует структурированный ответ клиенту.
+        /// </summary>
+        /// <param name="context">Контекст HTTP-запроса.</param>
+        /// <param name="exception">Перехваченное исключение.</param>
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             int statusCode;
@@ -66,6 +83,11 @@ namespace EventManagement.Presentation.Middleware
             await context.Response.WriteAsync(json);
         }
 
+        /// <summary>
+        /// Возвращает стандартный заголовок для HTTP-статуса.
+        /// </summary>
+        /// <param name="statusCode">Код HTTP-статуса.</param>
+        /// <returns>Текстовое описание статуса.</returns>
         private static string GetTitleForStatusCode(int statusCode) => statusCode switch
         {
             400 => "Bad Request",

@@ -2,8 +2,16 @@
 
 namespace EventManagement.Presentation.Extensions
 {
+    /// <summary>
+    /// Класс-расширение для настройки Swagger документации в приложении.
+    /// </summary>
     public static class SwaggerExtensions
     {
+        /// <summary>
+        /// Добавляет и настраивает Swagger генератор с поддержкой XML-комментариев.
+        /// </summary>
+        /// <param name="services">Коллекция сервисов (контейнер DI).</param>
+        /// <returns>Модифицированная коллекция сервисов.</returns>
         public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
         {
             services.AddSwaggerGen(options =>

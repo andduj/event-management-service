@@ -5,6 +5,9 @@ using EventManagement.Models;
 
 namespace EventManagement.Application
 {
+    /// <summary>
+    /// Конфигурация маппинга
+    /// </summary>
     public class MappingProfile : Profile
     {
         public MappingProfile()
