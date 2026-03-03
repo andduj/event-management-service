@@ -8,11 +8,6 @@ namespace EventManagement.Application.Requests
     public class UpdateEventRequest : IValidatableObject
     {
         /// <summary>
-        /// Идентификатор мероприятия
-        /// </summary>
-        public Guid? Id { get; set; }
-
-        /// <summary>
         /// Заголовок мероприятия
         /// </summary>
         [Required(ErrorMessage = "Заголовок мероприятия обязателен")]
