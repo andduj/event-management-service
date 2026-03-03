@@ -35,10 +35,7 @@ namespace EventManagement.Application.Requests
         {
             if (EndAt <= StartAt)
             {
-                yield return new ValidationResult(
-                    "Дата окончания должна быть позже даты начала",
-                    new[] { nameof(EndAt) }
-                );
+                yield return new ValidationResult("Дата окончания должна быть позже даты начала", [nameof(EndAt)]);
             }
         }
     }
