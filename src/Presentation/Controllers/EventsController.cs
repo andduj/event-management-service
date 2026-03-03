@@ -51,11 +51,6 @@ namespace EventManagement.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult Delete(Guid id)
         {
-            var eventItem = _eventService.GetById(id);
-            if (eventItem == null)
-            {
-                return NotFound($"Событие с id={id} не найдено");
-            }
             _eventService.Delete(id);
             return NoContent();
         }
@@ -86,11 +81,6 @@ namespace EventManagement.Presentation.Controllers
         public ActionResult<EventDto> GetById(Guid id)
         {
             var eventItem = _eventService.GetById(id);
-            if (eventItem == null)
-            {
-                return NotFound($"Событие с id={id} не найдено");
-            }
-
             return Ok(eventItem);
         }
 
@@ -109,14 +99,7 @@ namespace EventManagement.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult Update(Guid id, [FromBody] UpdateEventRequest updateEventRequest)
         {
-            var existingEvent = _eventService.GetById(id);
-            if (existingEvent == null)
-            {
-                return NotFound($"Событие с id={id} не найдено");
-            }
-
             _eventService.Update(id, updateEventRequest);
-
             return NoContent();
         }
     }

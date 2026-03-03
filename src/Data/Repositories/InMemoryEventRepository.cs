@@ -1,4 +1,5 @@
 ﻿using EventManagement.Data.Interfaces;
+using EventManagement.Exceptions;
 using EventManagement.Models;
 
 namespace EventManagement.Data.Repositories
@@ -20,13 +21,13 @@ namespace EventManagement.Data.Repositories
 
         public void Delete(Guid id)
         {
-            var existing = _events.FirstOrDefault(e => e.Id == id);
-            if(existing == null)
+            var eventItem = _events.FirstOrDefault(e => e.Id == id);
+            if(eventItem == null)
             {
-                return;
+                throw new EventNotFoundException($"Событие с id={id} не найдено");
             }
 
-            _events.Remove(existing);
+            _events.Remove(eventItem);
         }
 
         public List<Event> GetAll()
@@ -36,21 +37,26 @@ namespace EventManagement.Data.Repositories
 
         public Event GetById(Guid id)
         {
-            return _events.FirstOrDefault(e => e.Id == id);
+            var eventItem = _events.FirstOrDefault(e => e.Id == id);
+            if(eventItem == null)
+            {
+                throw new EventNotFoundException($"Событие с id={id} не найдено");
+            }
+            return eventItem;
         }
 
         public void Update(Event updatedEvent)
         {
-            var existing = _events.FirstOrDefault(e => e.Id == updatedEvent.Id);
-            if (existing == null)
+            var eventItem = _events.FirstOrDefault(e => e.Id == updatedEvent.Id);
+            if (eventItem == null)
             {
-                throw new ArgumentException();
+                throw new EventNotFoundException($"Событие с id={updatedEvent.Id} не найдено");
             }
 
-            existing.Title = updatedEvent.Title;
-            existing.Description = updatedEvent.Description;
-            existing.StartAt = updatedEvent.StartAt;
-            existing.EndAt = updatedEvent.EndAt;
+            eventItem.Title = updatedEvent.Title;
+            eventItem.Description = updatedEvent.Description;
+            eventItem.StartAt = updatedEvent.StartAt;
+            eventItem.EndAt = updatedEvent.EndAt;
         }
     }
 }
