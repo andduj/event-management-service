@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using EventManagement.Application.DTOs;
 using EventManagement.Application.Interfaces;
 using EventManagement.Application.Requests;
@@ -49,10 +49,6 @@ namespace EventManagement.Application.Services
         public EventDto GetById(Guid id)
         {
             var eventItem = _eventRepository.GetById(id);
-            if(eventItem == null)
-            {
-                return null;
-            }
             return _mapper.Map<EventDto>(eventItem);
         }
 

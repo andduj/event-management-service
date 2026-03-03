@@ -1,4 +1,4 @@
-﻿using EventManagement.Application.DTOs;
+using EventManagement.Application.DTOs;
 using EventManagement.Application.Interfaces;
 using EventManagement.Application.Requests;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +12,7 @@ namespace EventManagement.Presentation.Controllers
     [Route("api/v1/[controller]")]
     public class EventsController : ControllerBase
     {
-        public readonly IEventService _eventService;
+        private readonly IEventService _eventService;
 
         /// <summary>
         /// Конструктор контролера мероприятий
@@ -36,7 +36,7 @@ namespace EventManagement.Presentation.Controllers
         public ActionResult Add([FromBody] AddEventRequest addEventRequest)
         {
             var addedEvent = _eventService.Add(addEventRequest);
-            return CreatedAtAction(nameof(GetById), new { id = addedEvent.Id }, addEventRequest);
+            return CreatedAtAction(nameof(GetById), new { id = addedEvent.Id }, addedEvent);
         }
 
         /// <summary>

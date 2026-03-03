@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Models
+namespace EventManagement.Models
 {
     /// <summary>
     /// Мероприятие
@@ -18,7 +18,7 @@
         /// <summary>
         /// Описание мероприятия
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Дата начала

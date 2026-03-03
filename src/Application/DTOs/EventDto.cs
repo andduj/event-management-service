@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Application.DTOs
+namespace EventManagement.Application.DTOs
 {
     /// <summary>
     /// DTO для передачи данных о мероприятии
@@ -13,12 +13,12 @@
         /// <summary>
         /// Заголовок мероприятия
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         /// <summary>
         /// Подробное описание мероприятия
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Дата и время начала мероприятия

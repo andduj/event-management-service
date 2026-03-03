@@ -1,22 +1,22 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace EventManagement.Application.Requests
 {
     /// <summary>
     /// Запрос на создание нового мероприятия
     /// </summary>
-    public class AddEventRequest
+    public class AddEventRequest : IValidatableObject
     {
         /// <summary>
         /// Заголовок мероприятия
         /// </summary>
         [Required(ErrorMessage = "Заголовок мероприятия обязателен")]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         /// <summary>
         /// Подробное описание мероприятия
         /// </summary>
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Дата и время начала мероприятия
@@ -28,7 +28,18 @@ namespace EventManagement.Application.Requests
         /// Дата и время окончания мероприятия
         /// </summary>
         [Required(ErrorMessage = "Дата окончания обязательна")]
-        [Compare(nameof(StartAt), ErrorMessage = "Дата окончания должна быть позже даты начала")]
         public DateTime EndAt { get; set; }
+
+        /// <inheritdoc />
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (EndAt <= StartAt)
+            {
+                yield return new ValidationResult(
+                    "Дата окончания должна быть позже даты начала",
+                    new[] { nameof(EndAt) }
+                );
+            }
+        }
     }
 }
