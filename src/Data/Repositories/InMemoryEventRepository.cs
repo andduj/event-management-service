@@ -1,4 +1,4 @@
-﻿using EventManagement.Data.Interfaces;
+using EventManagement.Data.Interfaces;
 using EventManagement.Exceptions;
 using EventManagement.Models;
 
@@ -29,7 +29,7 @@ namespace EventManagement.Data.Repositories
             var eventItem = _events.FirstOrDefault(e => e.Id == id);
             if (eventItem == null)
             {
-                throw new EventNotFoundException($"Событие с id={id} не найдено");
+                throw new EventNotFoundException($"Мероприятие с id={id} не найдено.");
             }
 
             _events.Remove(eventItem);
@@ -45,9 +45,9 @@ namespace EventManagement.Data.Repositories
         public Event GetById(Guid id)
         {
             var eventItem = _events.FirstOrDefault(e => e.Id == id);
-            if(eventItem == null)
+            if (eventItem == null)
             {
-                throw new EventNotFoundException($"Событие с id={id} не найдено");
+                throw new EventNotFoundException($"Мероприятие с id={id} не найдено.");
             }
             return eventItem;
         }
@@ -58,7 +58,7 @@ namespace EventManagement.Data.Repositories
             var eventItem = _events.FirstOrDefault(e => e.Id == updatedEvent.Id);
             if (eventItem == null)
             {
-                throw new EventNotFoundException($"Событие с id={updatedEvent.Id} не найдено");
+                throw new EventNotFoundException($"Мероприятие с id={updatedEvent.Id} не найдено.");
             }
 
             eventItem.Title = updatedEvent.Title;

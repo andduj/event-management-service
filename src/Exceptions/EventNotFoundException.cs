@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Exceptions
+namespace EventManagement.Exceptions
 {
     /// <summary>
     /// Исключение, которое возникает при попытке обращения к несуществующему мероприятию.
@@ -7,10 +7,10 @@
     {
         /// <summary>
         /// Инициализирует новый экземпляр класса <see cref="EventNotFoundException"/>
-        /// с сообщением по умолчанию "Событие не найдено".
+        /// с сообщением по умолчанию "Мероприятие не найдено".
         /// </summary>
         public EventNotFoundException()
-            : base("Событие не найдено")
+            : base("Мероприятие не найдено")
         {
         }
 
