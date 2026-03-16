@@ -1,5 +1,6 @@
 using AutoMapper;
 using EventManagement.Application.DTOs;
+using EventManagement.Application.Filters;
 using EventManagement.Application.Interfaces;
 using EventManagement.Application.Requests;
 using EventManagement.Data.Interfaces;
@@ -37,9 +38,9 @@ namespace EventManagement.Application.Services
         }
 
         /// <inheritdoc/>
-        public List<EventDto> GetAll()
+        public List<EventDto> Filter(EventFilter eventFilter)
         {
-            var events = _eventRepository.GetAll();
+            var events = _eventRepository.Filter(eventFilter);
             return events
                 .Select(_mapper.Map<EventDto>)
                 .ToList();

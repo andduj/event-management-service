@@ -1,4 +1,5 @@
 ﻿using EventManagement.Application.DTOs;
+using EventManagement.Application.Filters;
 using EventManagement.Application.Requests;
 
 namespace EventManagement.Application.Interfaces
@@ -12,7 +13,7 @@ namespace EventManagement.Application.Interfaces
         /// Получает список всех мероприятий
         /// </summary>
         /// <returns>Список всех мероприятий в виде DTO объектов</returns>
-        List<EventDto> GetAll();
+        List<EventDto> Filter(EventFilter eventFilter);
 
         /// <summary>
         /// Получает мероприятие по его уникальному идентификатору

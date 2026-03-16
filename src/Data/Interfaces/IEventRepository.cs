@@ -1,3 +1,4 @@
+using EventManagement.Application.Filters;
 using EventManagement.Models;
 using System.Collections.ObjectModel;
 
@@ -12,7 +13,7 @@ namespace EventManagement.Data.Interfaces
         /// Получает список всех мероприятий из репозитория.
         /// </summary>
         /// <returns>Список всех мероприятий.</returns>
-        ReadOnlyCollection<Event> GetAll();
+        ReadOnlyCollection<Event> Filter(EventFilter eventFilter);
 
         /// <summary>
         /// Получает конкретное мероприятие по его уникальному идентификатору.

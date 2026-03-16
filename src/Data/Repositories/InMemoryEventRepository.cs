@@ -1,7 +1,10 @@
+using EventManagement.Application.Filters;
 using EventManagement.Data.Interfaces;
 using EventManagement.Exceptions;
 using EventManagement.Models;
+using LinqKit;
 using System.Collections.ObjectModel;
+using System.Linq.Expressions;
 
 namespace EventManagement.Data.Repositories
 {
@@ -37,9 +40,13 @@ namespace EventManagement.Data.Repositories
         }
 
         /// <inheritdoc/>
-        public ReadOnlyCollection<Event> GetAll()
+        public ReadOnlyCollection<Event> Filter(EventFilter eventFilter)
         {
-            return _events.AsReadOnly();
+            var predicate = BuildPredicate(eventFilter);
+            return _events
+                .Where(predicate.Compile())
+                .ToList()
+                .AsReadOnly();
         }
 
         /// <inheritdoc/>
@@ -66,6 +73,28 @@ namespace EventManagement.Data.Repositories
             eventItem.Description = updatedEvent.Description;
             eventItem.StartAt = updatedEvent.StartAt;
             eventItem.EndAt = updatedEvent.EndAt;
+        }
+
+        private static Expression<Func<Event, bool>> BuildPredicate(EventFilter filter)
+        {
+            var predicate = PredicateBuilder.New<Event>(true);
+
+            if (!string.IsNullOrEmpty(filter.Title))
+            {
+                predicate.And(e => e.Title.Contains(filter.Title, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (filter.StartAt.HasValue)
+            {
+                predicate.And(e => e.StartAt >= filter.StartAt);
+            }
+
+            if (filter.EndAt.HasValue)
+            {
+                predicate.And(e => e.EndAt <= filter.EndAt);
+            }
+
+            return predicate;
         }
     }
 }

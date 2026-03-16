@@ -1,7 +1,7 @@
 using EventManagement.Application.DTOs;
+using EventManagement.Application.Filters;
 using EventManagement.Application.Interfaces;
 using EventManagement.Application.Requests;
-using EventManagement.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventManagement.Presentation.Controllers
@@ -59,13 +59,14 @@ namespace EventManagement.Presentation.Controllers
         /// <summary>
         /// Получает список всех мероприятий
         /// </summary>
+        /// <param name="eventFilter">Фильтр для мероприятий</param>
         /// <returns>Возвращает список мероприятий с кодом 200 (OK)</returns>
         /// <response code="200">Список мероприятий успешно получен</response>
-        [HttpGet]
+        [HttpPost("Filter")]
         [ProducesResponseType(typeof(List<EventDto>), StatusCodes.Status200OK)]
-        public ActionResult<List<EventDto>> GetAll()
+        public ActionResult<List<EventDto>> Filter([FromBody]EventFilter eventFilter)
         {
-            var events = _eventService.GetAll();
+            var events = _eventService.Filter(eventFilter);
             return Ok(events);
         }
 
