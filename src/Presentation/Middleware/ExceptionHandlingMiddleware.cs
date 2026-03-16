@@ -1,6 +1,5 @@
 ﻿using EventManagement.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace EventManagement.Presentation.Middleware
 {
@@ -11,16 +10,19 @@ namespace EventManagement.Presentation.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IWebHostEnvironment _env;
+        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
         /// <summary>
         /// Инициализирует новый экземпляр класса <see cref="ExceptionHandlingMiddleware"/>.
         /// </summary>
         /// <param name="next">Делегат следующего компонента в конвейере обработки запроса.</param>
         /// <param name="env">Информация о среде выполнения приложения (Development/Production).</param>
-        public ExceptionHandlingMiddleware(RequestDelegate next, IWebHostEnvironment env)
+        /// <param name="logger">Логгер.</param>
+        public ExceptionHandlingMiddleware(RequestDelegate next, IWebHostEnvironment env, ILogger<ExceptionHandlingMiddleware> logger)
         {
             _next = next;
             _env = env;
+            _logger = logger;
         }
 
         /// <summary>
@@ -46,21 +48,18 @@ namespace EventManagement.Presentation.Middleware
         /// <param name="exception">Перехваченное исключение.</param>
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            int statusCode;
+            _logger.LogError(
+                exception,
+                "Необработанное исключение. Метод:{Method}, Путь:{Path}",
+                context.Request.Method,
+                context.Request.Path);
 
-            switch (exception)
+            if (context.Response.HasStarted)
             {
-                case EventNotFoundException:
-                    statusCode = StatusCodes.Status404NotFound;
-                    break;
-                case ArgumentException:
-                    statusCode = StatusCodes.Status400BadRequest;
-                    break;
-                case NullReferenceException:
-                default:
-                    statusCode = StatusCodes.Status500InternalServerError;
-                    break;
+                return;
             }
+
+            int statusCode = MapStatusCode(exception);
 
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/problem+json";
@@ -79,8 +78,7 @@ namespace EventManagement.Presentation.Middleware
                 problemDetails.Extensions["traceId"] = context.TraceIdentifier;
             }
 
-            string json = JsonSerializer.Serialize(problemDetails);
-            await context.Response.WriteAsync(json);
+            await context.Response.WriteAsJsonAsync(problemDetails);
         }
 
         /// <summary>
@@ -88,18 +86,50 @@ namespace EventManagement.Presentation.Middleware
         /// </summary>
         /// <param name="statusCode">Код HTTP-статуса.</param>
         /// <returns>Текстовое описание статуса.</returns>
-        private static string GetTitleForStatusCode(int statusCode) => statusCode switch
+        private static string GetTitleForStatusCode(int statusCode)
         {
-            400 => "Bad Request",
-            401 => "Unauthorized",
-            403 => "Forbidden",
-            404 => "Not Found",
-            405 => "Method Not Allowed",
-            409 => "Conflict",
-            415 => "Unsupported Media Type",
-            422 => "Unprocessable Entity",
-            500 => "Internal Server Error",
-            _ => "An error occurred"
-        };
+            switch (statusCode)
+            {
+                case 400:
+                    return "Bad Request";
+                case 401:
+                    return "Unauthorized";
+                case 403:
+                    return "Forbidden";
+                case 404:
+                    return "Not Found";
+                case 405:
+                    return "Method Not Allowed";
+                case 409:
+                    return "Conflict";
+                case 415:
+                    return "Unsupported Media Type";
+                case 422:
+                    return "Unprocessable Entity";
+                case 500:
+                    return "Internal Server Error";
+                default:
+                    return "An error occurred";
+            }
+        }
+
+        private static int MapStatusCode(Exception exception)
+        {
+            int statusCode;
+            switch (exception)
+            {
+                case EventNotFoundException:
+                    statusCode = StatusCodes.Status404NotFound;
+                    break;
+                case ArgumentException:
+                    statusCode = StatusCodes.Status400BadRequest;
+                    break;
+                case NullReferenceException:
+                default:
+                    statusCode = StatusCodes.Status500InternalServerError;
+                    break;
+            }
+            return statusCode;
+        }
     }
 }

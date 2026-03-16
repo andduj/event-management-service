@@ -1,6 +1,7 @@
 using EventManagement.Application.DTOs;
 using EventManagement.Application.Interfaces;
 using EventManagement.Application.Requests;
+using EventManagement.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventManagement.Presentation.Controllers
@@ -64,6 +65,7 @@ namespace EventManagement.Presentation.Controllers
         [ProducesResponseType(typeof(List<EventDto>), StatusCodes.Status200OK)]
         public ActionResult<List<EventDto>> GetAll()
         {
+            throw new NotImplementedException();
             var events = _eventService.GetAll();
             return Ok(events);
         }
