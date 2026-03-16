@@ -65,7 +65,6 @@ namespace EventManagement.Presentation.Controllers
         [ProducesResponseType(typeof(List<EventDto>), StatusCodes.Status200OK)]
         public ActionResult<List<EventDto>> GetAll()
         {
-            throw new NotImplementedException();
             var events = _eventService.GetAll();
             return Ok(events);
         }
