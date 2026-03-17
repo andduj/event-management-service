@@ -1,6 +1,6 @@
+using EventManagement.Application.DTOs;
 using EventManagement.Application.Filters;
 using EventManagement.Models;
-using System.Collections.ObjectModel;
 
 namespace EventManagement.Data.Interfaces
 {
@@ -12,8 +12,11 @@ namespace EventManagement.Data.Interfaces
         /// <summary>
         /// Получает список всех мероприятий из репозитория.
         /// </summary>
+        /// <param name="eventFilter">Фильтр для мероприятий.</param>
+        /// <param name="page">Страница.</param>
+        /// <param name="pageSize">Размер страницы.</param>
         /// <returns>Список всех мероприятий.</returns>
-        ReadOnlyCollection<Event> Filter(EventFilter eventFilter);
+        PaginatedResult<Event> Filter(EventFilter eventFilter, int page, int pageSize);
 
         /// <summary>
         /// Получает конкретное мероприятие по его уникальному идентификатору.

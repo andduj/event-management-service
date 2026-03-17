@@ -1,9 +1,9 @@
+using EventManagement.Application.DTOs;
 using EventManagement.Application.Filters;
 using EventManagement.Data.Interfaces;
 using EventManagement.Exceptions;
 using EventManagement.Models;
 using LinqKit;
-using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 
 namespace EventManagement.Data.Repositories
@@ -40,13 +40,30 @@ namespace EventManagement.Data.Repositories
         }
 
         /// <inheritdoc/>
-        public ReadOnlyCollection<Event> Filter(EventFilter eventFilter)
+        public PaginatedResult<Event> Filter(EventFilter eventFilter, int page, int pageSize)
         {
             var predicate = BuildPredicate(eventFilter);
-            return _events
-                .Where(predicate.Compile())
+            var query = _events
+                .Where(predicate.Compile());
+
+            int filteredCount = query.Count();
+
+            var items = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToList()
                 .AsReadOnly();
+
+            int totalPages = (int)Math.Ceiling((double)filteredCount / pageSize);
+
+            return new PaginatedResult<Event> 
+            {
+                Items = items, 
+                Page = page, 
+                PageSize = pageSize, 
+                TotalItems = filteredCount, 
+                TotalPages = totalPages
+            };
         }
 
         /// <inheritdoc/>

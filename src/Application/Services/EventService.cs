@@ -38,12 +38,22 @@ namespace EventManagement.Application.Services
         }
 
         /// <inheritdoc/>
-        public List<EventDto> Filter(EventFilter eventFilter)
+        public PaginatedResult<EventDto> Filter(EventFilter eventFilter, int page, int pageSize)
         {
-            var events = _eventRepository.Filter(eventFilter);
-            return events
+            var paginatedResult = _eventRepository.Filter(eventFilter, page, pageSize);
+            var events = paginatedResult.Items
                 .Select(_mapper.Map<EventDto>)
-                .ToList();
+                .ToList()
+                .AsReadOnly();
+
+            return new PaginatedResult<EventDto>
+            {
+                Items = events,
+                Page = paginatedResult.Page,
+                PageSize = paginatedResult.PageSize,
+                TotalItems = paginatedResult.TotalItems,
+                TotalPages = paginatedResult.TotalPages
+            };
         }
 
         /// <inheritdoc/>

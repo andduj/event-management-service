@@ -12,8 +12,11 @@ namespace EventManagement.Application.Interfaces
         /// <summary>
         /// Получает список всех мероприятий
         /// </summary>
+        /// <param name="eventFilter">Фильтр для мероприятий.</param>
+        /// <param name="page">Страница.</param>
+        /// <param name="pageSize">Размер страницы.</param>
         /// <returns>Список всех мероприятий в виде DTO объектов</returns>
-        List<EventDto> Filter(EventFilter eventFilter);
+        PaginatedResult<EventDto> Filter(EventFilter eventFilter, int page, int pageSize);
 
         /// <summary>
         /// Получает мероприятие по его уникальному идентификатору
