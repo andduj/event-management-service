@@ -1,10 +1,16 @@
-﻿using EventManagement.Models;
+using EventManagement.Models;
 using FluentValidation;
 
 namespace EventManagement.Application
 {
+    /// <summary>
+    /// Валидатор доменной модели мероприятия.
+    /// </summary>
     public class EventValidator : AbstractValidator<Event>
     {
+        /// <summary>
+        /// Инициализирует новый экземпляр валидатора мероприятия.
+        /// </summary>
         public EventValidator()
         {
             RuleFor(x => x.Title)

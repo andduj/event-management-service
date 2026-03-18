@@ -1,32 +1,32 @@
 namespace EventManagement.Models
 {
     /// <summary>
-    /// Мероприятие
+    /// Мероприятие.
     /// </summary>
     public class Event
     {
         /// <summary>
-        /// Идентификатор мероприятия
+        /// Идентификатор мероприятия.
         /// </summary>
         public required Guid Id { get; set; }
 
         /// <summary>
-        /// Заголовок мероприятия
+        /// Заголовок мероприятия.
         /// </summary>
         public required string Title { get; set; }
 
         /// <summary>
-        /// Описание мероприятия
+        /// Описание мероприятия.
         /// </summary>
         public string? Description { get; set; }
 
         /// <summary>
-        /// Дата начала
+        /// Дата начала.
         /// </summary>
         public required DateTime StartAt { get; set; }
 
         /// <summary>
-        /// Дата завершения
+        /// Дата завершения.
         /// </summary>
         public required DateTime EndAt { get; set; }
     }

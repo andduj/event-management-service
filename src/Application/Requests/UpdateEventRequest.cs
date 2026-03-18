@@ -1,27 +1,27 @@
 namespace EventManagement.Application.Requests
 {
     /// <summary>
-    /// Запрос на обновление мероприятия
+    /// Запрос на обновление мероприятия.
     /// </summary>
     public class UpdateEventRequest
     {
         /// <summary>
-        /// Заголовок мероприятия
+        /// Заголовок мероприятия.
         /// </summary>
         public string Title { get; set; } = string.Empty;
 
         /// <summary>
-        /// Описание мероприятия
+        /// Описание мероприятия.
         /// </summary>
         public string? Description { get; set; }
 
         /// <summary>
-        /// Дата начала
+        /// Дата начала.
         /// </summary>
         public DateTime StartAt { get; set; }
 
         /// <summary>
-        /// Дата завершения
+        /// Дата завершения.
         /// </summary>
         public DateTime EndAt { get; set; }
     }

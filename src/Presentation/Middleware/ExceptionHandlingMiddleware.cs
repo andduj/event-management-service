@@ -1,4 +1,4 @@
-﻿using EventManagement.Exceptions;
+using EventManagement.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +13,12 @@ namespace EventManagement.Presentation.Middleware
         private readonly IWebHostEnvironment _env;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
+        /// <summary>
+        /// Инициализирует новый экземпляр middleware глобальной обработки исключений.
+        /// </summary>
+        /// <param name="next">Следующий компонент в конвейере запросов.</param>
+        /// <param name="env">Среда выполнения приложения.</param>
+        /// <param name="logger">Логгер.</param>
         public ExceptionHandlingMiddleware(RequestDelegate next, IWebHostEnvironment env, ILogger<ExceptionHandlingMiddleware> logger)
         {
             _next = next;
@@ -20,6 +26,11 @@ namespace EventManagement.Presentation.Middleware
             _logger = logger;
         }
 
+        /// <summary>
+        /// Обрабатывает HTTP-запрос и перехватывает необработанные исключения.
+        /// </summary>
+        /// <param name="context">Контекст HTTP-запроса.</param>
+        /// <returns>Задача выполнения middleware.</returns>
         public async Task InvokeAsync(HttpContext context)
         {
             try
