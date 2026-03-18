@@ -11,6 +11,7 @@ namespace EventService.Tests
     {
         private const int MinHours = 1;
         private const int MaxHours = 5;
+        private const int Year = 2026;
 
         public EventManagement.Application.Services.EventService EventService { get; }
 
@@ -28,8 +29,8 @@ namespace EventService.Tests
             Fixture.Customize<AddEventRequest>(composer => composer
                 .FromFactory(() =>
                 {
-                    var startAt = GetRandomStartDate();
-                    var endAt = startAt.AddHours(Random.Shared.Next(MinHours, MaxHours));
+                    var startAt = GetRandomDateTimeUtcInYear(Year);
+                    var endAt = startAt.AddHours(Random.Shared.Next(MinHours, MaxHours + 1));
 
                     return new AddEventRequest
                     {
@@ -38,13 +39,14 @@ namespace EventService.Tests
                         StartAt = startAt,
                         EndAt = endAt
                     };
-                }));
+                })
+                .OmitAutoProperties());
 
             Fixture.Customize<UpdateEventRequest>(composer => composer
                 .FromFactory(() =>
                 {
-                    var startAt = GetRandomStartDate();
-                    var endAt = startAt.AddHours(Random.Shared.Next(MinHours, MaxHours));
+                    var startAt = GetRandomDateTimeUtcInYear(Year);
+                    var endAt = startAt.AddHours(Random.Shared.Next(MinHours, MaxHours + 1));
 
                     return new UpdateEventRequest
                     {
@@ -53,17 +55,21 @@ namespace EventService.Tests
                         StartAt = startAt,
                         EndAt = endAt
                     };
-                }));
+                })
+                .OmitAutoProperties());
         }
 
-        private DateTime GetRandomStartDate()
+        private static DateTime GetRandomDateTimeUtcInYear(int year)
         {
-            return new DateTime(2026,
-                Random.Shared.Next(1, 13),
-                Random.Shared.Next(1, 28),
-                Random.Shared.Next(0, 24),
-                Random.Shared.Next(0, 60),
-                0);
+            var daysInYear = DateTime.IsLeapYear(year) ? 366 : 365;
+            var dayOfYear = Random.Shared.Next(1, daysInYear + 1);
+            var date = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddDays(dayOfYear - 1);
+
+            var hour = Random.Shared.Next(0, 24);
+            var minute = Random.Shared.Next(0, 60);
+            var second = Random.Shared.Next(0, 60);
+
+            return date.AddHours(hour).AddMinutes(minute).AddSeconds(second);
         }
     }
 }

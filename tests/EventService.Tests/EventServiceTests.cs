@@ -28,8 +28,8 @@ namespace EventService.Tests
         {
             return
             [
-                ["Спектакль", new DateTime(2026, 1, 1), new DateTime(2026, 1, 30)],
-                ["Концерт", new DateTime(2026, 5, 1), new DateTime(2026, 5, 30)],
+                ["Концерт", new DateTime(2026, 1, 1), new DateTime(2026, 1, 30)],
+                ["Салют", new DateTime(2026, 5, 1), new DateTime(2026, 5, 30)],
                 ["Фестиваль", new DateTime(2026, 10, 1), new DateTime(2026, 10, 30)]
             ];
         }
@@ -98,8 +98,8 @@ namespace EventService.Tests
         }
 
         [Theory]
-        [InlineData("Спектакль")]
         [InlineData("Концерт")]
+        [InlineData("Салют")]
         [InlineData("Фестиваль")]
         public void Filter_ByTitle_Success(string title)
         {
@@ -167,7 +167,9 @@ namespace EventService.Tests
         [Fact]
         public void Update_NotExistingEvent_ShouldThrowEventNotFoundException()
         {
-            var action = () => _eventService.Update(Guid.NewGuid(), new UpdateEventRequest());
+            var updateEventRequest = _fixture.Create<UpdateEventRequest>();
+
+            var action = () => _eventService.Update(Guid.NewGuid(), updateEventRequest);
 
             action.Should().Throw<EventNotFoundException>();
         }
