@@ -67,7 +67,7 @@ namespace EventManagement.Presentation.Controllers
         /// <returns>Возвращает список мероприятий с кодом 200 (OK).</returns>
         /// <response code="200">Список мероприятий успешно получен.</response>
         [HttpGet]
-        [ProducesResponseType(typeof(List<EventDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
         public ActionResult<PaginatedResult<EventDto>> GetAll(string? title, DateTime? from, DateTime? to, int? page = 1, int? pageSize = 10)
         {
             var eventFilter = new EventFilter
@@ -89,7 +89,7 @@ namespace EventManagement.Presentation.Controllers
         /// <returns>Возвращает список мероприятий с кодом 200 (OK).</returns>
         /// <response code="200">Список мероприятий успешно получен.</response>
         [HttpPost("Filter")]
-        [ProducesResponseType(typeof(List<EventDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
         public ActionResult<PaginatedResult<EventDto>> Filter([FromBody]EventFilter eventFilter, int? page = 1, int? pageSize = 10)
         {
             var events = _eventService.Filter(eventFilter, page!.Value, pageSize!.Value);
