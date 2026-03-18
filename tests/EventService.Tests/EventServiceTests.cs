@@ -1,14 +1,36 @@
 using AutoFixture;
+using EventManagement.Application.Filters;
 using EventManagement.Application.Requests;
+using EventManagement.Exceptions;
 using FluentAssertions;
 using System;
-using EventManagement.Application.Filters;
+using System.Collections.Generic;
 
 namespace EventService.Tests
 {
     public class EventServiceTests : IClassFixture<EventServiceFixture>
     {
         private readonly EventManagement.Application.Services.EventService _eventService;
+
+        public static IEnumerable<object[]> DateTimePeriods()
+        {
+            return
+            [
+                [new DateTime(2026, 1, 1), new DateTime(2026, 1, 30)],
+                [new DateTime(2026, 5, 1), new DateTime(2026, 5, 30)],
+                [new DateTime(2026, 10, 1), new DateTime(2026, 10, 30)]
+            ];
+        }
+
+        public static IEnumerable<object[]> TitleAndDateTimePeriods()
+        {
+            return
+            [
+                ["Концерт", new DateTime(2026, 1, 1), new DateTime(2026, 1, 30)],
+                ["Салют", new DateTime(2026, 5, 1), new DateTime(2026, 5, 30)],
+                ["Фестиваль", new DateTime(2026, 10, 1), new DateTime(2026, 10, 30)]
+            ];
+        }
 
         public EventServiceTests(EventServiceFixture fixture)
         {
@@ -18,8 +40,7 @@ namespace EventService.Tests
         [Fact]
         public void Add_NewEvent_Success()
         {
-            var fixture = new Fixture();
-            var addEventRequest = fixture.Create<AddEventRequest>();
+            var addEventRequest = new Fixture().Create<AddEventRequest>();
 
             var added = _eventService.Add(addEventRequest);
 
@@ -32,6 +53,132 @@ namespace EventService.Tests
             var paginatedResult = _eventService.Filter(new EventFilter(), 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public void GetById_ExistingEvent_Success()
+        {
+            var addEventRequest = new Fixture().Create<AddEventRequest>();
+            var added = _eventService.Add(addEventRequest);
+
+            var eventItem = _eventService.GetById(added.Id);
+
+            eventItem.Id.Should().Be(added.Id);
+        }
+
+        [Fact]
+        public void Update_ExistingEvent_Success()
+        {
+            var fixture = new Fixture();
+            var addEventRequest = fixture.Create<AddEventRequest>();
+            var added = _eventService.Add(addEventRequest);
+            var updateEventRequest = fixture.Create<UpdateEventRequest>();
+
+           _eventService.Update(added.Id, updateEventRequest);
+
+            var eventItem = _eventService.GetById(added.Id);
+            eventItem.Title.Should().Be(updateEventRequest.Title);
+            eventItem.Description.Should().Be(updateEventRequest.Description);
+            eventItem.StartAt.Should().Be(updateEventRequest.StartAt);
+            eventItem.EndAt.Should().Be(updateEventRequest.EndAt);
+        }
+
+        [Fact]
+        public void Delete_ExistingEvent_Success()
+        {
+            var addEventRequest = new Fixture().Create<AddEventRequest>();
+            var added = _eventService.Add(addEventRequest);
+
+            _eventService.Delete(added.Id);
+
+            var action = ()=> _eventService.GetById(added.Id);
+            action.Should().Throw<EventNotFoundException>();
+        }
+
+        [Theory]
+        [InlineData("Концерт")]
+        [InlineData("Фестиваль")]
+        [InlineData("Лекция")]
+        [InlineData("Шоу")]
+        public void Filter_ByTitle_Success(string title)
+        {
+            var filter = new EventFilter
+            {
+                Title = title
+            };
+
+            var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
+
+            paginatedResult.Items.Should().NotBeEmpty();
+        }
+
+        [Theory]
+        [MemberData(nameof(DateTimePeriods))]
+        public void Filter_ByDate_Success(DateTime startAt, DateTime endAt)
+        {
+            var filter = new EventFilter
+            {
+                StartAt = startAt,
+                EndAt = endAt
+            };
+
+            var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
+
+            paginatedResult.Items.Should().NotBeEmpty();
+        }
+
+        [Theory]
+        [InlineData(1, 12, 12)]
+        [InlineData(2, 12, 12)]
+        [InlineData(3, 12, 12)]
+        [InlineData(4, 12, 8)]
+        public void Filter_Pagination_Success(int page, int pageSize, int expectedCount)
+        {
+            var paginatedResult = _eventService.Filter(new EventFilter(), page, pageSize);
+
+            paginatedResult.Items.Should().NotBeEmpty();
+            paginatedResult.Items.Should().HaveCount(expectedCount);
+        }
+
+        [Theory]
+        [MemberData(nameof(TitleAndDateTimePeriods))]
+        public void Filter_Combined_Success(string title, DateTime startAt, DateTime endAt)
+        {
+            var filter = new EventFilter
+            {
+                Title = title,
+                StartAt = startAt,
+                EndAt = endAt
+            };
+
+            var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
+
+            paginatedResult.Items.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        public void GetById_NotExistingEvent_ShouldThrowEventNotFoundException()
+        {
+            var action = () => _eventService.GetById(Guid.NewGuid());
+
+            action.Should().Throw<EventNotFoundException>();
+        }
+
+        [Fact]
+        public void Update_NotExistingEvent_ShouldThrowEventNotFoundException()
+        {
+            var action = () => _eventService.Update(Guid.NewGuid(), new UpdateEventRequest());
+
+            action.Should().Throw<EventNotFoundException>();
+        }
+
+        [Fact]
+        public void Add_Invalid_ShouldThrowEventNotFoundException()
+        {
+            var addEventRequest = new Fixture().Create<AddEventRequest>();
+            addEventRequest.Title = string.Empty;
+
+            var added = _eventService.Add(addEventRequest);
         }
     }
 }
