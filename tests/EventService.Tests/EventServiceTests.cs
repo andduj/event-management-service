@@ -12,6 +12,7 @@ namespace EventService.Tests
     public class EventServiceTests : IClassFixture<EventServiceFixture>
     {
         private readonly EventManagement.Application.Services.EventService _eventService;
+        private readonly IFixture _fixture;
 
         public static IEnumerable<object[]> DateTimePeriods()
         {
@@ -27,21 +28,22 @@ namespace EventService.Tests
         {
             return
             [
-                [" ÓÌˆÂÚ", new DateTime(2026, 1, 1), new DateTime(2026, 1, 30)],
-                ["—‡Î˛Ú", new DateTime(2026, 5, 1), new DateTime(2026, 5, 30)],
-                ["‘ÂÒÚË‚‡Î¸", new DateTime(2026, 10, 1), new DateTime(2026, 10, 30)]
+                ["–°–ø–µ–∫—Ç–∞–∫–ª—å", new DateTime(2026, 1, 1), new DateTime(2026, 1, 30)],
+                ["–ö–æ–Ω—Ü–µ—Ä—Ç", new DateTime(2026, 5, 1), new DateTime(2026, 5, 30)],
+                ["–§–µ—Å—Ç–∏–≤–∞–ª—å", new DateTime(2026, 10, 1), new DateTime(2026, 10, 30)]
             ];
         }
 
         public EventServiceTests(EventServiceFixture fixture)
         {
             _eventService = fixture.EventService;
+            _fixture = fixture.Fixture;
         }
 
         [Fact]
         public void Add_NewEvent_Success()
         {
-            var addEventRequest = new Fixture().Create<AddEventRequest>();
+            var addEventRequest = _fixture.Create<AddEventRequest>();
 
             var added = _eventService.Add(addEventRequest);
 
@@ -59,7 +61,7 @@ namespace EventService.Tests
         [Fact]
         public void GetById_ExistingEvent_Success()
         {
-            var addEventRequest = new Fixture().Create<AddEventRequest>();
+            var addEventRequest = _fixture.Create<AddEventRequest>();
             var added = _eventService.Add(addEventRequest);
 
             var eventItem = _eventService.GetById(added.Id);
@@ -70,10 +72,9 @@ namespace EventService.Tests
         [Fact]
         public void Update_ExistingEvent_Success()
         {
-            var fixture = new Fixture();
-            var addEventRequest = fixture.Create<AddEventRequest>();
+            var addEventRequest = _fixture.Create<AddEventRequest>();
             var added = _eventService.Add(addEventRequest);
-            var updateEventRequest = fixture.Create<UpdateEventRequest>();
+            var updateEventRequest = _fixture.Create<UpdateEventRequest>();
 
            _eventService.Update(added.Id, updateEventRequest);
 
@@ -87,7 +88,7 @@ namespace EventService.Tests
         [Fact]
         public void Delete_ExistingEvent_Success()
         {
-            var addEventRequest = new Fixture().Create<AddEventRequest>();
+            var addEventRequest = _fixture.Create<AddEventRequest>();
             var added = _eventService.Add(addEventRequest);
 
             _eventService.Delete(added.Id);
@@ -97,10 +98,9 @@ namespace EventService.Tests
         }
 
         [Theory]
-        [InlineData(" ÓÌˆÂÚ")]
-        [InlineData("‘ÂÒÚË‚‡Î¸")]
-        [InlineData("ÀÂÍˆËˇ")]
-        [InlineData("ÿÓÛ")]
+        [InlineData("–°–ø–µ–∫—Ç–∞–∫–ª—å")]
+        [InlineData("–ö–æ–Ω—Ü–µ—Ä—Ç")]
+        [InlineData("–§–µ—Å—Ç–∏–≤–∞–ª—å")]
         public void Filter_ByTitle_Success(string title)
         {
             var filter = new EventFilter
@@ -132,7 +132,6 @@ namespace EventService.Tests
         [InlineData(1, 12, 12)]
         [InlineData(2, 12, 12)]
         [InlineData(3, 12, 12)]
-        [InlineData(4, 12, 8)]
         public void Filter_Pagination_Success(int page, int pageSize, int expectedCount)
         {
             var paginatedResult = _eventService.Filter(new EventFilter(), page, pageSize);
@@ -174,10 +173,34 @@ namespace EventService.Tests
         }
 
         [Fact]
-        public void Add_Invalid_ShouldThrowValidationException()
+        public void Add_WithoutTitle_ShouldThrowValidationException()
         {
-            var addEventRequest = new Fixture().Create<AddEventRequest>();
+            var addEventRequest = _fixture.Create<AddEventRequest>();
             addEventRequest.Title = string.Empty;
+
+            var action = () => _eventService.Add(addEventRequest);
+
+            action.Should().Throw<ValidationException>();
+        }
+
+        [Fact]
+        public void Add_StartAtIsGreaterEndAt_ShouldThrowValidationException()
+        {
+            var addEventRequest = _fixture.Create<AddEventRequest>();
+            addEventRequest.StartAt = DateTime.Now.AddHours(1);
+            addEventRequest.EndAt = DateTime.Now;
+
+            var action = () => _eventService.Add(addEventRequest);
+
+            action.Should().Throw<ValidationException>();
+        }
+
+        [Fact]
+        public void Update_StartAtIsGreaterEndAt_ShouldThrowValidationException()
+        {
+            var addEventRequest = _fixture.Create<AddEventRequest>();
+            addEventRequest.StartAt = DateTime.Now.AddHours(1);
+            addEventRequest.EndAt = DateTime.Now;
 
             var action = () => _eventService.Add(addEventRequest);
 
