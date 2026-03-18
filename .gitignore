@@ -5,3 +5,5 @@
 /src/obj
 /src/bin
 /src/.vs
+/tests/EventService.Tests/bin/Debug/net8.0
+/tests/EventService.Tests/obj
