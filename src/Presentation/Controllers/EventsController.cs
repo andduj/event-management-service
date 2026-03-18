@@ -59,6 +59,30 @@ namespace EventManagement.Presentation.Controllers
         /// <summary>
         /// Получает список всех мероприятий.
         /// </summary>
+        /// <param name="title">Заголовок мероприятия.</param>
+        /// <param name="from">Фильтр для мероприятий.</param>
+        /// <param name="to">Фильтр для мероприятий.</param>
+        /// <param name="page">Страница.</param>
+        /// <param name="pageSize">Размер страницы.</param>
+        /// <returns>Возвращает список мероприятий с кодом 200 (OK).</returns>
+        /// <response code="200">Список мероприятий успешно получен.</response>
+        [HttpGet]
+        [ProducesResponseType(typeof(List<EventDto>), StatusCodes.Status200OK)]
+        public ActionResult<PaginatedResult<EventDto>> GetAll(string? title, DateTime? from, DateTime? to, int? page = 1, int? pageSize = 10)
+        {
+            var eventFilter = new EventFilter
+            {
+                Title = title,
+                StartAt = from,
+                EndAt = to,
+            };
+            var events = _eventService.Filter(eventFilter, page!.Value, pageSize!.Value);
+            return Ok(events);
+        }
+
+        /// <summary>
+        /// Получает список всех мероприятий.
+        /// </summary>
         /// <param name="eventFilter">Фильтр для мероприятий.</param>
         /// <param name="page">Страница.</param>
         /// <param name="pageSize">Размер страницы.</param>
