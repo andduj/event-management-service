@@ -3,6 +3,7 @@ using EventManagement.Application.Filters;
 using EventManagement.Application.Requests;
 using EventManagement.Exceptions;
 using FluentAssertions;
+using FluentValidation;
 using System;
 using System.Collections.Generic;
 
@@ -173,12 +174,14 @@ namespace EventService.Tests
         }
 
         [Fact]
-        public void Add_Invalid_ShouldThrowEventNotFoundException()
+        public void Add_Invalid_ShouldThrowValidationException()
         {
             var addEventRequest = new Fixture().Create<AddEventRequest>();
             addEventRequest.Title = string.Empty;
 
-            var added = _eventService.Add(addEventRequest);
+            var action = () => _eventService.Add(addEventRequest);
+
+            action.Should().Throw<ValidationException>();
         }
     }
 }

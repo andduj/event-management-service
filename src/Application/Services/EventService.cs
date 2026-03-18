@@ -5,6 +5,7 @@ using EventManagement.Application.Interfaces;
 using EventManagement.Application.Requests;
 using EventManagement.Data.Interfaces;
 using EventManagement.Models;
+using FluentValidation;
 
 namespace EventManagement.Application.Services
 {
@@ -15,17 +16,20 @@ namespace EventManagement.Application.Services
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
+        private readonly IValidator<Event> _validator;
 
-        public EventService(IEventRepository eventRepository, IMapper mapper)
+        public EventService(IEventRepository eventRepository, IMapper mapper, IValidator<Event> validator)
         {
             _eventRepository = eventRepository;
             _mapper = mapper;
+            _validator = validator;
         }
 
         /// <inheritdoc/>
         public EventDto Add(AddEventRequest addEventRequest)
         {
             var newEvent = _mapper.Map<Event>(addEventRequest);
+            _validator.ValidateAndThrow(newEvent);
             newEvent.Id = Guid.NewGuid();
             var addedEvent = _eventRepository.Add(newEvent);
             return _mapper.Map<EventDto>(addedEvent);
@@ -67,6 +71,7 @@ namespace EventManagement.Application.Services
         public void Update(Guid id, UpdateEventRequest updateEventRequest)
         {
             var updatedEvent = _mapper.Map<Event>(updateEventRequest);
+            _validator.ValidateAndThrow(updatedEvent);
             updatedEvent.Id = id;
             _eventRepository.Update(updatedEvent);
         }

@@ -1,5 +1,7 @@
 ﻿using EventManagement.Application.Interfaces;
 using EventManagement.Application.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 namespace EventManagement.Application
 {
@@ -17,6 +19,11 @@ namespace EventManagement.Application
         {
             services.AddScoped<IEventService, EventService>();
             services.AddAutoMapper(typeof(Program));
+
+            services.AddFluentValidationAutoValidation();
+            services.AddFluentValidationClientsideAdapters();
+            services.AddValidatorsFromAssemblyContaining<EventValidator>();
+
             return services;
         }
     }

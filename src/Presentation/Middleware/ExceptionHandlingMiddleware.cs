@@ -1,4 +1,5 @@
 ﻿using EventManagement.Exceptions;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventManagement.Presentation.Middleware
@@ -12,12 +13,6 @@ namespace EventManagement.Presentation.Middleware
         private readonly IWebHostEnvironment _env;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-        /// <summary>
-        /// Инициализирует новый экземпляр класса <see cref="ExceptionHandlingMiddleware"/>.
-        /// </summary>
-        /// <param name="next">Делегат следующего компонента в конвейере обработки запроса.</param>
-        /// <param name="env">Информация о среде выполнения приложения (Development/Production).</param>
-        /// <param name="logger">Логгер.</param>
         public ExceptionHandlingMiddleware(RequestDelegate next, IWebHostEnvironment env, ILogger<ExceptionHandlingMiddleware> logger)
         {
             _next = next;
@@ -25,10 +20,6 @@ namespace EventManagement.Presentation.Middleware
             _logger = logger;
         }
 
-        /// <summary>
-        /// Выполняет обработку HTTP-запроса с перехватом возможных исключений.
-        /// </summary>
-        /// <param name="context">Контекст HTTP-запроса.</param>
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -41,11 +32,6 @@ namespace EventManagement.Presentation.Middleware
             }
         }
 
-        /// <summary>
-        /// Обрабатывает исключение и формирует структурированный ответ клиенту.
-        /// </summary>
-        /// <param name="context">Контекст HTTP-запроса.</param>
-        /// <param name="exception">Перехваченное исключение.</param>
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             _logger.LogError(
@@ -72,6 +58,20 @@ namespace EventManagement.Presentation.Middleware
                 Instance = context.Request.Path
             };
 
+            if (exception is ValidationException validationException)
+            {
+                problemDetails.Title = "Validation Error";
+
+                var errors = validationException.Errors
+                    .GroupBy(exception => exception.PropertyName)
+                    .ToDictionary(
+                        group => group.Key,
+                        group => group.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                problemDetails.Extensions["errors"] = errors;
+            }
+
             if (_env.IsDevelopment())
             {
                 problemDetails.Extensions["stackTrace"] = exception.StackTrace;
@@ -81,11 +81,6 @@ namespace EventManagement.Presentation.Middleware
             await context.Response.WriteAsJsonAsync(problemDetails);
         }
 
-        /// <summary>
-        /// Возвращает стандартный заголовок для HTTP-статуса.
-        /// </summary>
-        /// <param name="statusCode">Код HTTP-статуса.</param>
-        /// <returns>Текстовое описание статуса.</returns>
         private static string GetTitleForStatusCode(int statusCode)
         {
             switch (statusCode)
@@ -118,11 +113,17 @@ namespace EventManagement.Presentation.Middleware
             int statusCode;
             switch (exception)
             {
+                case ValidationException:
+                    statusCode = StatusCodes.Status400BadRequest;
+                    break;
                 case EventNotFoundException:
                     statusCode = StatusCodes.Status404NotFound;
                     break;
                 case ArgumentException:
                     statusCode = StatusCodes.Status400BadRequest;
+                    break;
+                case UnauthorizedAccessException:
+                    statusCode = StatusCodes.Status401Unauthorized;
                     break;
                 case NullReferenceException:
                 default:

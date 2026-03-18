@@ -13,7 +13,7 @@ namespace EventService.Tests
             var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())
                 .CreateMapper();
 
-            EventService = new EventManagement.Application.Services.EventService(new InMemoryEventRepository(), mapper);
+            EventService = new EventManagement.Application.Services.EventService(new InMemoryEventRepository(), mapper, new EventValidator());
         }
     }
 }
