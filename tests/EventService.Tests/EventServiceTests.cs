@@ -1,6 +1,7 @@
 using AutoFixture;
 using EventManagement.Application.Filters;
 using EventManagement.Application.Requests;
+using EventManagement.Application.Services;
 using EventManagement.Exceptions;
 using FluentAssertions;
 using FluentValidation;
@@ -11,7 +12,7 @@ namespace EventService.Tests
 {
     public class EventServiceTests : IClassFixture<EventServiceFixture>
     {
-        private readonly EventManagement.Application.Services.EventService _eventService;
+        private readonly EventsService _eventsService;
         private readonly IFixture _fixture;
 
         public static IEnumerable<object[]> DateTimePeriods()
@@ -36,7 +37,7 @@ namespace EventService.Tests
 
         public EventServiceTests(EventServiceFixture fixture)
         {
-            _eventService = fixture.EventService;
+            _eventsService = fixture.EventsService;
             _fixture = fixture.Fixture;
         }
 
@@ -45,7 +46,7 @@ namespace EventService.Tests
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
 
-            var added = _eventService.Add(addEventRequest);
+            var added = _eventsService.Add(addEventRequest);
 
             Assert.NotEqual(Guid.Empty, added.Id);
         }
@@ -53,7 +54,7 @@ namespace EventService.Tests
         [Fact]
         public void Filter_GetAll_Success()
         {
-            var paginatedResult = _eventService.Filter(new EventFilter(), 1, int.MaxValue);
+            var paginatedResult = _eventsService.Filter(new EventFilter(), 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
         }
@@ -62,9 +63,9 @@ namespace EventService.Tests
         public void GetById_ExistingEvent_Success()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
-            var added = _eventService.Add(addEventRequest);
+            var added = _eventsService.Add(addEventRequest);
 
-            var eventItem = _eventService.GetById(added.Id);
+            var eventItem = _eventsService.GetById(added.Id);
 
             eventItem.Id.Should().Be(added.Id);
         }
@@ -73,12 +74,12 @@ namespace EventService.Tests
         public void Update_ExistingEvent_Success()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
-            var added = _eventService.Add(addEventRequest);
+            var added = _eventsService.Add(addEventRequest);
             var updateEventRequest = _fixture.Create<UpdateEventRequest>();
 
-           _eventService.Update(added.Id, updateEventRequest);
+           _eventsService.Update(added.Id, updateEventRequest);
 
-            var eventItem = _eventService.GetById(added.Id);
+            var eventItem = _eventsService.GetById(added.Id);
             eventItem.Title.Should().Be(updateEventRequest.Title);
             eventItem.Description.Should().Be(updateEventRequest.Description);
             eventItem.StartAt.Should().Be(updateEventRequest.StartAt);
@@ -89,11 +90,11 @@ namespace EventService.Tests
         public void Delete_ExistingEvent_Success()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
-            var added = _eventService.Add(addEventRequest);
+            var added = _eventsService.Add(addEventRequest);
 
-            _eventService.Delete(added.Id);
+            _eventsService.Delete(added.Id);
 
-            var action = ()=> _eventService.GetById(added.Id);
+            var action = ()=> _eventsService.GetById(added.Id);
             action.Should().Throw<EventNotFoundException>();
         }
 
@@ -108,7 +109,7 @@ namespace EventService.Tests
                 Title = title
             };
 
-            var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
+            var paginatedResult = _eventsService.Filter(filter, 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
             paginatedResult.Items
@@ -126,7 +127,7 @@ namespace EventService.Tests
                 EndAt = endAt
             };
 
-            var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
+            var paginatedResult = _eventsService.Filter(filter, 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
             paginatedResult.Items
@@ -140,7 +141,7 @@ namespace EventService.Tests
         [InlineData(3, 12, 12)]
         public void Filter_Pagination_Success(int page, int pageSize, int expectedCount)
         {
-            var paginatedResult = _eventService.Filter(new EventFilter(), page, pageSize);
+            var paginatedResult = _eventsService.Filter(new EventFilter(), page, pageSize);
 
             paginatedResult.Items.Should().NotBeEmpty();
             paginatedResult.Items.Should().HaveCount(expectedCount);
@@ -157,7 +158,7 @@ namespace EventService.Tests
                 EndAt = endAt
             };
 
-            var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
+            var paginatedResult = _eventsService.Filter(filter, 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
             paginatedResult.Items
@@ -170,7 +171,7 @@ namespace EventService.Tests
         [Fact]
         public void GetById_NotExistingEvent_ShouldThrowEventNotFoundException()
         {
-            var action = () => _eventService.GetById(Guid.NewGuid());
+            var action = () => _eventsService.GetById(Guid.NewGuid());
 
             action.Should().Throw<EventNotFoundException>();
         }
@@ -180,7 +181,7 @@ namespace EventService.Tests
         {
             var updateEventRequest = _fixture.Create<UpdateEventRequest>();
 
-            var action = () => _eventService.Update(Guid.NewGuid(), updateEventRequest);
+            var action = () => _eventsService.Update(Guid.NewGuid(), updateEventRequest);
 
             action.Should().Throw<EventNotFoundException>();
         }
@@ -191,7 +192,7 @@ namespace EventService.Tests
             var addEventRequest = _fixture.Create<AddEventRequest>();
             addEventRequest.Title = string.Empty;
 
-            var action = () => _eventService.Add(addEventRequest);
+            var action = () => _eventsService.Add(addEventRequest);
 
             action.Should().Throw<ValidationException>();
         }
@@ -203,7 +204,7 @@ namespace EventService.Tests
             addEventRequest.StartAt = DateTime.Now.AddHours(1);
             addEventRequest.EndAt = DateTime.Now;
 
-            var action = () => _eventService.Add(addEventRequest);
+            var action = () => _eventsService.Add(addEventRequest);
 
             action.Should().Throw<ValidationException>();
         }
@@ -212,12 +213,12 @@ namespace EventService.Tests
         public void Update_StartAtIsGreaterEndAt_ShouldThrowValidationException()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
-            var addedEvent = _eventService.Add(addEventRequest);
+            var addedEvent = _eventsService.Add(addEventRequest);
             var updateEventRequest = _fixture.Create<UpdateEventRequest>();
             updateEventRequest.StartAt = DateTime.Now.AddHours(1);
             updateEventRequest.EndAt = DateTime.Now;
 
-            var action = () => _eventService.Update(addedEvent.Id, updateEventRequest);
+            var action = () => _eventsService.Update(addedEvent.Id, updateEventRequest);
 
             action.Should().Throw<ValidationException>();
         }

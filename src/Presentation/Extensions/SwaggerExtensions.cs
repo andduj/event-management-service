@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace EventManagement.Presentation.Extensions
 {

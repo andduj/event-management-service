@@ -1,4 +1,5 @@
 ﻿using EventManagement.Presentation.Middleware;
+using Microsoft.AspNetCore.Builder;
 
 namespace EventManagement.Presentation.Extensions
 {

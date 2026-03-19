@@ -126,17 +126,14 @@ Swagger отображает все эндпоинты и схемы модел�
 
 ## Валидация
 
-Валидация выполняется в `EventService` через `FluentValidation` (`EventValidator`) для доменной модели `Event`.
+Валидация выполняется в `EventsService` через `FluentValidation` (`EventValidator`) для доменной модели `Event`.
 
 Проверяются правила:
 
 - `Title` обязателен;
-- `Description` обязателен;
 - `StartAt` обязателен;
 - `EndAt` обязателен;
 - `EndAt` должна быть **строго позже** `StartAt`.
-
-Примечание: в модели `Event` поле `Description` допускает `null`, но в текущей бизнес-логике (`EventValidator`) оно проверяется как обязательное.
 
 При нарушении правил API возвращает `400 Bad Request` с деталями ошибок.
 
@@ -146,11 +143,11 @@ Swagger отображает все эндпоинты и схемы модел�
 
 - `Models` — доменные модели (`Event`).
 - `Data` — работа с данными (`IEventRepository`, `InMemoryEventRepository`).
-- `Application` — бизнес-логика (`IEventService`, `EventService`, DTO, запросы, профили AutoMapper).
+- `Application` — бизнес-логика (`IEventsService`, `EventsService`, DTO, запросы, профили AutoMapper).
 - `Infrastructure` — регистрация инфраструктурных зависимостей.
 - `Presentation` — веб-слой (контроллеры, middleware, расширения, Swagger).
 
-Бизнес-логика вынесена в сервис `EventService` и подключена через DI.  
+Бизнес-логика вынесена в сервис `EventsService` и подключена через DI.  
 Контроллер `EventsController` не содержит бизнес-логики, а только вызывает сервис.
 
 ## Обработка ошибок
@@ -173,7 +170,7 @@ Swagger отображает все эндпоинты и схемы модел�
 
 ## Юнит-тесты
 
-Для сервиса `EventService` реализован набор тестов на:
+Для сервиса `EventsService` реализован набор тестов на:
 
 - успешные сценарии (`Add`, `GetById`, `Update`, `Delete`);
 - фильтрацию по названию и датам;

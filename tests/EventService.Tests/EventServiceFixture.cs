@@ -2,6 +2,7 @@ using AutoFixture;
 using AutoMapper;
 using EventManagement.Application;
 using EventManagement.Application.Requests;
+using EventManagement.Application.Services;
 using EventManagement.Data.Repositories;
 using System;
 
@@ -13,7 +14,7 @@ namespace EventService.Tests
         private const int MaxHours = 5;
         private const int Year = 2026;
 
-        public EventManagement.Application.Services.EventService EventService { get; }
+        public EventsService EventsService { get; }
 
         public IFixture Fixture { get; }
 
@@ -22,7 +23,11 @@ namespace EventService.Tests
             var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())
                 .CreateMapper();
 
-            EventService = new EventManagement.Application.Services.EventService(new InMemoryEventRepository(), mapper, new EventValidator());
+            EventsService = new EventManagement.Application.Services.EventsService(
+                new InMemoryEventRepository(),
+                mapper,
+                new EventValidator(),
+                new NoOpLogger<EventManagement.Application.Services.EventsService>());
 
             Fixture = new Fixture();
 
@@ -70,6 +75,15 @@ namespace EventService.Tests
             var second = Random.Shared.Next(0, 60);
 
             return date.AddHours(hour).AddMinutes(minute).AddSeconds(second);
+        }
+
+        private sealed class NoOpLogger<T> : global::EventService.Logging.ILogger<T>
+        {
+            public void Debug(string message, params object[] args) { }
+            public void Error(Exception exception, string message, params object[] args) { }
+            public void Info(string message, params object[] args) { }
+            public void Trace(string message, params object[] args) { }
+            public void Warn(string message, params object[] args) { }
         }
     }
 }

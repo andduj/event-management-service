@@ -1,3 +1,5 @@
+using System;
+
 namespace EventManagement.Exceptions
 {
     /// <summary>

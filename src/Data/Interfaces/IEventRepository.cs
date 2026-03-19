@@ -1,6 +1,7 @@
 using EventManagement.Application.DTOs;
 using EventManagement.Application.Filters;
 using EventManagement.Models;
+using System;
 
 namespace EventManagement.Data.Interfaces
 {

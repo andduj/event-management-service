@@ -1,4 +1,5 @@
 ﻿using EventManagement.Presentation.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EventManagement.Presentation
 {

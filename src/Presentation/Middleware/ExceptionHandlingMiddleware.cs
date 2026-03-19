@@ -1,6 +1,13 @@
 using EventManagement.Exceptions;
+using EventService.Logging;
 using FluentValidation;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EventManagement.Presentation.Middleware
 {
@@ -18,7 +25,7 @@ namespace EventManagement.Presentation.Middleware
         /// </summary>
         /// <param name="next">Следующий компонент в конвейере запросов.</param>
         /// <param name="env">Среда выполнения приложения.</param>
-        /// <param name="logger">Логгер.</param>
+        /// <param name="logger">Логгер приложения.</param>
         public ExceptionHandlingMiddleware(RequestDelegate next, IWebHostEnvironment env, ILogger<ExceptionHandlingMiddleware> logger)
         {
             _next = next;
@@ -45,9 +52,9 @@ namespace EventManagement.Presentation.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            _logger.LogError(
+            _logger.Error(
                 exception,
-                "Необработанное исключение. Метод:{Method}, Путь:{Path}",
+                "Необработанное исключение. Метод={0}, Путь={1}",
                 context.Request.Method,
                 context.Request.Path);
 

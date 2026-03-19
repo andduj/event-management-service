@@ -1,3 +1,5 @@
+using System;
+
 namespace EventManagement.Application.Filters
 {
     /// <summary>
