@@ -101,17 +101,17 @@ namespace EventService.Data.Repositories
 
             if (!string.IsNullOrEmpty(filter.Title))
             {
-                predicate.And(e => e.Title.Contains(filter.Title, StringComparison.OrdinalIgnoreCase));
+                predicate = predicate.And(e => e.Title.Contains(filter.Title, StringComparison.OrdinalIgnoreCase));
             }
 
             if (filter.StartAt.HasValue)
             {
-                predicate.And(e => e.StartAt >= filter.StartAt);
+                predicate = predicate.And(e => e.StartAt >= filter.StartAt);
             }
 
             if (filter.EndAt.HasValue)
             {
-                predicate.And(e => e.EndAt <= filter.EndAt);
+                predicate = predicate.And(e => e.EndAt <= filter.EndAt);
             }
 
             return predicate;
