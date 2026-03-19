@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EventManagement.Presentation.Controllers
 {
     /// <summary>
-    /// Контролер для работы с мероприятиями.
+    /// Контроллер для работы с мероприятиями.
     /// </summary>
     [ApiController]
     [Route("api/v1/[controller]")]
@@ -57,14 +57,14 @@ namespace EventManagement.Presentation.Controllers
         }
 
         /// <summary>
-        /// Получает список всех мероприятий.
+        /// Получает список мероприятий с фильтрацией и пагинацией.
         /// </summary>
-        /// <param name="title">Заголовок мероприятия.</param>
-        /// <param name="from">Фильтр для мероприятий.</param>
-        /// <param name="to">Фильтр для мероприятий.</param>
-        /// <param name="page">Страница.</param>
+        /// <param name="title">Часть названия мероприятия (регистронезависимо).</param>
+        /// <param name="from">Минимальная дата начала (включительно).</param>
+        /// <param name="to">Максимальная дата окончания (включительно).</param>
+        /// <param name="page">Номер страницы.</param>
         /// <param name="pageSize">Размер страницы.</param>
-        /// <returns>Возвращает список мероприятий с кодом 200 (OK).</returns>
+        /// <returns>Возвращает данные текущей страницы с метаданными пагинации.</returns>
         /// <response code="200">Список мероприятий успешно получен.</response>
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
@@ -81,16 +81,16 @@ namespace EventManagement.Presentation.Controllers
         }
 
         /// <summary>
-        /// Получает список всех мероприятий.
+        /// Получает список мероприятий по фильтрам из тела запроса.
         /// </summary>
         /// <param name="eventFilter">Фильтр для мероприятий.</param>
-        /// <param name="page">Страница.</param>
+        /// <param name="page">Номер страницы.</param>
         /// <param name="pageSize">Размер страницы.</param>
-        /// <returns>Возвращает список мероприятий с кодом 200 (OK).</returns>
+        /// <returns>Возвращает данные текущей страницы с метаданными пагинации.</returns>
         /// <response code="200">Список мероприятий успешно получен.</response>
         [HttpPost("Filter")]
         [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
-        public ActionResult<PaginatedResult<EventDto>> Filter([FromBody]EventFilter eventFilter, int? page = 1, int? pageSize = 10)
+        public ActionResult<PaginatedResult<EventDto>> Filter([FromBody] EventFilter eventFilter, int? page = 1, int? pageSize = 10)
         {
             var events = _eventService.Filter(eventFilter, page!.Value, pageSize!.Value);
             return Ok(events);

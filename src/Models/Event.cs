@@ -21,12 +21,12 @@ namespace EventManagement.Models
         public string? Description { get; set; }
 
         /// <summary>
-        /// Дата начала.
+        /// Дата и время начала мероприятия.
         /// </summary>
         public required DateTime StartAt { get; set; }
 
         /// <summary>
-        /// Дата завершения.
+        /// Дата и время окончания мероприятия.
         /// </summary>
         public required DateTime EndAt { get; set; }
     }

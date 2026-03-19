@@ -205,7 +205,6 @@ namespace EventService.Tests
             var updateEventRequest = _fixture.Create<UpdateEventRequest>();
             updateEventRequest.StartAt = DateTime.Now.AddHours(1);
             updateEventRequest.EndAt = DateTime.Now;
-            updateEventRequest.Title = string.Empty;
 
             var action = () => _eventService.Update(addedEvent.Id, updateEventRequest);
 

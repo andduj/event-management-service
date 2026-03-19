@@ -16,9 +16,6 @@ namespace EventManagement.Application
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage("Заголовок мероприятия обязателен");
 
-            RuleFor(x => x.Description)
-                .NotEmpty().WithMessage("Описание мероприятия обязательно");
-
             RuleFor(x => x.StartAt)
                 .NotEmpty().WithMessage("Дата начала обязательна");
 

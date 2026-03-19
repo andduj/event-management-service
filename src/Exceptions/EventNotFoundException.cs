@@ -6,7 +6,7 @@ namespace EventManagement.Exceptions
     public class EventNotFoundException : Exception
     {
         /// <summary>
-        /// Инициализирует новый экземпляр класса <see cref="EventNotFoundException"/>.
+        /// Инициализирует новый экземпляр класса <see cref="EventNotFoundException"/>
         /// с сообщением по умолчанию "Мероприятие не найдено".
         /// </summary>
         public EventNotFoundException()
@@ -15,7 +15,7 @@ namespace EventManagement.Exceptions
         }
 
         /// <summary>
-        /// Инициализирует новый экземпляр класса <see cref="EventNotFoundException"/>.
+        /// Инициализирует новый экземпляр класса <see cref="EventNotFoundException"/>
         /// с указанным сообщением об ошибке.
         /// </summary>
         /// <param name="message">Сообщение, описывающее ошибку.</param>
@@ -25,7 +25,7 @@ namespace EventManagement.Exceptions
         }
 
         /// <summary>
-        /// Инициализирует новый экземпляр класса <see cref="EventNotFoundException"/>.
+        /// Инициализирует новый экземпляр класса <see cref="EventNotFoundException"/>
         /// с указанным сообщением об ошибке и ссылкой на внутреннее исключение,
         /// которое является причиной возникновения данного исключения.
         /// </summary>

@@ -16,12 +16,12 @@ namespace EventManagement.Application.Requests
         public string? Description { get; set; }
 
         /// <summary>
-        /// Дата начала.
+        /// Дата и время начала мероприятия.
         /// </summary>
         public DateTime StartAt { get; set; }
 
         /// <summary>
-        /// Дата завершения.
+        /// Дата и время окончания мероприятия.
         /// </summary>
         public DateTime EndAt { get; set; }
     }

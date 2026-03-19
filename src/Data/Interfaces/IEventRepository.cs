@@ -10,12 +10,12 @@ namespace EventManagement.Data.Interfaces
     public interface IEventRepository
     {
         /// <summary>
-        /// Получает список всех мероприятий из репозитория.
+        /// Возвращает мероприятия из репозитория с учетом фильтрации и пагинации.
         /// </summary>
         /// <param name="eventFilter">Фильтр для мероприятий.</param>
-        /// <param name="page">Страница.</param>
+        /// <param name="page">Номер страницы.</param>
         /// <param name="pageSize">Размер страницы.</param>
-        /// <returns>Список всех мероприятий.</returns>
+        /// <returns>Результат с данными текущей страницы и метаданными пагинации.</returns>
         PaginatedResult<Event> Filter(EventFilter eventFilter, int page, int pageSize);
 
         /// <summary>

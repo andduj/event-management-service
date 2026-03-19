@@ -1,7 +1,7 @@
-﻿namespace EventManagement.Application.Filters
+namespace EventManagement.Application.Filters
 {
     /// <summary>
-    /// Фильтр для мероприятияй.
+    /// Параметры фильтрации мероприятий.
     /// </summary>
     public class EventFilter
     {
@@ -11,12 +11,12 @@
         public string? Title { get; set; }
 
         /// <summary>
-        /// Дата и время начала мероприятия.
+        /// Минимальная дата начала мероприятия (включительно).
         /// </summary>
         public DateTime? StartAt { get; set; }
 
         /// <summary>
-        /// Дата и время окончания мероприятия.
+        /// Максимальная дата окончания мероприятия (включительно).
         /// </summary>
         public DateTime? EndAt { get; set; }
     }
