@@ -8,6 +8,7 @@ Cервис для управления мероприятиями на **ASP.NE
 - **C#**, **.NET 8**
 - **ASP.NET Core Web API**
 - **Swagger / Swashbuckle**
+- **NLog** (логирование через проект `EventService.Logging`)
 - **Dependency Injection**
 - **AutoMapper**
 - **FluentValidation**
@@ -22,7 +23,7 @@ Cервис для управления мероприятиями на **ASP.NE
 
 ```bash
 git clone <url-репозитория>
-cd event-management-service/src
+cd event-management-service
 ```
 
 2. Восстановить зависимости и собрать проект:
@@ -35,7 +36,7 @@ dotnet build
 3. Запустить приложение:
 
 ```bash
-dotnet run
+dotnet run --project src/EventService.csproj
 ```
 
 По умолчанию приложение запускается на адресах, указанных в `launchSettings.json`, например:
@@ -45,13 +46,27 @@ dotnet run
 
 ## Запуск тестов
 
-Из корня репозитория:
+1. Перейти в корень репозитория:
 
 ```bash
-dotnet test src/EventService.sln
+cd event-management-service
+```
+
+2. Запустить тесты:
+
+```bash
+dotnet test
+```
+
+Или запустить тесты по конкретному solution:
+
+```bash
+dotnet test EventManagement.sln
 ```
 
 Тесты находятся в проекте `tests/EventService.Tests`.
+
+Проверка успешности: `dotnet test` завершится без ошибок, если все тесты пройдены.
 
 ## Swagger
 
@@ -160,19 +175,3 @@ Swagger отображает все эндпоинты и схемы модел�
 - Поддерживается логирование ошибок через `ILogger`.
 
 Ответ формируется в формате `application/problem+json` (`ProblemDetails`).
-
-## Тестирование через `.http` файл
-
-В корне проекта `src` есть файл `EventService.http` с примерами запросов:
-
-- `GET /api/v1/events`
-- `POST /api/v1/events`
-
-## Юнит-тесты
-
-Для сервиса `EventsService` реализован набор тестов на:
-
-- успешные сценарии (`Add`, `GetById`, `Update`, `Delete`);
-- фильтрацию по названию и датам;
-- пагинацию и комбинированную фильтрацию;
-- неуспешные сценарии (несуществующий `id`, ошибки валидации).
