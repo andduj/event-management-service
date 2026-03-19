@@ -10,7 +10,7 @@ namespace EventManagement.Application.DTOs
         /// <summary>
         /// Элементы текущей страницы.
         /// </summary>
-        public ReadOnlyCollection<T> Items { get; set; }
+        public ReadOnlyCollection<T> Items { get; set; } = Array.Empty<T>().ToList().AsReadOnly();
 
         /// <summary>
         /// Номер текущей страницы.
