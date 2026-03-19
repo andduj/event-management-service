@@ -4,6 +4,8 @@ using EventService.Application;
 using EventService.Application.Requests;
 using EventService.Application.Services;
 using EventService.Data.Repositories;
+using EventService.Logging;
+using Moq;
 using System;
 
 namespace EventService.Tests
@@ -23,11 +25,11 @@ namespace EventService.Tests
             var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())
                 .CreateMapper();
 
-            EventsService = new EventService.Application.Services.EventsService(
+            EventsService = new EventsService(
                 new InMemoryEventRepository(),
                 mapper,
                 new EventValidator(),
-                new NoOpLogger<EventService.Application.Services.EventsService>());
+                new Mock<ILogger<EventsService>>().Object);
 
             Fixture = new Fixture();
 
@@ -75,15 +77,6 @@ namespace EventService.Tests
             var second = Random.Shared.Next(0, 60);
 
             return date.AddHours(hour).AddMinutes(minute).AddSeconds(second);
-        }
-
-        private sealed class NoOpLogger<T> : global::EventService.Logging.ILogger<T>
-        {
-            public void Debug(string message, params object[] args) { }
-            public void Error(Exception exception, string message, params object[] args) { }
-            public void Info(string message, params object[] args) { }
-            public void Trace(string message, params object[] args) { }
-            public void Warn(string message, params object[] args) { }
         }
     }
 }
