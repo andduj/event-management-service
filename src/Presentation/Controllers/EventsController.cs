@@ -1,12 +1,12 @@
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Filters;
-using EventManagement.Application.Interfaces;
-using EventManagement.Application.Requests;
+using EventService.Application.DTOs;
+using EventService.Application.Filters;
+using EventService.Application.Interfaces;
+using EventService.Application.Requests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
-namespace EventManagement.Presentation.Controllers
+namespace EventService.Presentation.Controllers
 {
     /// <summary>
     /// Контроллер для работы с мероприятиями.

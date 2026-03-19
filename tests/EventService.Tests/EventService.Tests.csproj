@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\EventManagement.csproj" />
+    <ProjectReference Include="..\..\src\EventService.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
-﻿using EventManagement.Presentation.Middleware;
+using EventService.Presentation.Middleware;
 using Microsoft.AspNetCore.Builder;
 
-namespace EventManagement.Presentation.Extensions
+namespace EventService.Presentation.Extensions
 {
     /// <summary>
     /// Класс-расширение для регистрации middleware обработки исключений в конвейере HTTP-запросов.

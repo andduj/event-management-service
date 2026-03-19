@@ -1,9 +1,9 @@
 using AutoMapper;
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Requests;
-using EventManagement.Models;
+using EventService.Application.DTOs;
+using EventService.Application.Requests;
+using EventService.Models;
 
-namespace EventManagement.Application
+namespace EventService.Application
 {
     /// <summary>
     /// Конфигурация маппинга.

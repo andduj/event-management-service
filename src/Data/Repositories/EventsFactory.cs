@@ -1,8 +1,8 @@
-﻿using EventManagement.Models;
+using EventService.Models;
 using System;
 using System.Collections.Generic;
 
-namespace EventManagement.Data.Repositories
+namespace EventService.Data.Repositories
 {
     /// <summary>
     /// Фабрика для создания тестовых данных мероприятий.

@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using System.Reflection;
 
-namespace EventManagement.Presentation.Extensions
+namespace EventService.Presentation.Extensions
 {
     /// <summary>
     /// Класс-расширение для настройки Swagger документации в приложении.

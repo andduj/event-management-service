@@ -1,9 +1,9 @@
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Filters;
-using EventManagement.Models;
+using EventService.Application.DTOs;
+using EventService.Application.Filters;
+using EventService.Models;
 using System;
 
-namespace EventManagement.Data.Interfaces
+namespace EventService.Data.Interfaces
 {
     /// <summary>
     /// Репозиторий для управления мероприятиями.

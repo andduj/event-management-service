@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace EventManagement.Application.Extensions
+namespace EventService.Application.Extensions
 {
     /// <summary>
     /// Вспомогательные расширения для запуска FluentValidation-валидации.

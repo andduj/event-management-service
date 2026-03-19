@@ -48,7 +48,7 @@ dotnet run
 Из корня репозитория:
 
 ```bash
-dotnet test src/EventManagement.sln
+dotnet test src/EventService.sln
 ```
 
 Тесты находятся в проекте `tests/EventService.Tests`.
@@ -163,7 +163,7 @@ Swagger отображает все эндпоинты и схемы модел�
 
 ## Тестирование через `.http` файл
 
-В корне проекта `src` есть файл `EventManagement.http` с примерами запросов:
+В корне проекта `src` есть файл `EventService.http` с примерами запросов:
 
 - `GET /api/v1/events`
 - `POST /api/v1/events`

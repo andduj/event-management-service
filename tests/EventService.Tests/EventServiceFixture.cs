@@ -1,9 +1,9 @@
 using AutoFixture;
 using AutoMapper;
-using EventManagement.Application;
-using EventManagement.Application.Requests;
-using EventManagement.Application.Services;
-using EventManagement.Data.Repositories;
+using EventService.Application;
+using EventService.Application.Requests;
+using EventService.Application.Services;
+using EventService.Data.Repositories;
 using System;
 
 namespace EventService.Tests
@@ -23,11 +23,11 @@ namespace EventService.Tests
             var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())
                 .CreateMapper();
 
-            EventsService = new EventManagement.Application.Services.EventsService(
+            EventsService = new EventService.Application.Services.EventsService(
                 new InMemoryEventRepository(),
                 mapper,
                 new EventValidator(),
-                new NoOpLogger<EventManagement.Application.Services.EventsService>());
+                new NoOpLogger<EventService.Application.Services.EventsService>());
 
             Fixture = new Fixture();
 

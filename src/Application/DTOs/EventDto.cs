@@ -1,6 +1,6 @@
 using System;
 
-namespace EventManagement.Application.DTOs
+namespace EventService.Application.DTOs
 {
     /// <summary>
     /// DTO для передачи данных о мероприятии.

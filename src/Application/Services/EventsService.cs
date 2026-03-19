@@ -1,16 +1,16 @@
 using AutoMapper;
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Filters;
-using EventManagement.Application.Interfaces;
-using EventManagement.Application.Requests;
-using EventManagement.Data.Interfaces;
-using EventManagement.Models;
+using EventService.Application.DTOs;
+using EventService.Application.Filters;
+using EventService.Application.Interfaces;
+using EventService.Application.Requests;
+using EventService.Data.Interfaces;
+using EventService.Models;
 using EventService.Logging;
 using FluentValidation;
 using System;
 using System.Linq;
 
-namespace EventManagement.Application.Services
+namespace EventService.Application.Services
 {
     /// <summary>
     /// Сервис для работы с мероприятиями.

@@ -1,11 +1,11 @@
-@EventManagement_HostAddress = http://localhost:5167
+@EventService_HostAddress = http://localhost:5167
 
-GET {{EventManagement_HostAddress}}/api/v1/events
+GET {{EventService_HostAddress}}/api/v1/events
 Accept: application/json
 
 ###
 
-POST {{EventManagement_HostAddress}}/api/v1/events
+POST {{EventService_HostAddress}}/api/v1/events
 Content-Type: application/json
 Accept: application/json
 

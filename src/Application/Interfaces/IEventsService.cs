@@ -1,9 +1,9 @@
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Filters;
-using EventManagement.Application.Requests;
+using EventService.Application.DTOs;
+using EventService.Application.Filters;
+using EventService.Application.Requests;
 using System;
 
-namespace EventManagement.Application.Interfaces
+namespace EventService.Application.Interfaces
 {
     /// <summary>
     /// Интерфейс сервиса для работы с мероприятиями.

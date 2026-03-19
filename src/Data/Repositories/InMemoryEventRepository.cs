@@ -1,15 +1,15 @@
-using EventManagement.Application.DTOs;
-using EventManagement.Application.Filters;
-using EventManagement.Data.Interfaces;
-using EventManagement.Exceptions;
-using EventManagement.Models;
+using EventService.Application.DTOs;
+using EventService.Application.Filters;
+using EventService.Data.Interfaces;
+using EventService.Exceptions;
+using EventService.Models;
 using LinqKit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace EventManagement.Data.Repositories
+namespace EventService.Data.Repositories
 {
     /// <summary>
     /// Репозиторий для работы с мероприятиями, реализующий хранение данных в оперативной памяти.
