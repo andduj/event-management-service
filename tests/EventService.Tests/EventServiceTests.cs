@@ -111,6 +111,9 @@ namespace EventService.Tests
             var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
+            paginatedResult.Items
+                .Should()
+                .OnlyContain(eventItem => eventItem.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
         }
 
         [Theory]
@@ -126,6 +129,9 @@ namespace EventService.Tests
             var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
+            paginatedResult.Items
+                .Should()
+                .OnlyContain(eventItem => eventItem.StartAt >= startAt && eventItem.EndAt <= endAt);
         }
 
         [Theory]
@@ -154,6 +160,11 @@ namespace EventService.Tests
             var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
+            paginatedResult.Items
+                .Should()
+                .OnlyContain(eventItem => eventItem.Title.Contains(title, StringComparison.OrdinalIgnoreCase) &&
+                                            eventItem.StartAt >= startAt &&
+                                            eventItem.EndAt <= endAt);
         }
 
         [Fact]
