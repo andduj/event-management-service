@@ -201,10 +201,13 @@ namespace EventService.Tests
         public void Update_StartAtIsGreaterEndAt_ShouldThrowValidationException()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
-            addEventRequest.StartAt = DateTime.Now.AddHours(1);
-            addEventRequest.EndAt = DateTime.Now;
+            var addedEvent = _eventService.Add(addEventRequest);
+            var updateEventRequest = _fixture.Create<UpdateEventRequest>();
+            updateEventRequest.StartAt = DateTime.Now.AddHours(1);
+            updateEventRequest.EndAt = DateTime.Now;
+            updateEventRequest.Title = string.Empty;
 
-            var action = () => _eventService.Add(addEventRequest);
+            var action = () => _eventService.Update(addedEvent.Id, updateEventRequest);
 
             action.Should().Throw<ValidationException>();
         }
