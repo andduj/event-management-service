@@ -5,8 +5,10 @@ using EventService.Application.Services;
 using EventService.Exceptions;
 using FluentAssertions;
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 
 namespace EventService.Tests
 {
@@ -186,11 +188,14 @@ namespace EventService.Tests
             action.Should().Throw<EventNotFoundException>();
         }
 
-        [Fact]
-        public void Add_WithoutTitle_ShouldThrowValidationException()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("    ")]
+        public void Add_InvalidTitle_ShouldThrowValidationException(string title)
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
-            addEventRequest.Title = string.Empty;
+            addEventRequest.Title = title;
 
             var action = () => _eventsService.Add(addEventRequest);
 
@@ -221,6 +226,14 @@ namespace EventService.Tests
             var action = () => _eventsService.Update(addedEvent.Id, updateEventRequest);
 
             action.Should().Throw<ValidationException>();
+        }
+
+        [Fact]
+        public void Filter_PageOutOfRange_ShouldNoExceptions()
+        {
+            var paginatedResult = _eventsService.Filter(new EventFilter(), 100, 100);
+
+            paginatedResult.Items.Should().BeEmpty();
         }
     }
 }
