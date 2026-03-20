@@ -1,32 +1,34 @@
-namespace EventManagement.Application.DTOs
+using System;
+
+namespace EventService.Application.DTOs
 {
     /// <summary>
-    /// DTO для передачи данных о мероприятии
+    /// DTO для передачи данных о мероприятии.
     /// </summary>
     public class EventDto
     {
         /// <summary>
-        /// Идентификатор мероприятия
+        /// Идентификатор мероприятия.
         /// </summary>
         public Guid Id { get; set; }
 
         /// <summary>
-        /// Заголовок мероприятия
+        /// Заголовок мероприятия.
         /// </summary>
         public string Title { get; set; } = string.Empty;
 
         /// <summary>
-        /// Подробное описание мероприятия
+        /// Подробное описание мероприятия.
         /// </summary>
         public string? Description { get; set; }
 
         /// <summary>
-        /// Дата и время начала мероприятия
+        /// Дата и время начала мероприятия.
         /// </summary>
         public DateTime StartAt { get; set; }
 
         /// <summary>
-        /// Дата и время окончания мероприятия
+        /// Дата и время окончания мероприятия.
         /// </summary>
         public DateTime EndAt { get; set; }
     }

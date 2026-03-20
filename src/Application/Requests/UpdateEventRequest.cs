@@ -1,45 +1,30 @@
-using System.ComponentModel.DataAnnotations;
+using System;
 
-namespace EventManagement.Application.Requests
+namespace EventService.Application.Requests
 {
     /// <summary>
-    /// Запрос на обновление мероприятия
+    /// Запрос на обновление мероприятия.
     /// </summary>
-    public class UpdateEventRequest : IValidatableObject
+    public class UpdateEventRequest
     {
         /// <summary>
-        /// Заголовок мероприятия
+        /// Заголовок мероприятия.
         /// </summary>
-        [Required(ErrorMessage = "Заголовок мероприятия обязателен")]
         public string Title { get; set; } = string.Empty;
 
         /// <summary>
-        /// Описание мероприятия
+        /// Описание мероприятия.
         /// </summary>
         public string? Description { get; set; }
 
         /// <summary>
-        /// Дата начала
+        /// Дата и время начала мероприятия.
         /// </summary>
-        [Required(ErrorMessage = "Дата начала обязательна")]
         public DateTime StartAt { get; set; }
 
         /// <summary>
-        /// Дата завершения
+        /// Дата и время окончания мероприятия.
         /// </summary>
-        [Required(ErrorMessage = "Дата завершения обязательна")]
         public DateTime EndAt { get; set; }
-
-        /// <inheritdoc />
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (EndAt <= StartAt)
-            {
-                yield return new ValidationResult(
-                    "Дата завершения должна быть позже даты начала",
-                    new[] { nameof(EndAt) }
-                );
-            }
-        }
     }
 }

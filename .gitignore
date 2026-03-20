@@ -1,7 +1,14 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
+
+# Visual Studio cache (корневая папка .vs)
+.vs/
 
 /src/obj
 /src/bin
 /src/.vs
+/tests/EventService.Tests/bin/Debug/net8.0
+/tests/EventService.Tests/obj
+/EventService.Logging/obj
+/EventService.Logging/bin/Debug/net8.0

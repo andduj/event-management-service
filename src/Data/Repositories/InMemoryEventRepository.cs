@@ -1,9 +1,15 @@
-using EventManagement.Data.Interfaces;
-using EventManagement.Exceptions;
-using EventManagement.Models;
-using System.Collections.ObjectModel;
+using EventService.Application.DTOs;
+using EventService.Application.Filters;
+using EventService.Data.Interfaces;
+using EventService.Exceptions;
+using EventService.Models;
+using LinqKit;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 
-namespace EventManagement.Data.Repositories
+namespace EventService.Data.Repositories
 {
     /// <summary>
     /// Репозиторий для работы с мероприятиями, реализующий хранение данных в оперативной памяти.
@@ -37,9 +43,30 @@ namespace EventManagement.Data.Repositories
         }
 
         /// <inheritdoc/>
-        public ReadOnlyCollection<Event> GetAll()
+        public PaginatedResult<Event> Filter(EventFilter eventFilter, int page, int pageSize)
         {
-            return _events.AsReadOnly();
+            var predicate = BuildPredicate(eventFilter);
+            var query = _events
+                .Where(predicate.Compile());
+
+            int filteredCount = query.Count();
+
+            var items = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList()
+                .AsReadOnly();
+
+            int totalPages = (int)Math.Ceiling((double)filteredCount / pageSize);
+
+            return new PaginatedResult<Event> 
+            {
+                Items = items, 
+                Page = page, 
+                PageSize = pageSize, 
+                TotalItems = filteredCount, 
+                TotalPages = totalPages
+            };
         }
 
         /// <inheritdoc/>
@@ -66,6 +93,28 @@ namespace EventManagement.Data.Repositories
             eventItem.Description = updatedEvent.Description;
             eventItem.StartAt = updatedEvent.StartAt;
             eventItem.EndAt = updatedEvent.EndAt;
+        }
+
+        private static Expression<Func<Event, bool>> BuildPredicate(EventFilter filter)
+        {
+            var predicate = PredicateBuilder.New<Event>(true);
+
+            if (!string.IsNullOrEmpty(filter.Title))
+            {
+                predicate = predicate.And(e => e.Title.Contains(filter.Title, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (filter.StartAt.HasValue)
+            {
+                predicate = predicate.And(e => e.StartAt >= filter.StartAt);
+            }
+
+            if (filter.EndAt.HasValue)
+            {
+                predicate = predicate.And(e => e.EndAt <= filter.EndAt);
+            }
+
+            return predicate;
         }
     }
 }

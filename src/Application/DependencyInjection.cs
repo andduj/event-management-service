@@ -1,7 +1,10 @@
-﻿using EventManagement.Application.Interfaces;
-using EventManagement.Application.Services;
+using EventService.Application.Interfaces;
+using EventService.Application.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace EventManagement.Application
+namespace EventService.Application
 {
     /// <summary>
     /// Регистрация зависимостей уровня приложения в DI контейнере.
@@ -15,8 +18,13 @@ namespace EventManagement.Application
         /// <returns>Модифицированная коллекция сервисов для дальнейшей настройки.</returns>
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            services.AddScoped<IEventService, EventService>();
+            services.AddScoped<IEventsService, EventsService>();
             services.AddAutoMapper(typeof(Program));
+
+            services.AddFluentValidationAutoValidation();
+            services.AddFluentValidationClientsideAdapters();
+            services.AddValidatorsFromAssemblyContaining<EventValidator>();
+
             return services;
         }
     }

@@ -1,7 +1,9 @@
-using EventManagement.Models;
-using System.Collections.ObjectModel;
+using EventService.Application.DTOs;
+using EventService.Application.Filters;
+using EventService.Models;
+using System;
 
-namespace EventManagement.Data.Interfaces
+namespace EventService.Data.Interfaces
 {
     /// <summary>
     /// Репозиторий для управления мероприятиями.
@@ -9,10 +11,13 @@ namespace EventManagement.Data.Interfaces
     public interface IEventRepository
     {
         /// <summary>
-        /// Получает список всех мероприятий из репозитория.
+        /// Возвращает мероприятия из репозитория с учетом фильтрации и пагинации.
         /// </summary>
-        /// <returns>Список всех мероприятий.</returns>
-        ReadOnlyCollection<Event> GetAll();
+        /// <param name="eventFilter">Фильтр для мероприятий.</param>
+        /// <param name="page">Номер страницы.</param>
+        /// <param name="pageSize">Размер страницы.</param>
+        /// <returns>Результат с данными текущей страницы и метаданными пагинации.</returns>
+        PaginatedResult<Event> Filter(EventFilter eventFilter, int page, int pageSize);
 
         /// <summary>
         /// Получает конкретное мероприятие по его уникальному идентификатору.
