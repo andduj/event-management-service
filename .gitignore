@@ -5,12 +5,10 @@
 # Visual Studio cache (корневая папка .vs)
 .vs/
 
-/src/EventManagement.Event/obj
-/src/EventManagement.Event/bin
-/src/EventManagement.Logging/obj
-/src/EventManagement.Logging/bin
-/src/EventManagement.Booking/obj
-/src/EventManagement.Booking/bin
+# Сборка .NET — везде в репозитории (включая вложенные пути вроде .../Booking/Booking/obj)
+**/bin/
+**/obj/
+[Bb]in/
+[Oo]bj/
+
 /src/.vs
-/tests/EventManagement.Tests/bin/Debug/net8.0
-/tests/EventManagement.Tests/obj
