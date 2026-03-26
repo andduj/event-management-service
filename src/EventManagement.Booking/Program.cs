@@ -1,5 +1,5 @@
 
-namespace EventManagement.Booking
+namespace EventManagement.Bookings
 {
     public class Program
     {

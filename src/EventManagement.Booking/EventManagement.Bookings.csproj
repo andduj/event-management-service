@@ -4,14 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>EventManagement.Bookings</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="EventManagement.Booking\**" />
-    <Content Remove="EventManagement.Booking\**" />
-    <EmbeddedResource Remove="EventManagement.Booking\**" />
-    <None Remove="EventManagement.Booking\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />

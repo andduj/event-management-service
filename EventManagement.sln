@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventManagement.Common", "E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventManagement.Services", "EventManagement.Services", "{8C600859-CE93-4345-BD0D-5AB66EB911CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Booking", "src\EventManagement.Booking\EventManagement.Booking.csproj", "{1BF21356-F4FC-431A-885A-81406903CE48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Bookings", "src\EventManagement.Booking\EventManagement.Bookings.csproj", "{1BF21356-F4FC-431A-885A-81406903CE48}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-﻿namespace EventManagement.Booking.Models
+namespace EventManagement.Bookings.Models
 {
     /// <summary>
     /// Статус бронирования.
