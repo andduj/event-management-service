@@ -5,14 +5,12 @@ using EventService.Application.Services;
 using EventService.Exceptions;
 using FluentAssertions;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Printing;
 
 namespace EventService.Tests
 {
-    public class EventServiceTests : IClassFixture<EventServiceFixture>
+    public class EventsServiceTests : IClassFixture<EventsServiceFixture>
     {
         private readonly EventsService _eventsService;
         private readonly IFixture _fixture;
@@ -37,7 +35,7 @@ namespace EventService.Tests
             ];
         }
 
-        public EventServiceTests(EventServiceFixture fixture)
+        public EventsServiceTests(EventsServiceFixture fixture)
         {
             _eventsService = fixture.EventsService;
             _fixture = fixture.Fixture;

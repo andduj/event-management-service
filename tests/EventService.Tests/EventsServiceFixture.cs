@@ -10,7 +10,7 @@ using System;
 
 namespace EventService.Tests
 {
-    public class EventServiceFixture
+    public class EventsServiceFixture
     {
         private const int MinHours = 1;
         private const int MaxHours = 5;
@@ -20,7 +20,7 @@ namespace EventService.Tests
 
         public IFixture Fixture { get; }
 
-        public EventServiceFixture()
+        public EventsServiceFixture()
         {
             var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())
                 .CreateMapper();
