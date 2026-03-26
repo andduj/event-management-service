@@ -12,3 +12,8 @@
 [Oo]bj/
 
 /src/.vs
+
+# Лишняя вложенная копия проекта Booking (второй obj → duplicate Assembly* при сборке)
+/src/EventManagement.Booking/EventManagement.Booking/
+
+*.csproj.Backup.tmp
