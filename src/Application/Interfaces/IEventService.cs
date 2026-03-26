@@ -1,14 +1,14 @@
-using EventService.Application.DTOs;
-using EventService.Application.Filters;
-using EventService.Application.Requests;
+using EventManagement.Event.Application.DTOs;
+using EventManagement.Event.Application.Filters;
+using EventManagement.Event.Application.Requests;
 using System;
 
-namespace EventService.Application.Interfaces
+namespace EventManagement.Event.Application.Interfaces
 {
     /// <summary>
     /// Интерфейс сервиса для работы с мероприятиями.
     /// </summary>
-    public interface IEventsService
+    public interface IEventService
     {
         /// <summary>
         /// Возвращает мероприятия с учетом фильтрации и пагинации.

@@ -1,12 +1,12 @@
-using EventService.Application.DTOs;
-using EventService.Application.Filters;
-using EventService.Application.Interfaces;
-using EventService.Application.Requests;
+using EventManagement.Event.Application.DTOs;
+using EventManagement.Event.Application.Filters;
+using EventManagement.Event.Application.Interfaces;
+using EventManagement.Event.Application.Requests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
-namespace EventService.Presentation.Controllers
+namespace EventManagement.Event.Presentation.Controllers
 {
     /// <summary>
     /// Контроллер для работы с мероприятиями.
@@ -15,15 +15,15 @@ namespace EventService.Presentation.Controllers
     [Route("api/v1/[controller]")]
     public class EventsController : ControllerBase
     {
-        private readonly IEventsService _eventsService;
+        private readonly IEventService _eventService;
 
         /// <summary>
         /// Конструктор контролера мероприятий.
         /// </summary>
-        /// <param name="eventsService">Сервис мероприятий.</param>
-        public EventsController(IEventsService eventsService)
+        /// <param name="EventService">Сервис мероприятий.</param>
+        public EventsController(IEventService EventService)
         {
-            _eventsService = eventsService;
+            _eventService = EventService;
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace EventService.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult Add([FromBody] AddEventRequest addEventRequest)
         {
-            var addedEvent = _eventsService.Add(addEventRequest);
+            var addedEvent = _eventService.Add(addEventRequest);
             return CreatedAtAction(nameof(GetById), new { id = addedEvent.Id }, addedEvent);
         }
 
@@ -54,7 +54,7 @@ namespace EventService.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult Delete(Guid id)
         {
-            _eventsService.Delete(id);
+            _eventService.Delete(id);
             return NoContent();
         }
 
@@ -78,7 +78,7 @@ namespace EventService.Presentation.Controllers
                 StartAt = from,
                 EndAt = to,
             };
-            var events = _eventsService.Filter(eventFilter, page!.Value, pageSize!.Value);
+            var events = _eventService.Filter(eventFilter, page!.Value, pageSize!.Value);
             return Ok(events);
         }
 
@@ -94,7 +94,7 @@ namespace EventService.Presentation.Controllers
         [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
         public ActionResult<PaginatedResult<EventDto>> Filter([FromBody] EventFilter eventFilter, int? page = 1, int? pageSize = 10)
         {
-            var events = _eventsService.Filter(eventFilter, page!.Value, pageSize!.Value);
+            var events = _eventService.Filter(eventFilter, page!.Value, pageSize!.Value);
             return Ok(events);
         }
 
@@ -110,7 +110,7 @@ namespace EventService.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<EventDto> GetById(Guid id)
         {
-            var eventItem = _eventsService.GetById(id);
+            var eventItem = _eventService.GetById(id);
             return Ok(eventItem);
         }
 
@@ -129,7 +129,7 @@ namespace EventService.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult Update(Guid id, [FromBody] UpdateEventRequest updateEventRequest)
         {
-            _eventsService.Update(id, updateEventRequest);
+            _eventService.Update(id, updateEventRequest);
             return NoContent();
         }
     }

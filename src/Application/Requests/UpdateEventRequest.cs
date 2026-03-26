@@ -1,6 +1,6 @@
 using System;
 
-namespace EventService.Application.Requests
+namespace EventManagement.Event.Application.Requests
 {
     /// <summary>
     /// Запрос на обновление мероприятия.

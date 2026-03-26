@@ -1,9 +1,9 @@
-using EventService.Data.Interfaces;
-using EventService.Data.Repositories;
+using EventManagement.Event.Data.Interfaces;
+using EventManagement.Event.Data.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EventService.Infrastructure
+namespace EventManagement.Event.Infrastructure
 {
     /// <summary>
     /// Класс для регистрации зависимостей уровня инфраструктуры в DI контейнере.
@@ -19,7 +19,7 @@ namespace EventService.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IEventRepository, InMemoryEventRepository>();
-            services.AddSingleton(typeof(EventService.Logging.ILogger<>), typeof(EventService.Logging.Logger<>));
+            services.AddSingleton(typeof(EventManagement.Event.Logging.ILogger<>), typeof(EventManagement.Event.Logging.Logger<>));
 
             return services;
         }

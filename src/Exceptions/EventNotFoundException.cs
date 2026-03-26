@@ -1,6 +1,6 @@
 using System;
 
-namespace EventService.Exceptions
+namespace EventManagement.Event.Exceptions
 {
     /// <summary>
     /// Исключение, которое возникает при попытке обращения к несуществующему мероприятию.

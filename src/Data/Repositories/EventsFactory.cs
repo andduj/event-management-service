@@ -1,19 +1,19 @@
-using EventService.Models;
 using System;
+using EventModel = EventManagement.Models.Event;
 using System.Collections.Generic;
 
-namespace EventService.Data.Repositories
+namespace EventManagement.Event.Data.Repositories
 {
     /// <summary>
     /// Фабрика для создания тестовых данных мероприятий.
     /// </summary>
     public static class EventsFactory
     {
-        public static List<Event> Create()
+        public static List<EventModel> Create()
         {
-            return new List<Event>
+            return new List<EventModel>
             {
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Новогодний концерт",
@@ -21,7 +21,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 1, 3, 18, 0, 0),
                     EndAt = new DateTime(2026, 1, 3, 21, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Рождественская ярмарка",
@@ -29,7 +29,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 1, 6, 12, 0, 0),
                     EndAt = new DateTime(2026, 1, 6, 20, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Спектакль 'Снежная королева'",
@@ -37,7 +37,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 1, 10, 12, 0, 0),
                     EndAt = new DateTime(2026, 1, 10, 14, 30, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Джазовый вечер",
@@ -45,7 +45,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 1, 17, 20, 0, 0),
                     EndAt = new DateTime(2026, 1, 17, 23, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День всех влюбленных",
@@ -53,7 +53,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 2, 14, 19, 0, 0),
                     EndAt = new DateTime(2026, 2, 14, 23, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Масленица",
@@ -61,7 +61,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 2, 15, 12, 0, 0),
                     EndAt = new DateTime(2026, 2, 15, 18, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Выставка современного искусства",
@@ -69,7 +69,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 2, 20, 15, 0, 0),
                     EndAt = new DateTime(2026, 2, 20, 21, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Стендап-концерт",
@@ -77,7 +77,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 2, 21, 20, 0, 0),
                     EndAt = new DateTime(2026, 2, 21, 22, 30, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Концерт к 8 марта",
@@ -85,7 +85,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 3, 7, 17, 0, 0),
                     EndAt = new DateTime(2026, 3, 7, 20, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Фестиваль тюльпанов",
@@ -93,7 +93,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 3, 14, 11, 0, 0),
                     EndAt = new DateTime(2026, 3, 14, 19, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Лекция 'Архитектура Петербурга'",
@@ -101,7 +101,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 3, 18, 19, 0, 0),
                     EndAt = new DateTime(2026, 3, 18, 21, 30, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День космонавтики",
@@ -109,7 +109,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 4, 12, 14, 0, 0),
                     EndAt = new DateTime(2026, 4, 12, 20, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Весенний бал",
@@ -117,7 +117,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 4, 18, 18, 0, 0),
                     EndAt = new DateTime(2026, 4, 18, 23, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Книжная ярмарка",
@@ -125,7 +125,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 4, 25, 11, 0, 0),
                     EndAt = new DateTime(2026, 4, 25, 20, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Концерт фортепианной музыки",
@@ -133,7 +133,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 4, 26, 19, 0, 0),
                     EndAt = new DateTime(2026, 4, 26, 21, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Праздничный салют",
@@ -141,7 +141,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 5, 9, 15, 0, 0),
                     EndAt = new DateTime(2026, 5, 9, 23, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Фестиваль уличных театров",
@@ -149,7 +149,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 5, 16, 13, 0, 0),
                     EndAt = new DateTime(2026, 5, 16, 21, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Ночь музеев",
@@ -157,7 +157,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 5, 23, 18, 0, 0),
                     EndAt = new DateTime(2026, 5, 24, 6, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День защиты детей",
@@ -165,7 +165,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 6, 1, 12, 0, 0),
                     EndAt = new DateTime(2026, 6, 1, 18, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Пушкинский день",
@@ -173,7 +173,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 6, 6, 11, 0, 0),
                     EndAt = new DateTime(2026, 6, 6, 20, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Фестиваль красок",
@@ -181,7 +181,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 6, 20, 14, 0, 0),
                     EndAt = new DateTime(2026, 6, 20, 19, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Музыкальный фестиваль",
@@ -189,7 +189,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 6, 26, 16, 0, 0),
                     EndAt = new DateTime(2026, 6, 28, 23, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День семьи, любви и верности",
@@ -197,7 +197,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 7, 8, 16, 0, 0),
                     EndAt = new DateTime(2026, 7, 8, 21, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Фестиваль воздушных змеев",
@@ -205,7 +205,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 7, 12, 11, 0, 0),
                     EndAt = new DateTime(2026, 7, 12, 18, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Ночной забег",
@@ -213,7 +213,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 7, 18, 22, 0, 0),
                     EndAt = new DateTime(2026, 7, 19, 1, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Оперный фестиваль",
@@ -221,7 +221,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 7, 25, 20, 0, 0),
                     EndAt = new DateTime(2026, 7, 25, 23, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День ВМФ",
@@ -229,7 +229,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 8, 2, 10, 0, 0),
                     EndAt = new DateTime(2026, 8, 2, 23, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Фестиваль цветов",
@@ -237,7 +237,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 8, 8, 12, 0, 0),
                     EndAt = new DateTime(2026, 8, 8, 20, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Яблочный спас",
@@ -245,7 +245,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 8, 19, 13, 0, 0),
                     EndAt = new DateTime(2026, 8, 19, 19, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День кино",
@@ -253,7 +253,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 8, 27, 18, 0, 0),
                     EndAt = new DateTime(2026, 8, 27, 23, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День знаний",
@@ -261,7 +261,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 9, 1, 14, 0, 0),
                     EndAt = new DateTime(2026, 9, 1, 19, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День города",
@@ -269,7 +269,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 9, 12, 12, 0, 0),
                     EndAt = new DateTime(2026, 9, 13, 2, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Осенний марафон",
@@ -277,7 +277,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 9, 20, 9, 0, 0),
                     EndAt = new DateTime(2026, 9, 20, 16, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Фестиваль тыквы",
@@ -285,7 +285,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 9, 26, 12, 0, 0),
                     EndAt = new DateTime(2026, 9, 26, 18, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День учителя",
@@ -293,7 +293,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 10, 5, 16, 0, 0),
                     EndAt = new DateTime(2026, 10, 5, 20, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Фестиваль науки",
@@ -301,7 +301,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 10, 11, 11, 0, 0),
                     EndAt = new DateTime(2026, 10, 11, 19, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Хэллоуин party",
@@ -309,7 +309,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 10, 31, 21, 0, 0),
                     EndAt = new DateTime(2026, 11, 1, 3, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День народного единства",
@@ -317,7 +317,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 11, 4, 13, 0, 0),
                     EndAt = new DateTime(2026, 11, 4, 20, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Фестиваль света",
@@ -325,7 +325,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 11, 14, 19, 0, 0),
                     EndAt = new DateTime(2026, 11, 14, 23, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "День матери",
@@ -333,7 +333,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 11, 29, 16, 0, 0),
                     EndAt = new DateTime(2026, 11, 29, 20, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Джазовые вечера",
@@ -341,7 +341,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 11, 21, 20, 0, 0),
                     EndAt = new DateTime(2026, 11, 21, 23, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Открытие новогодней елки",
@@ -349,7 +349,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 12, 20, 17, 0, 0),
                     EndAt = new DateTime(2026, 12, 20, 21, 0, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Новогодний балет 'Щелкунчик'",
@@ -357,7 +357,7 @@ namespace EventService.Data.Repositories
                     StartAt = new DateTime(2026, 12, 25, 18, 0, 0),
                     EndAt = new DateTime(2026, 12, 25, 21, 30, 0),
                 },
-                new Event
+                new EventModel
                 {
                     Id = Guid.NewGuid(),
                     Title = "Новогодний корпоратив",

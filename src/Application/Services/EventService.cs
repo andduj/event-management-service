@@ -1,28 +1,28 @@
 using AutoMapper;
-using EventService.Application.DTOs;
-using EventService.Application.Filters;
-using EventService.Application.Interfaces;
-using EventService.Application.Requests;
-using EventService.Data.Interfaces;
-using EventService.Models;
-using EventService.Logging;
+using EventManagement.Event.Application.DTOs;
+using EventManagement.Event.Application.Filters;
+using EventManagement.Event.Application.Interfaces;
+using EventManagement.Event.Application.Requests;
+using EventManagement.Event.Data.Interfaces;
+using EventManagement.Event.Logging;
+using EventModel = EventManagement.Models.Event;
 using FluentValidation;
 using System;
 using System.Linq;
 
-namespace EventService.Application.Services
+namespace EventManagement.Event.Application.Services
 {
     /// <summary>
     /// Сервис для работы с мероприятиями.
     /// </summary>
-    public class EventsService : IEventsService
+    public class EventService : IEventService
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
-        private readonly IValidator<Event> _validator;
-        private readonly ILogger<EventsService> _logger;
+        private readonly IValidator<EventModel> _validator;
+        private readonly ILogger<EventService> _logger;
 
-        public EventsService(IEventRepository eventRepository, IMapper mapper, IValidator<Event> validator, ILogger<EventsService> logger)
+        public EventService(IEventRepository eventRepository, IMapper mapper, IValidator<EventModel> validator, ILogger<EventService> logger)
         {
             _eventRepository = eventRepository;
             _mapper = mapper;
@@ -34,7 +34,7 @@ namespace EventService.Application.Services
         public EventDto Add(AddEventRequest addEventRequest)
         {
             _logger.Info("Создание нового мероприятия.");
-            var newEvent = _mapper.Map<Event>(addEventRequest);
+            var newEvent = _mapper.Map<EventModel>(addEventRequest);
             _validator.ValidateAndThrow(newEvent);
             newEvent.Id = Guid.NewGuid();
             var addedEvent = _eventRepository.Add(newEvent);
@@ -81,7 +81,7 @@ namespace EventService.Application.Services
         public void Update(Guid id, UpdateEventRequest updateEventRequest)
         {
             _logger.Info("Обновление мероприятия. Id={0}", id);
-            var updatedEvent = _mapper.Map<Event>(updateEventRequest);
+            var updatedEvent = _mapper.Map<EventModel>(updateEventRequest);
             _validator.ValidateAndThrow(updatedEvent);
             updatedEvent.Id = id;
             _eventRepository.Update(updatedEvent);

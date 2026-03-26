@@ -1,6 +1,6 @@
 using System;
 
-namespace EventService.Application.Filters
+namespace EventManagement.Event.Application.Filters
 {
     /// <summary>
     /// Параметры фильтрации мероприятий.

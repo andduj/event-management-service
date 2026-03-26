@@ -1,9 +1,9 @@
 using AutoMapper;
-using EventService.Application.DTOs;
-using EventService.Application.Requests;
-using EventService.Models;
+using EventManagement.Event.Application.DTOs;
+using EventManagement.Event.Application.Requests;
+using EventModel = EventManagement.Models.Event;
 
-namespace EventService.Application
+namespace EventManagement.Event.Application
 {
     /// <summary>
     /// Конфигурация маппинга.
@@ -15,9 +15,9 @@ namespace EventService.Application
         /// </summary>
         public MappingProfile()
         {
-            CreateMap<AddEventRequest, Event>();
-            CreateMap<UpdateEventRequest, Event>();
-            CreateMap<Event, EventDto>();
+            CreateMap<AddEventRequest, EventModel>();
+            CreateMap<UpdateEventRequest, EventModel>();
+            CreateMap<EventModel, EventDto>();
         }
     }
 }

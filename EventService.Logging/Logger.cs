@@ -1,7 +1,7 @@
 using NLog;
 using System;
 
-namespace EventService.Logging
+namespace EventManagement.Event.Logging
 {
     /// <summary>
     /// Обертка над NLog для логирования в приложении.

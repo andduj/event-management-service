@@ -2,7 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace EventService.Application.DTOs
+namespace EventManagement.Event.Application.DTOs
 {
     /// <summary>
     /// Результат выборки с пагинацией.

@@ -1,7 +1,7 @@
-using EventService.Presentation.Extensions;
+using EventManagement.Event.Presentation.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EventService.Presentation
+namespace EventManagement.Event.Presentation
 {
     /// <summary>
     /// Класс для регистрации зависимостей уровня представления в DI контейнере.

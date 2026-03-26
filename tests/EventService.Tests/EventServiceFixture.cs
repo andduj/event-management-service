@@ -1,35 +1,35 @@
 using AutoFixture;
 using AutoMapper;
-using EventService.Application;
-using EventService.Application.Requests;
-using EventService.Application.Services;
-using EventService.Data.Repositories;
-using EventService.Logging;
+using EventManagement.Event.Application;
+using EventManagement.Event.Application.Requests;
+using EventManagement.Event.Application.Services;
+using EventManagement.Event.Data.Repositories;
+using EventManagement.Event.Logging;
 using Moq;
 using System;
 
-namespace EventService.Tests
+namespace EventManagement.Event.Tests
 {
-    public class EventsServiceFixture
+    public class EventServiceFixture
     {
         private const int MinHours = 1;
         private const int MaxHours = 5;
         private const int Year = 2026;
 
-        public EventsService EventsService { get; }
+        public EventService EventService { get; }
 
         public IFixture Fixture { get; }
 
-        public EventsServiceFixture()
+        public EventServiceFixture()
         {
             var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())
                 .CreateMapper();
 
-            EventsService = new EventsService(
+            EventService = new EventService(
                 new InMemoryEventRepository(),
                 mapper,
                 new EventValidator(),
-                new Mock<ILogger<EventsService>>().Object);
+                new Mock<ILogger<EventService>>().Object);
 
             Fixture = new Fixture();
 
