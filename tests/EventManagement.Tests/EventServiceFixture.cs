@@ -1,9 +1,9 @@
 using AutoFixture;
 using AutoMapper;
-using EventManagement.Event.Application;
-using EventManagement.Event.Application.Requests;
-using EventManagement.Event.Application.Services;
-using EventManagement.Event.Data.Repositories;
+using EventManagement.Events.Application;
+using EventManagement.Events.Application.Requests;
+using EventManagement.Events.Application.Services;
+using EventManagement.Events.Data.Repositories;
 using EventManagement.Logging;
 using Moq;
 using System;

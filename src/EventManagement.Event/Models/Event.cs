@@ -1,6 +1,6 @@
 using System;
 
-namespace EventManagement.Models
+namespace EventManagement.Events.Models
 {
     /// <summary>
     /// Мероприятие.

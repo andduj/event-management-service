@@ -1,10 +1,10 @@
-using EventManagement.Event.Application.Interfaces;
-using EventManagement.Event.Application.Services;
+using EventManagement.Events.Application.Interfaces;
+using EventManagement.Events.Application.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EventManagement.Event.Application
+namespace EventManagement.Events.Application
 {
     /// <summary>
     /// Регистрация зависимостей уровня приложения в DI контейнере.

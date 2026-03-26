@@ -1,8 +1,8 @@
 using System;
-using EventModel = EventManagement.Models.Event;
+using EventModel = EventManagement.Events.Models.Event;
 using System.Collections.Generic;
 
-namespace EventManagement.Event.Data.Repositories
+namespace EventManagement.Events.Data.Repositories
 {
     /// <summary>
     /// Фабрика для создания тестовых данных мероприятий.

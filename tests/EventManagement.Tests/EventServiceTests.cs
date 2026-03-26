@@ -1,8 +1,8 @@
 using AutoFixture;
-using EventManagement.Event.Application.Filters;
-using EventManagement.Event.Application.Requests;
-using EventManagement.Event.Application.Services;
-using EventManagement.Event.Exceptions;
+using EventManagement.Events.Application.Filters;
+using EventManagement.Events.Application.Requests;
+using EventManagement.Events.Application.Services;
+using EventManagement.Events.Exceptions;
 using FluentAssertions;
 using FluentValidation;
 using System;

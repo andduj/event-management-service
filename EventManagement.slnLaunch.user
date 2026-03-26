@@ -3,7 +3,7 @@
     "Name": "New Profile",
     "Projects": [
       {
-        "Path": "src\\EventManagement.Event\\EventManagement.Event.csproj",
+        "Path": "src\\EventManagement.Event\\EventManagement.Events.csproj",
         "Action": "Start"
       },
       {

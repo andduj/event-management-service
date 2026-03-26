@@ -1,7 +1,7 @@
 using FluentValidation;
-using EventModel = EventManagement.Models.Event;
+using EventModel = EventManagement.Events.Models.Event;
 
-namespace EventManagement.Event.Application
+namespace EventManagement.Events.Application
 {
     /// <summary>
     /// Валидатор доменной модели мероприятия.

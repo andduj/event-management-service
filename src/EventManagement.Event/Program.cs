@@ -1,7 +1,7 @@
-using EventManagement.Event.Application;
-using EventManagement.Event.Infrastructure;
-using EventManagement.Event.Presentation;
-using EventManagement.Event.Presentation.Extensions;
+using EventManagement.Events.Application;
+using EventManagement.Events.Infrastructure;
+using EventManagement.Events.Presentation;
+using EventManagement.Events.Presentation.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

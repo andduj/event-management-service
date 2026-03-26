@@ -1,4 +1,4 @@
-using EventManagement.Event.Exceptions;
+using EventManagement.Events.Exceptions;
 using EventManagement.Logging;
 using FluentValidation;
 using Microsoft.AspNetCore.Hosting;
@@ -9,7 +9,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EventManagement.Event.Presentation.Middleware
+namespace EventManagement.Events.Presentation.Middleware
 {
     /// <summary>
     /// Класс для глобальной обработки исключений.

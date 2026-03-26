@@ -1,22 +1,22 @@
-using EventManagement.Event.Application.DTOs;
-using EventManagement.Event.Application.Filters;
-using EventManagement.Event.Data.Interfaces;
-using EventManagement.Event.Exceptions;
+using EventManagement.Events.Application.DTOs;
+using EventManagement.Events.Application.Filters;
+using EventManagement.Events.Data.Interfaces;
+using EventManagement.Events.Exceptions;
+using EventManagement.Events.Models;
 using LinqKit;
-using EventModel = EventManagement.Models.Event;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace EventManagement.Event.Data.Repositories
+namespace EventManagement.Events.Data.Repositories
 {
     /// <summary>
     /// Репозиторий для работы с мероприятиями, реализующий хранение данных в оперативной памяти.
     /// </summary>
     public class InMemoryEventRepository : IEventRepository
     {
-        private static readonly List<EventModel> _events;
+        private static readonly List<Event> _events;
 
         static InMemoryEventRepository() 
         {
@@ -24,7 +24,7 @@ namespace EventManagement.Event.Data.Repositories
         }
         
         /// <inheritdoc/>
-        public EventModel Add(EventModel newEvent)
+        public Event Add(Event newEvent)
         {
             _events.Add(newEvent);
             return newEvent;
@@ -43,7 +43,7 @@ namespace EventManagement.Event.Data.Repositories
         }
 
         /// <inheritdoc/>
-        public PaginatedResult<EventModel> Filter(EventFilter eventFilter, int page, int pageSize)
+        public PaginatedResult<Event> Filter(EventFilter eventFilter, int page, int pageSize)
         {
             var predicate = BuildPredicate(eventFilter);
             var query = _events
@@ -59,7 +59,7 @@ namespace EventManagement.Event.Data.Repositories
 
             int totalPages = (int)Math.Ceiling((double)filteredCount / pageSize);
 
-            return new PaginatedResult<EventModel> 
+            return new PaginatedResult<Event> 
             {
                 Items = items, 
                 Page = page, 
@@ -70,7 +70,7 @@ namespace EventManagement.Event.Data.Repositories
         }
 
         /// <inheritdoc/>
-        public EventModel GetById(Guid id)
+        public Event GetById(Guid id)
         {
             var eventItem = _events.FirstOrDefault(e => e.Id == id);
             if (eventItem == null)
@@ -81,7 +81,7 @@ namespace EventManagement.Event.Data.Repositories
         }
 
         /// <inheritdoc/>
-        public void Update(EventModel updatedEvent)
+        public void Update(Event updatedEvent)
         {
             var eventItem = _events.FirstOrDefault(e => e.Id == updatedEvent.Id);
             if (eventItem == null)
@@ -95,9 +95,9 @@ namespace EventManagement.Event.Data.Repositories
             eventItem.EndAt = updatedEvent.EndAt;
         }
 
-        private static Expression<Func<EventModel, bool>> BuildPredicate(EventFilter filter)
+        private static Expression<Func<Event, bool>> BuildPredicate(EventFilter filter)
         {
-            var predicate = PredicateBuilder.New<EventModel>(true);
+            var predicate = PredicateBuilder.New<Event>(true);
 
             if (!string.IsNullOrEmpty(filter.Title))
             {

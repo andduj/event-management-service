@@ -1,10 +1,10 @@
-using EventManagement.Event.Data.Interfaces;
-using EventManagement.Event.Data.Repositories;
+using EventManagement.Events.Data.Interfaces;
+using EventManagement.Events.Data.Repositories;
 using EventManagement.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EventManagement.Event.Infrastructure
+namespace EventManagement.Events.Infrastructure
 {
     /// <summary>
     /// Класс для регистрации зависимостей уровня инфраструктуры в DI контейнере.
