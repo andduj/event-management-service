@@ -1,5 +1,6 @@
 using EventManagement.Event.Data.Interfaces;
 using EventManagement.Event.Data.Repositories;
+using EventManagement.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,7 +20,7 @@ namespace EventManagement.Event.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IEventRepository, InMemoryEventRepository>();
-            services.AddSingleton(typeof(EventManagement.Event.Logging.ILogger<>), typeof(EventManagement.Event.Logging.Logger<>));
+            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
 
             return services;
         }

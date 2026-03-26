@@ -4,11 +4,11 @@ using EventManagement.Event.Application.Filters;
 using EventManagement.Event.Application.Interfaces;
 using EventManagement.Event.Application.Requests;
 using EventManagement.Event.Data.Interfaces;
-using EventManagement.Event.Logging;
 using EventModel = EventManagement.Models.Event;
 using FluentValidation;
 using System;
 using System.Linq;
+using EventManagement.Logging;
 
 namespace EventManagement.Event.Application.Services
 {

@@ -4,7 +4,7 @@ using EventManagement.Event.Application;
 using EventManagement.Event.Application.Requests;
 using EventManagement.Event.Application.Services;
 using EventManagement.Event.Data.Repositories;
-using EventManagement.Event.Logging;
+using EventManagement.Logging;
 using Moq;
 using System;
 

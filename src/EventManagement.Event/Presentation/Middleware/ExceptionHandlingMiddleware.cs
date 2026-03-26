@@ -1,5 +1,5 @@
 using EventManagement.Event.Exceptions;
-using EventManagement.Event.Logging;
+using EventManagement.Logging;
 using FluentValidation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

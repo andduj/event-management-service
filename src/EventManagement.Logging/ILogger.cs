@@ -1,6 +1,6 @@
 using System;
 
-namespace EventManagement.Event.Logging
+namespace EventManagement.Logging
 {
     /// <summary>
     /// Абстракция логгера приложения.
