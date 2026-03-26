@@ -5,10 +5,10 @@
 # Visual Studio cache (корневая папка .vs)
 .vs/
 
-/src/obj
-/src/bin
+/src/EventManagement.Event/obj
+/src/EventManagement.Event/bin
+/src/EventManagement.Logging/obj
+/src/EventManagement.Logging/bin
 /src/.vs
-/tests/EventService.Tests/bin/Debug/net8.0
-/tests/EventService.Tests/obj
-/EventService.Logging/obj
-/EventService.Logging/bin/Debug/net8.0
+/tests/EventManagement.Tests/bin/Debug/net8.0
+/tests/EventManagement.Tests/obj

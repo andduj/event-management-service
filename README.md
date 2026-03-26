@@ -8,7 +8,7 @@ Cервис для управления мероприятиями на **ASP.NE
 - **C#**, **.NET 8**
 - **ASP.NET Core Web API**
 - **Swagger / Swashbuckle**
-- **NLog** (логирование через проект `EventService.Logging`)
+- **NLog** (логирование через проект `EventManagement.Logging`)
 - **Dependency Injection**
 - **AutoMapper**
 - **FluentValidation**
@@ -36,7 +36,7 @@ dotnet build
 3. Запустить приложение:
 
 ```bash
-dotnet run --project src/EventService.csproj
+dotnet run --project src/EventManagement.Event/EventManagement.Event.csproj
 ```
 
 По умолчанию приложение запускается на адресах, указанных в `launchSettings.json`, например:
@@ -64,7 +64,7 @@ dotnet test
 dotnet test EventManagement.sln
 ```
 
-Тесты находятся в проекте `tests/EventService.Tests`.
+Тесты находятся в проекте `tests/EventManagement.Tests`.
 
 Проверка успешности: `dotnet test` завершится без ошибок, если все тесты пройдены.
 
