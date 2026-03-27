@@ -1,9 +1,9 @@
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Data.Repositories;
-using EventManagement.Events.Data.Interfaces;
-using EventManagement.Events.Data.Repositories;
+using GpnDs.UBER.NTC.Calculations.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace EventManagement.Bookings.Infrastructure
 {
@@ -21,9 +21,15 @@ namespace EventManagement.Bookings.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IBookingRepository, InMemoryBookingRepository>();
-            services.AddScoped<IEventRepository, InMemoryEventRepository>();
             services.AddSingleton(typeof(Logging.ILogger<>), typeof(Logging.Logger<>));
             services.AddHostedService<BookingBackgroundService>();
+
+            services.AddHttpClient<IEventsClient, EventsClient>(client =>
+            {
+                var baseUrl = configuration["ExternalServices:EventsBaseUrl"] ?? "https://localhost:7216";
+                client.BaseAddress = new Uri(baseUrl);
+            });
+
             return services;
         }
     }

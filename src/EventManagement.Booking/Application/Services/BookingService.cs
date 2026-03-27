@@ -2,8 +2,8 @@ using AutoMapper;
 using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Data.Interfaces;
-using EventManagement.Events.Data.Interfaces;
 using EventManagement.Bookings.Models;
+using GpnDs.UBER.NTC.Calculations.Api;
 using System;
 using System.Threading.Tasks;
 
@@ -15,18 +15,18 @@ namespace EventManagement.Bookings.Application.Services
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepository;
-        private readonly IEventRepository _eventRepository;
+        private readonly IEventsClient _eventsClient;
         private readonly IMapper _mapper;
         private readonly Logging.ILogger<BookingService> _logger;
 
         public BookingService(
             IBookingRepository bookingRepository,
-            IEventRepository eventRepository,
+            IEventsClient eventsClient,
             IMapper mapper,
             Logging.ILogger<BookingService> logger)
         {
             _bookingRepository = bookingRepository;
-            _eventRepository = eventRepository;
+            _eventsClient = eventsClient;
             _mapper = mapper;
             _logger = logger;
         }
@@ -35,7 +35,7 @@ namespace EventManagement.Bookings.Application.Services
         public async Task<Booking> CreateBookingAsync(Guid eventId)
         {
             _logger.Info("Создание новой брони. EventId={0}", eventId);
-            await _eventRepository.GetEventByIdAsync(eventId);
+            await _eventsClient.EventsGetAsync(eventId);
 
             var booking = new Booking
             {

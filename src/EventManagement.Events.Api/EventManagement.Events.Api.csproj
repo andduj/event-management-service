@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NSwag.MSBuild" Version="14.6.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EventManagement.Event\EventManagement.Events.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GeneratedEventsClient>$(ProjectDir)EventsClient.cs</GeneratedEventsClient>
+  </PropertyGroup>
+
+  <Target Name="ClientsGeneration"
+          BeforeTargets="BeforeBuild;BeforeRebuild">
+    <Exec Command="$(NSwagExe_Net80) run events.json /variables:Input=$(ProjectDir)..\swagger\events-swagger.json,OutputFile=$(GeneratedEventsClient)" />
+  </Target>
+
+</Project>
