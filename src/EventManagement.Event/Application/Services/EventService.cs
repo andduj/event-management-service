@@ -4,12 +4,12 @@ using EventManagement.Events.Application.Filters;
 using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Application.Requests;
 using EventManagement.Events.Data.Interfaces;
-using EventModel = EventManagement.Events.Models.Event;
 using FluentValidation;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using EventManagement.Logging;
+using EventManagement.Events.Models;
 
 namespace EventManagement.Events.Application.Services
 {
@@ -20,10 +20,10 @@ namespace EventManagement.Events.Application.Services
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
-        private readonly IValidator<EventModel> _validator;
+        private readonly IValidator<Event> _validator;
         private readonly ILogger<EventService> _logger;
 
-        public EventService(IEventRepository eventRepository, IMapper mapper, IValidator<EventModel> validator, ILogger<EventService> logger)
+        public EventService(IEventRepository eventRepository, IMapper mapper, IValidator<Event> validator, ILogger<EventService> logger)
         {
             _eventRepository = eventRepository;
             _mapper = mapper;
@@ -35,7 +35,7 @@ namespace EventManagement.Events.Application.Services
         public async Task<EventDto> CreateEventAsync(AddEventRequest addEventRequest)
         {
             _logger.Info("Создание нового мероприятия.");
-            var newEvent = _mapper.Map<EventModel>(addEventRequest);
+            var newEvent = _mapper.Map<Event>(addEventRequest);
             _validator.ValidateAndThrow(newEvent);
             newEvent.Id = Guid.NewGuid();
             var addedEvent = await _eventRepository.CreateEventAsync(newEvent);
@@ -82,7 +82,7 @@ namespace EventManagement.Events.Application.Services
         public async Task UpdateEventAsync(Guid id, UpdateEventRequest updateEventRequest)
         {
             _logger.Info("Обновление мероприятия. Id={0}", id);
-            var updatedEvent = _mapper.Map<EventModel>(updateEventRequest);
+            var updatedEvent = _mapper.Map<Event>(updateEventRequest);
             _validator.ValidateAndThrow(updatedEvent);
             updatedEvent.Id = id;
             await _eventRepository.UpdateEventAsync(updatedEvent);
