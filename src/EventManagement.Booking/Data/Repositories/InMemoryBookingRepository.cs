@@ -38,5 +38,33 @@ namespace EventManagement.Bookings.Data.Repositories
 
             return Task.FromResult(booking);
         }
+
+        /// <inheritdoc/>
+        public Task<IReadOnlyCollection<Booking>> GetBookingsAsync(BookingStatus bookingStatus)
+        {
+            IReadOnlyCollection<Booking> bookings = _bookings
+                .Where(booking => booking.Status == bookingStatus)
+                .ToList()
+                .AsReadOnly();
+
+            return Task.FromResult(bookings);
+        }
+
+        /// <inheritdoc/>
+        public Task UpdateBookingAsync(Booking booking)
+        {
+            var existingBooking = _bookings.FirstOrDefault(item => item.Id == booking.Id);
+            if (existingBooking == null)
+            {
+                throw new BookingNotFoundException($"Бронь с id={booking.Id} не найдена.");
+            }
+
+            existingBooking.EventId = booking.EventId;
+            existingBooking.Status = booking.Status;
+            existingBooking.CreatedAt = booking.CreatedAt;
+            existingBooking.ProcessedAt = booking.ProcessedAt;
+
+            return Task.CompletedTask;
+        }
     }
 }

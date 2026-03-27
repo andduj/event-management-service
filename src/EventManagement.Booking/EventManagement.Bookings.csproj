@@ -15,10 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EventManagement.Logging\EventManagement.Logging.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
+    <ProjectReference Include="..\EventManagement.Event\EventManagement.Events.csproj" />
   </ItemGroup>
 
 </Project>

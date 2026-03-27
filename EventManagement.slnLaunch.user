@@ -7,7 +7,7 @@
         "Action": "Start"
       },
       {
-        "Path": "src\\EventManagement.Booking\\EventManagement.Booking\\EventManagement.Booking.csproj",
+        "Path": "src\\EventManagement.Booking\\EventManagement.Bookings.csproj",
         "Action": "Start"
       }
     ]

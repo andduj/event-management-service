@@ -1,5 +1,6 @@
 using EventManagement.Bookings.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EventManagement.Bookings.Data.Interfaces
@@ -22,5 +23,18 @@ namespace EventManagement.Bookings.Data.Interfaces
         /// <param name="bookingId">Идентификатор брони.</param>
         /// <returns>Найденная бронь.</returns>
         Task<Booking> GetBookingByIdAsync(Guid bookingId);
+
+        /// <summary>
+        /// Возвращает список бронирований с указанным статусом.
+        /// </summary>
+        /// <param name="bookingStatus">Статус бронирований для выборки.</param>
+        /// <returns>Список бронирований с указанным статусом.</returns>
+        Task<IReadOnlyCollection<Booking>> GetBookingsAsync(BookingStatus bookingStatus);
+
+        /// <summary>
+        /// Обновляет существующую бронь.
+        /// </summary>
+        /// <param name="booking">Бронь с обновленными данными.</param>
+        Task UpdateBookingAsync(Booking booking);
     }
 }

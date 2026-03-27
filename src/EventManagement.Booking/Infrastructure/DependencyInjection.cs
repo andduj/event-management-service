@@ -1,5 +1,7 @@
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Data.Repositories;
+using EventManagement.Events.Data.Interfaces;
+using EventManagement.Events.Data.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,7 +21,9 @@ namespace EventManagement.Bookings.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IBookingRepository, InMemoryBookingRepository>();
+            services.AddScoped<IEventRepository, InMemoryEventRepository>();
             services.AddSingleton(typeof(Logging.ILogger<>), typeof(Logging.Logger<>));
+            services.AddHostedService<BookingBackgroundService>();
             return services;
         }
     }
