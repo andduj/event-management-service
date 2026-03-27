@@ -8,7 +8,7 @@ using EventManagement.Logging;
 using Moq;
 using System;
 
-namespace EventManagement.Event.Tests
+namespace EventManagement.Events.Tests
 {
     public class EventServiceFixture
     {

@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace EventManagement.Event.Tests
+namespace EventManagement.Events.Tests
 {
     public class EventServiceTests : IClassFixture<EventServiceFixture>
     {

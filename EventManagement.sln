@@ -4,7 +4,7 @@ VisualStudioVersion = 17.14.37012.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Events", "src\EventManagement.Event\EventManagement.Events.csproj", "{A01CD021-2EE1-4D96-BBD2-18739F15E229}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Tests", "tests\EventManagement.Tests\EventManagement.Tests.csproj", "{3764BB9D-0B74-40C9-93AE-EB5DDAFB60F6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Events.Tests", "tests\EventManagement.Events.Tests\EventManagement.Events.Tests.csproj", "{3764BB9D-0B74-40C9-93AE-EB5DDAFB60F6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Logging", "src\EventManagement.Logging\EventManagement.Logging.csproj", "{DE478FB8-ABC1-4D93-ACCD-0B771AF98948}"
 EndProject
@@ -19,6 +19,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Events", "Events", "{F6A02210-5F93-498F-9838-487E0DB134F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Events.Api", "src\EventManagement.Events.Api\EventManagement.Events.Api.csproj", "{5777DA80-5635-4424-8713-F53778B9E427}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventManagement.Tests", "EventManagement.Tests", "{3F2ED6AA-8B0B-4662-B7F6-200C862C3CEE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Events", "Events", "{0257C40D-755D-4EDC-954D-732F5C193F38}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bookings", "Bookings", "{9F6E2D48-3575-4EDA-B736-10016F3C8CEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Bookings.Tests", "tests\EventManagement.Bookings.Tests\EventManagement.Bookings.Tests.csproj", "{C4C55140-99AD-492C-B063-EC49299F97AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,17 +54,25 @@ Global
 		{5777DA80-5635-4424-8713-F53778B9E427}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5777DA80-5635-4424-8713-F53778B9E427}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5777DA80-5635-4424-8713-F53778B9E427}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4C55140-99AD-492C-B063-EC49299F97AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4C55140-99AD-492C-B063-EC49299F97AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4C55140-99AD-492C-B063-EC49299F97AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4C55140-99AD-492C-B063-EC49299F97AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A01CD021-2EE1-4D96-BBD2-18739F15E229} = {F6A02210-5F93-498F-9838-487E0DB134F9}
+		{3764BB9D-0B74-40C9-93AE-EB5DDAFB60F6} = {0257C40D-755D-4EDC-954D-732F5C193F38}
 		{DE478FB8-ABC1-4D93-ACCD-0B771AF98948} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{1BF21356-F4FC-431A-885A-81406903CE48} = {7DB43B57-A56A-4AE3-8F1A-59ECF1CF2EC1}
 		{7DB43B57-A56A-4AE3-8F1A-59ECF1CF2EC1} = {8C600859-CE93-4345-BD0D-5AB66EB911CA}
 		{F6A02210-5F93-498F-9838-487E0DB134F9} = {8C600859-CE93-4345-BD0D-5AB66EB911CA}
 		{5777DA80-5635-4424-8713-F53778B9E427} = {F6A02210-5F93-498F-9838-487E0DB134F9}
+		{0257C40D-755D-4EDC-954D-732F5C193F38} = {3F2ED6AA-8B0B-4662-B7F6-200C862C3CEE}
+		{9F6E2D48-3575-4EDA-B736-10016F3C8CEF} = {3F2ED6AA-8B0B-4662-B7F6-200C862C3CEE}
+		{C4C55140-99AD-492C-B063-EC49299F97AB} = {9F6E2D48-3575-4EDA-B736-10016F3C8CEF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0ED56681-167E-4BAD-B67A-15CA8E077A06}
