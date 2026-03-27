@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace EventManagement.Events.Data.Repositories
 {
@@ -24,14 +25,14 @@ namespace EventManagement.Events.Data.Repositories
         }
         
         /// <inheritdoc/>
-        public Event Add(Event newEvent)
+        public Task<Event> CreateEventAsync(Event newEvent)
         {
             _events.Add(newEvent);
-            return newEvent;
+            return Task.FromResult(newEvent);
         }
 
         /// <inheritdoc/>
-        public void Delete(Guid id)
+        public Task DeleteEventAsync(Guid id)
         {
             var eventItem = _events.FirstOrDefault(e => e.Id == id);
             if (eventItem == null)
@@ -40,10 +41,11 @@ namespace EventManagement.Events.Data.Repositories
             }
 
             _events.Remove(eventItem);
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
-        public PaginatedResult<Event> Filter(EventFilter eventFilter, int page, int pageSize)
+        public Task<PaginatedResult<Event>> FilterAsync(EventFilter eventFilter, int page, int pageSize)
         {
             var predicate = BuildPredicate(eventFilter);
             var query = _events
@@ -59,7 +61,7 @@ namespace EventManagement.Events.Data.Repositories
 
             int totalPages = (int)Math.Ceiling((double)filteredCount / pageSize);
 
-            return new PaginatedResult<Event> 
+            var result = new PaginatedResult<Event> 
             {
                 Items = items, 
                 Page = page, 
@@ -67,21 +69,24 @@ namespace EventManagement.Events.Data.Repositories
                 TotalItems = filteredCount, 
                 TotalPages = totalPages
             };
+
+            return Task.FromResult(result);
         }
 
         /// <inheritdoc/>
-        public Event GetById(Guid id)
+        public Task<Event> GetEventByIdAsync(Guid id)
         {
             var eventItem = _events.FirstOrDefault(e => e.Id == id);
             if (eventItem == null)
             {
                 throw new EventNotFoundException($"Мероприятие с id={id} не найдено.");
             }
-            return eventItem;
+
+            return Task.FromResult(eventItem);
         }
 
         /// <inheritdoc/>
-        public void Update(Event updatedEvent)
+        public Task UpdateEventAsync(Event updatedEvent)
         {
             var eventItem = _events.FirstOrDefault(e => e.Id == updatedEvent.Id);
             if (eventItem == null)
@@ -93,6 +98,8 @@ namespace EventManagement.Events.Data.Repositories
             eventItem.Description = updatedEvent.Description;
             eventItem.StartAt = updatedEvent.StartAt;
             eventItem.EndAt = updatedEvent.EndAt;
+
+            return Task.CompletedTask;
         }
 
         private static Expression<Func<Event, bool>> BuildPredicate(EventFilter filter)

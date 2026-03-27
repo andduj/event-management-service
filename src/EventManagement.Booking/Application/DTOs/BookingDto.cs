@@ -1,31 +1,32 @@
+using EventManagement.Bookings.Models;
 using System;
 
-namespace EventManagement.Bookings.Models
+namespace EventManagement.Bookings.Application.DTOs
 {
     /// <summary>
-    /// Бронирование мероприятия.
+    /// DTO для передачи данных о бронировании.
     /// </summary>
-    public class Booking
+    public class BookingDto
     {
         /// <summary>
         /// Уникальный идентификатор брони.
         /// </summary>
-        public required Guid Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
-        /// Идентификатор события, к которому относится бронь.
+        /// Идентификатор мероприятия, к которому относится бронь.
         /// </summary>
-        public required Guid EventId { get; set; }
+        public Guid EventId { get; set; }
 
         /// <summary>
         /// Текущий статус брони.
         /// </summary>
-        public required BookingStatus Status { get; set; }
+        public BookingStatus Status { get; set; }
 
         /// <summary>
         /// Дата и время создания брони.
         /// </summary>
-        public required DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         /// <summary>
         /// Дата и время обработки брони.

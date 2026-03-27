@@ -7,6 +7,7 @@ using FluentAssertions;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace EventManagement.Event.Tests
 {
@@ -42,44 +43,44 @@ namespace EventManagement.Event.Tests
         }
 
         [Fact]
-        public void Add_NewEvent_Success()
+        public async Task Add_NewEvent_Success()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
 
-            var added = _eventService.Add(addEventRequest);
+            var added = await _eventService.CreateEventAsync(addEventRequest);
 
             Assert.NotEqual(Guid.Empty, added.Id);
         }
 
         [Fact]
-        public void Filter_GetAll_Success()
+        public async Task Filter_GetAll_Success()
         {
-            var paginatedResult = _eventService.Filter(new EventFilter(), 1, int.MaxValue);
+            var paginatedResult = await _eventService.FilterAsync(new EventFilter(), 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
         }
 
         [Fact]
-        public void GetById_ExistingEvent_Success()
+        public async Task GetById_ExistingEvent_Success()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
-            var added = _eventService.Add(addEventRequest);
+            var added = await _eventService.CreateEventAsync(addEventRequest);
 
-            var eventItem = _eventService.GetById(added.Id);
+            var eventItem = await _eventService.GetEventByIdAsync(added.Id);
 
             eventItem.Id.Should().Be(added.Id);
         }
 
         [Fact]
-        public void Update_ExistingEvent_Success()
+        public async Task Update_ExistingEvent_Success()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
-            var added = _eventService.Add(addEventRequest);
+            var added = await _eventService.CreateEventAsync(addEventRequest);
             var updateEventRequest = _fixture.Create<UpdateEventRequest>();
 
-           _eventService.Update(added.Id, updateEventRequest);
+           await _eventService.UpdateEventAsync(added.Id, updateEventRequest);
 
-            var eventItem = _eventService.GetById(added.Id);
+            var eventItem = await _eventService.GetEventByIdAsync(added.Id);
             eventItem.Title.Should().Be(updateEventRequest.Title);
             eventItem.Description.Should().Be(updateEventRequest.Description);
             eventItem.StartAt.Should().Be(updateEventRequest.StartAt);
@@ -87,29 +88,29 @@ namespace EventManagement.Event.Tests
         }
 
         [Fact]
-        public void Delete_ExistingEvent_Success()
+        public async Task Delete_ExistingEvent_Success()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
-            var added = _eventService.Add(addEventRequest);
+            var added = await _eventService.CreateEventAsync(addEventRequest);
 
-            _eventService.Delete(added.Id);
+            await _eventService.DeleteEventAsync(added.Id);
 
-            var action = ()=> _eventService.GetById(added.Id);
-            action.Should().Throw<EventNotFoundException>();
+            Func<Task> action = ()=> _eventService.GetEventByIdAsync(added.Id);
+            await action.Should().ThrowAsync<EventNotFoundException>();
         }
 
         [Theory]
         [InlineData("Концерт")]
         [InlineData("Салют")]
         [InlineData("Фестиваль")]
-        public void Filter_ByTitle_Success(string title)
+        public async Task Filter_ByTitle_Success(string title)
         {
             var filter = new EventFilter
             {
                 Title = title
             };
 
-            var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
+            var paginatedResult = await _eventService.FilterAsync(filter, 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
             paginatedResult.Items
@@ -119,7 +120,7 @@ namespace EventManagement.Event.Tests
 
         [Theory]
         [MemberData(nameof(DateTimePeriods))]
-        public void Filter_ByDate_Success(DateTime startAt, DateTime endAt)
+        public async Task Filter_ByDate_Success(DateTime startAt, DateTime endAt)
         {
             var filter = new EventFilter
             {
@@ -127,7 +128,7 @@ namespace EventManagement.Event.Tests
                 EndAt = endAt
             };
 
-            var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
+            var paginatedResult = await _eventService.FilterAsync(filter, 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
             paginatedResult.Items
@@ -139,9 +140,9 @@ namespace EventManagement.Event.Tests
         [InlineData(1, 12, 12)]
         [InlineData(2, 12, 12)]
         [InlineData(3, 12, 12)]
-        public void Filter_Pagination_Success(int page, int pageSize, int expectedCount)
+        public async Task Filter_Pagination_Success(int page, int pageSize, int expectedCount)
         {
-            var paginatedResult = _eventService.Filter(new EventFilter(), page, pageSize);
+            var paginatedResult = await _eventService.FilterAsync(new EventFilter(), page, pageSize);
 
             paginatedResult.Items.Should().NotBeEmpty();
             paginatedResult.Items.Should().HaveCount(expectedCount);
@@ -149,7 +150,7 @@ namespace EventManagement.Event.Tests
 
         [Theory]
         [MemberData(nameof(TitleAndDateTimePeriods))]
-        public void Filter_Combined_Success(string title, DateTime startAt, DateTime endAt)
+        public async Task Filter_Combined_Success(string title, DateTime startAt, DateTime endAt)
         {
             var filter = new EventFilter
             {
@@ -158,7 +159,7 @@ namespace EventManagement.Event.Tests
                 EndAt = endAt
             };
 
-            var paginatedResult = _eventService.Filter(filter, 1, int.MaxValue);
+            var paginatedResult = await _eventService.FilterAsync(filter, 1, int.MaxValue);
 
             paginatedResult.Items.Should().NotBeEmpty();
             paginatedResult.Items
@@ -169,67 +170,67 @@ namespace EventManagement.Event.Tests
         }
 
         [Fact]
-        public void GetById_NotExistingEvent_ShouldThrowEventNotFoundException()
+        public async Task GetById_NotExistingEvent_ShouldThrowEventNotFoundException()
         {
-            var action = () => _eventService.GetById(Guid.NewGuid());
+            Func<Task> action = () => _eventService.GetEventByIdAsync(Guid.NewGuid());
 
-            action.Should().Throw<EventNotFoundException>();
+            await action.Should().ThrowAsync<EventNotFoundException>();
         }
 
         [Fact]
-        public void Update_NotExistingEvent_ShouldThrowEventNotFoundException()
+        public async Task Update_NotExistingEvent_ShouldThrowEventNotFoundException()
         {
             var updateEventRequest = _fixture.Create<UpdateEventRequest>();
 
-            var action = () => _eventService.Update(Guid.NewGuid(), updateEventRequest);
+            Func<Task> action = () => _eventService.UpdateEventAsync(Guid.NewGuid(), updateEventRequest);
 
-            action.Should().Throw<EventNotFoundException>();
+            await action.Should().ThrowAsync<EventNotFoundException>();
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("    ")]
-        public void Add_InvalidTitle_ShouldThrowValidationException(string title)
+        public async Task Add_InvalidTitle_ShouldThrowValidationException(string title)
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
             addEventRequest.Title = title;
 
-            var action = () => _eventService.Add(addEventRequest);
+            Func<Task> action = () => _eventService.CreateEventAsync(addEventRequest);
 
-            action.Should().Throw<ValidationException>();
+            await action.Should().ThrowAsync<ValidationException>();
         }
 
         [Fact]
-        public void Add_StartAtIsGreaterEndAt_ShouldThrowValidationException()
+        public async Task Add_StartAtIsGreaterEndAt_ShouldThrowValidationException()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
             addEventRequest.StartAt = DateTime.Now.AddHours(1);
             addEventRequest.EndAt = DateTime.Now;
 
-            var action = () => _eventService.Add(addEventRequest);
+            Func<Task> action = () => _eventService.CreateEventAsync(addEventRequest);
 
-            action.Should().Throw<ValidationException>();
+            await action.Should().ThrowAsync<ValidationException>();
         }
 
         [Fact]
-        public void Update_StartAtIsGreaterEndAt_ShouldThrowValidationException()
+        public async Task Update_StartAtIsGreaterEndAt_ShouldThrowValidationException()
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
-            var addedEvent = _eventService.Add(addEventRequest);
+            var addedEvent = await _eventService.CreateEventAsync(addEventRequest);
             var updateEventRequest = _fixture.Create<UpdateEventRequest>();
             updateEventRequest.StartAt = DateTime.Now.AddHours(1);
             updateEventRequest.EndAt = DateTime.Now;
 
-            var action = () => _eventService.Update(addedEvent.Id, updateEventRequest);
+            Func<Task> action = () => _eventService.UpdateEventAsync(addedEvent.Id, updateEventRequest);
 
-            action.Should().Throw<ValidationException>();
+            await action.Should().ThrowAsync<ValidationException>();
         }
 
         [Fact]
-        public void Filter_PageOutOfRange_ShouldNoExceptions()
+        public async Task Filter_PageOutOfRange_ShouldNoExceptions()
         {
-            var paginatedResult = _eventService.Filter(new EventFilter(), 100, 100);
+            var paginatedResult = await _eventService.FilterAsync(new EventFilter(), 100, 100);
 
             paginatedResult.Items.Should().BeEmpty();
         }

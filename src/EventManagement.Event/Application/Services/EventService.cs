@@ -8,6 +8,7 @@ using EventModel = EventManagement.Events.Models.Event;
 using FluentValidation;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using EventManagement.Logging;
 
 namespace EventManagement.Events.Application.Services
@@ -31,29 +32,29 @@ namespace EventManagement.Events.Application.Services
         }
 
         /// <inheritdoc/>
-        public EventDto Add(AddEventRequest addEventRequest)
+        public async Task<EventDto> CreateEventAsync(AddEventRequest addEventRequest)
         {
             _logger.Info("Создание нового мероприятия.");
             var newEvent = _mapper.Map<EventModel>(addEventRequest);
             _validator.ValidateAndThrow(newEvent);
             newEvent.Id = Guid.NewGuid();
-            var addedEvent = _eventRepository.Add(newEvent);
+            var addedEvent = await _eventRepository.CreateEventAsync(newEvent);
             _logger.Info("Мероприятие успешно создано. Id={0}", addedEvent.Id);
             return _mapper.Map<EventDto>(addedEvent);
         }
 
         /// <inheritdoc/>
-        public void Delete(Guid id)
+        public async Task DeleteEventAsync(Guid id)
         {
             _logger.Info("Удаление мероприятия. Id={0}", id);
-            _eventRepository.Delete(id);
+            await _eventRepository.DeleteEventAsync(id);
         }
 
         /// <inheritdoc/>
-        public PaginatedResult<EventDto> Filter(EventFilter eventFilter, int page, int pageSize)
+        public async Task<PaginatedResult<EventDto>> FilterAsync(EventFilter eventFilter, int page, int pageSize)
         {
             _logger.Debug("Получение списка мероприятий. Page={0}, PageSize={1}", page, pageSize);
-            var paginatedResult = _eventRepository.Filter(eventFilter, page, pageSize);
+            var paginatedResult = await _eventRepository.FilterAsync(eventFilter, page, pageSize);
             var events = paginatedResult.Items
                 .Select(_mapper.Map<EventDto>)
                 .ToList()
@@ -70,21 +71,21 @@ namespace EventManagement.Events.Application.Services
         }
 
         /// <inheritdoc/>
-        public EventDto GetById(Guid id)
+        public async Task<EventDto> GetEventByIdAsync(Guid id)
         {
             _logger.Debug("Получение мероприятия по Id={0}", id);
-            var eventItem = _eventRepository.GetById(id);
+            var eventItem = await _eventRepository.GetEventByIdAsync(id);
             return _mapper.Map<EventDto>(eventItem);
         }
 
         /// <inheritdoc/>
-        public void Update(Guid id, UpdateEventRequest updateEventRequest)
+        public async Task UpdateEventAsync(Guid id, UpdateEventRequest updateEventRequest)
         {
             _logger.Info("Обновление мероприятия. Id={0}", id);
             var updatedEvent = _mapper.Map<EventModel>(updateEventRequest);
             _validator.ValidateAndThrow(updatedEvent);
             updatedEvent.Id = id;
-            _eventRepository.Update(updatedEvent);
+            await _eventRepository.UpdateEventAsync(updatedEvent);
         }
     }
 }

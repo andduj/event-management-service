@@ -5,6 +5,7 @@ using EventManagement.Events.Application.Requests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
 
 namespace EventManagement.Events.Presentation.Controllers
 {
@@ -36,10 +37,10 @@ namespace EventManagement.Events.Presentation.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(EventDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult Add([FromBody] AddEventRequest addEventRequest)
+        public async Task<ActionResult> CreateEventAsync([FromBody] AddEventRequest addEventRequest)
         {
-            var addedEvent = _eventService.Add(addEventRequest);
-            return CreatedAtAction(nameof(GetById), new { id = addedEvent.Id }, addedEvent);
+            var addedEvent = await _eventService.CreateEventAsync(addEventRequest);
+            return CreatedAtAction(nameof(GetEventByIdAsync), new { id = addedEvent.Id }, addedEvent);
         }
 
         /// <summary>
@@ -52,9 +53,9 @@ namespace EventManagement.Events.Presentation.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Delete(Guid id)
+        public async Task<ActionResult> DeleteEventAsync(Guid id)
         {
-            _eventService.Delete(id);
+            await _eventService.DeleteEventAsync(id);
             return NoContent();
         }
 
@@ -70,7 +71,7 @@ namespace EventManagement.Events.Presentation.Controllers
         /// <response code="200">Список мероприятий успешно получен.</response>
         [HttpGet]
         [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
-        public ActionResult<PaginatedResult<EventDto>> GetAll(string? title, DateTime? from, DateTime? to, int? page = 1, int? pageSize = 10)
+        public async Task<ActionResult<PaginatedResult<EventDto>>> GetEventsAsync(string? title, DateTime? from, DateTime? to, int? page = 1, int? pageSize = 10)
         {
             var eventFilter = new EventFilter
             {
@@ -78,7 +79,7 @@ namespace EventManagement.Events.Presentation.Controllers
                 StartAt = from,
                 EndAt = to,
             };
-            var events = _eventService.Filter(eventFilter, page!.Value, pageSize!.Value);
+            var events = await _eventService.FilterAsync(eventFilter, page!.Value, pageSize!.Value);
             return Ok(events);
         }
 
@@ -92,9 +93,9 @@ namespace EventManagement.Events.Presentation.Controllers
         /// <response code="200">Список мероприятий успешно получен.</response>
         [HttpPost("Filter")]
         [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
-        public ActionResult<PaginatedResult<EventDto>> Filter([FromBody] EventFilter eventFilter, int? page = 1, int? pageSize = 10)
+        public async Task<ActionResult<PaginatedResult<EventDto>>> FilterEventsAsync([FromBody] EventFilter eventFilter, int? page = 1, int? pageSize = 10)
         {
-            var events = _eventService.Filter(eventFilter, page!.Value, pageSize!.Value);
+            var events = await _eventService.FilterAsync(eventFilter, page!.Value, pageSize!.Value);
             return Ok(events);
         }
 
@@ -108,9 +109,9 @@ namespace EventManagement.Events.Presentation.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<EventDto> GetById(Guid id)
+        public async Task<ActionResult<EventDto>> GetEventByIdAsync(Guid id)
         {
-            var eventItem = _eventService.GetById(id);
+            var eventItem = await _eventService.GetEventByIdAsync(id);
             return Ok(eventItem);
         }
 
@@ -127,9 +128,9 @@ namespace EventManagement.Events.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Update(Guid id, [FromBody] UpdateEventRequest updateEventRequest)
+        public async Task<ActionResult> UpdateEventAsync(Guid id, [FromBody] UpdateEventRequest updateEventRequest)
         {
-            _eventService.Update(id, updateEventRequest);
+            await _eventService.UpdateEventAsync(id, updateEventRequest);
             return NoContent();
         }
     }
