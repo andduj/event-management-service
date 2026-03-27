@@ -11,18 +11,16 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\EventManagement.Event\EventManagement.Events.csproj" />
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.4</Version>
+    </PackageReference>
   </ItemGroup>
 
   <PropertyGroup>
     <GeneratedEventsClient>$(ProjectDir)EventsClient.cs</GeneratedEventsClient>
   </PropertyGroup>
 
-  <Target Name="ClientsGeneration"
-          BeforeTargets="BeforeBuild;BeforeRebuild">
+  <Target Name="ClientsGeneration" BeforeTargets="BeforeBuild;BeforeRebuild">
     <Exec Command="$(NSwagExe_Net80) run events.json /variables:Input=$(ProjectDir)..\swagger\events-swagger.json,OutputFile=$(GeneratedEventsClient)" />
   </Target>
 

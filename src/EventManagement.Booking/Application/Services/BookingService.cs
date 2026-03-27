@@ -3,7 +3,7 @@ using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Models;
-using GpnDs.UBER.NTC.Calculations.Api;
+using EventManagement.Events.Api;
 using System;
 using System.Threading.Tasks;
 

@@ -1,3 +1,4 @@
+using EventManagement.Bookings.Presentation.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EventManagement.Bookings.Presentation
@@ -17,6 +18,7 @@ namespace EventManagement.Bookings.Presentation
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            services.AddSwaggerDocumentation();
 
             return services;
         }

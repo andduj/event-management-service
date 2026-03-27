@@ -1,6 +1,6 @@
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Data.Repositories;
-using GpnDs.UBER.NTC.Calculations.Api;
+using EventManagement.Events.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;

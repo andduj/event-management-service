@@ -2,7 +2,7 @@ using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Exceptions;
 using EventManagement.Bookings.Models;
-using EventManagement.Events.Exceptions;
+using EventManagement.Events.Api;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -46,7 +46,7 @@ namespace EventManagement.Bookings.Presentation.Controllers
 
                 return Accepted($"/bookings/{booking.Id}", new { bookingId = booking.Id, status = BookingStatus.Pending });
             }
-            catch (EventNotFoundException)
+            catch (ApiException exception) when (exception.StatusCode == StatusCodes.Status404NotFound)
             {
                 return NotFound();
             }
