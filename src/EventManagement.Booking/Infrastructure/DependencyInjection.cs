@@ -4,6 +4,7 @@ using EventManagement.Events.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Net.Http;
 
 namespace EventManagement.Bookings.Infrastructure
 {
@@ -24,10 +25,16 @@ namespace EventManagement.Bookings.Infrastructure
             services.AddSingleton(typeof(Logging.ILogger<>), typeof(Logging.Logger<>));
             services.AddHostedService<BookingBackgroundService>();
 
-            services.AddHttpClient<IEventsClient, EventsClient>(client =>
+            string eventsBaseUrl = configuration["ExternalServices:EventsBaseUrl"] ?? "https://localhost:7216";
+            services.AddHttpClient("EventsApi", client =>
             {
-                var baseUrl = configuration["ExternalServices:EventsBaseUrl"] ?? "https://localhost:7216";
-                client.BaseAddress = new Uri(baseUrl);
+                client.BaseAddress = new Uri(eventsBaseUrl);
+            });
+            services.AddScoped<IEventsClient>(serviceProvider =>
+            {
+                var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+                var httpClient = httpClientFactory.CreateClient("EventsApi");
+                return new EventsClient(eventsBaseUrl, httpClient);
             });
 
             return services;
