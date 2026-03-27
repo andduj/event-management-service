@@ -16,13 +16,8 @@ namespace EventManagement.Bookings.Models
         Confirmed = 1,
 
         /// <summary>
-        /// Отменена.
-        /// </summary>
-        Cancelled = 2,
-
-        /// <summary>
         /// Отклонена.
         /// </summary>
-        Rejected = 3,
+        Rejected = 2,
     }
 }

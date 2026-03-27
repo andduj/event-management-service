@@ -44,7 +44,7 @@ namespace EventManagement.Bookings.Presentation.Controllers
             {
                 var booking = await _bookingService.CreateBookingAsync(id);
 
-                return Accepted($"/bookings/{booking.Id}", new { bookingId = booking.Id, status = BookingStatus.Pending });
+                return Accepted($"/bookings/{booking.Id}", new { booking.Id, booking.EventId, booking.Status });
             }
             catch (ApiException exception) when (exception.StatusCode == StatusCodes.Status404NotFound)
             {
