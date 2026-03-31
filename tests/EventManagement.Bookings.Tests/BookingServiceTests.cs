@@ -79,7 +79,7 @@ namespace EventManagement.Bookings.Tests
         }
 
         [Fact]
-        public async Task CreateBookingAsync_ExistedEvent_ShouldApiException()
+        public async Task CreateBookingAsync_NotExistedEvent_ShouldApiException()
         {
             var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())
                 .CreateMapper();
@@ -87,13 +87,13 @@ namespace EventManagement.Bookings.Tests
             var eventsClient = new Mock<IEventsClient>();
             eventsClient
                 .Setup(client => client.EventsGetAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(() => { throw new ApiException(); });
+                .ThrowsAsync(new ApiException("Event not found", 404, string.Empty, null, null));
 
             var bookingService = new BookingService(new InMemoryBookingRepository(), eventsClient.Object, mapper, new Mock<ILogger<BookingService>>().Object);
 
-            var action = () => bookingService.GetBookingByIdAsync(Guid.NewGuid());
+            var action = () => bookingService.CreateBookingAsync(Guid.NewGuid());
 
-            await action.Should().ThrowAsync<BookingNotFoundException>();
+            await action.Should().ThrowAsync<ApiException>();
 
         }
     }
