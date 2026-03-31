@@ -1,7 +1,6 @@
 using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Exceptions;
-using EventManagement.Bookings.Models;
 using EventManagement.Events.Api;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -36,15 +35,15 @@ namespace EventManagement.Bookings.Presentation.Controllers
         /// <response code="202">Бронь принята в обработку.</response>
         /// <response code="404">Событие с указанным id не найдено.</response>
         [HttpPost("events/{id:guid}/book")]
-        [ProducesResponseType(typeof(BookingDto), StatusCodes.Status202Accepted)]
+        [ProducesResponseType(typeof(BookingInfo), StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CreateBookingAsync(Guid id)
         {
             try
             {
-                var booking = await _bookingService.CreateBookingAsync(id);
+                var bookingInfo = await _bookingService.CreateBookingAsync(id);
 
-                return Accepted($"/bookings/{booking.Id}", new { booking.Id, booking.EventId, booking.Status });
+                return Accepted($"/bookings/{bookingInfo.Id}", bookingInfo);
             }
             catch (ApiException exception) when (exception.StatusCode == StatusCodes.Status404NotFound)
             {

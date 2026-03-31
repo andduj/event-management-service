@@ -32,7 +32,7 @@ namespace EventManagement.Bookings.Application.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Booking> CreateBookingAsync(Guid eventId)
+        public async Task<BookingInfo> CreateBookingAsync(Guid eventId)
         {
             _logger.Info("Создание новой брони. EventId={0}", eventId);
             await _eventsClient.EventsGetAsync(eventId);
@@ -48,7 +48,7 @@ namespace EventManagement.Bookings.Application.Services
 
             var addedBooking = await _bookingRepository.CreateBookingAsync(booking);
             _logger.Info("Бронь успешно создана. BookingId={0}", addedBooking.Id);
-            return addedBooking;
+            return _mapper.Map<BookingInfo>(addedBooking);
         }
 
         /// <inheritdoc/>

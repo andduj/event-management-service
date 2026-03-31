@@ -1,4 +1,3 @@
-using EventManagement.Bookings.Models;
 using EventManagement.Bookings.Application.DTOs;
 using System.Threading.Tasks;
 using System;
@@ -14,8 +13,8 @@ namespace EventManagement.Bookings.Application.Interfaces
         /// Создает бронь для указанного мероприятия.
         /// </summary>
         /// <param name="eventId">Идентификатор мероприятия.</param>
-        /// <returns>Созданная бронь.</returns>
-        Task<Booking> CreateBookingAsync(Guid eventId);
+        /// <returns>Информация о созданной брони.</returns>
+        Task<BookingInfo> CreateBookingAsync(Guid eventId);
 
         /// <summary>
         /// Получает бронь по идентификатору.

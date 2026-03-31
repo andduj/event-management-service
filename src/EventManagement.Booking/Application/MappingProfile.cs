@@ -15,6 +15,7 @@ namespace EventManagement.Bookings.Application
         public MappingProfile()
         {
             CreateMap<Booking, BookingDto>();
+            CreateMap<Booking, BookingInfo>();
         }
     }
 }
