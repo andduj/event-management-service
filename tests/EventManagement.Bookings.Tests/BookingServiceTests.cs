@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using AutoFixture;
+using AutoMapper;
 using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Data.Repositories;
@@ -11,8 +12,38 @@ using Moq;
 
 namespace EventManagement.Bookings.Tests
 {
-    public class BookingServiceTests
+    public class BookingServiceFixture
     {
+        public Mock<IEventsClient> EventsClient { get; }
+
+        public BookingService BookingService { get; }
+
+        public BookingServiceFixture()
+        {
+            var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())
+                .CreateMapper();
+
+            EventsClient = new Mock<IEventsClient>();
+
+            BookingService = new BookingService(
+                new InMemoryBookingRepository(),
+                EventsClient.Object,
+                mapper,
+                new Mock<ILogger<BookingService>>().Object);
+        }
+    }
+
+    public class BookingServiceTests : IClassFixture<BookingServiceFixture>
+    {
+        public readonly BookingService _bookingService;
+        public readonly Mock<IEventsClient> _eventsClient;
+
+        public BookingServiceTests(BookingServiceFixture fixture) 
+        {
+            _bookingService = fixture.BookingService;
+            _eventsClient = fixture.EventsClient;
+        }
+
         [Fact]
         public async Task CreateBookingAsync_ExistedEvent_Success()
         {
@@ -21,7 +52,7 @@ namespace EventManagement.Bookings.Tests
 
             var bookingService = new BookingService(new InMemoryBookingRepository(), new Mock<IEventsClient>().Object, mapper, new Mock<ILogger<BookingService>>().Object);
 
-            var bookingInfo = await bookingService.CreateBookingAsync(Guid.NewGuid());
+            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid());
 
             bookingInfo.Status.Should().Be(BookingStatus.Pending);
         }
