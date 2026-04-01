@@ -11,7 +11,7 @@ namespace EventManagement.Bookings.Presentation.Controllers
     /// Контроллер для получения информации о бронированиях.
     /// </summary>
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1")]
     public class BookingsController : ControllerBase
     {
         private readonly IBookingService _bookingService;
@@ -38,7 +38,7 @@ namespace EventManagement.Bookings.Presentation.Controllers
         public async Task<IActionResult> CreateBookingAsync(Guid id)
         {
             var bookingInfo = await _bookingService.CreateBookingAsync(id);
-            return Accepted($"/bookings/{bookingInfo.Id}", bookingInfo);
+            return Accepted($"/api/v1/bookings/{bookingInfo.Id}", bookingInfo);
         }
 
         /// <summary>

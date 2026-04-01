@@ -37,10 +37,10 @@ namespace EventManagement.Bookings.Application.Services
             {
                 try
                 {
+                    await Task.Delay(DalayInMilliseconds, cancellationToken);
                     booking.Status = BookingStatus.Confirmed;
                     booking.ProcessedAt = DateTime.UtcNow;
                     await _bookingRepository.UpdateBookingAsync(booking);
-                    await Task.Delay(DalayInMilliseconds, cancellationToken);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {

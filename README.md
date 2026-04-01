@@ -102,14 +102,14 @@ Swagger UI доступен для каждого API в режиме Developmen
 
 ### Bookings API
 
-- `POST /api/v1/Bookings/events/{id}/book`
+- `POST /api/v1/events/{id}/book`
   - создает бронь для события;
   - возвращает `202 Accepted`;
   - в теле возвращает `BookingInfo` (`Id`, `EventId`, `Status`);
-  - в `Location` возвращает ссылку на ресурс брони;
+  - в `Location` возвращает ссылку на ресурс брони (`/api/v1/bookings/{bookingId}`);
   - если событие не найдено — `404 Not Found`.
 
-- `GET /api/v1/Bookings/bookings/{id}`
+- `GET /api/v1/bookings/{id}`
   - возвращает текущее состояние брони;
   - `200 OK` + `BookingDto`;
   - если бронь не найдена — `404 Not Found`.
@@ -118,16 +118,16 @@ Swagger UI доступен для каждого API в режиме Developmen
 
 В проекте реализован паттерн **быстрый ответ + отложенная обработка**:
 - `POST` на создание брони сразу возвращает `202 Accepted`;
-- фоновый сервис `BookingBackgroundService` в цикле обрабатывает `Pending` брони;
+- `BookingBackgroundService` периодически (polling) запускает обработку ожидающих заявок;
 - бизнес-обработка вынесена в `BookingProcessingService`;
-- для имитации внешнего вызова используется искусственная задержка;
+- для каждой `Pending` брони выполняется искусственная задержка (`Task.Delay`), имитирующая внешний вызов;
 - после обработки статус меняется на `Confirmed`, а `ProcessedAt` заполняется текущим UTC-временем.
 
 ## Пример сценария использования
 
 1. Создать событие через `POST /api/v1/events`.
-2. Создать бронь через `POST /api/v1/Bookings/events/{id}/book`.
-3. Сразу вызвать `GET /api/v1/Bookings/bookings/{bookingId}` — статус будет `Pending`.
+2. Создать бронь через `POST /api/v1/events/{id}/book`.
+3. Сразу вызвать `GET /api/v1/bookings/{bookingId}` — статус будет `Pending`.
 4. Подождать несколько секунд и повторить `GET` — статус станет `Confirmed`, поле `ProcessedAt` будет заполнено.
 
 ## Архитектура
