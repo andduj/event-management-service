@@ -1,9 +1,7 @@
-using EventManagement.Bookings.Application.Services;
-using EventManagement.Bookings.Data.Interfaces;
-using EventManagement.Bookings.Models;
+using EventManagement.Bookings.Application.Interfaces;
+using EventManagement.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,9 +13,9 @@ namespace EventManagement.Bookings.Infrastructure
     public class BookingBackgroundService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly Logging.ILogger<BookingService> _logger;
+        private readonly ILogger<BookingBackgroundService> _logger;
 
-        public BookingBackgroundService(IServiceScopeFactory scopeFactory, Logging.ILogger<BookingService> logger)
+        public BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger<BookingBackgroundService> logger)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
@@ -31,30 +29,9 @@ namespace EventManagement.Bookings.Infrastructure
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    await Task.Delay(5000, stoppingToken);
-
                     using var scope = _scopeFactory.CreateScope();
-                    var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
-                    var bookings = await bookingRepository.GetBookingsAsync(BookingStatus.Pending);
-
-                    foreach (var booking in bookings)
-                    {
-                        try
-                        {
-                            await Task.Delay(2000, stoppingToken);
-                            booking.Status = BookingStatus.Confirmed;
-                            booking.ProcessedAt = DateTime.UtcNow;
-                            await bookingRepository.UpdateBookingAsync(booking);
-                        }
-                        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-                        {
-                            return;
-                        }
-                        catch (Exception exception)
-                        {
-                            _logger.Error(exception, $"Ошибка при обработке бронирования {booking.Id}");
-                        }
-                    }
+                    var bookingProcessingService = scope.ServiceProvider.GetRequiredService<IBookingProcessingService>();
+                    await bookingProcessingService.ProcessPendingBookingsAsync(stoppingToken);
                 }
             }            
             finally

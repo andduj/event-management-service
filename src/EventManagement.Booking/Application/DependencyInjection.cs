@@ -17,6 +17,7 @@ namespace EventManagement.Bookings.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IBookingService, BookingService>();
+            services.AddScoped<IBookingProcessingService, BookingProcessingService>();
             services.AddAutoMapper(typeof(Program));
             return services;
         }
