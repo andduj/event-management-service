@@ -13,6 +13,7 @@ namespace EventManagement.Bookings.Application.Services
     /// </summary>
     public class BookingProcessingService : IBookingProcessingService
     {
+        private const int DalayInMilliseconds = 2000;
         private readonly IBookingRepository _bookingRepository;
         private readonly ILogger<BookingProcessingService> _logger;
 
@@ -39,6 +40,7 @@ namespace EventManagement.Bookings.Application.Services
                     booking.Status = BookingStatus.Confirmed;
                     booking.ProcessedAt = DateTime.UtcNow;
                     await _bookingRepository.UpdateBookingAsync(booking);
+                    await Task.Delay(DalayInMilliseconds, cancellationToken);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {

@@ -4,6 +4,7 @@ using EventManagement.Bookings.Exceptions;
 using EventManagement.Bookings.Models;
 using EventManagement.Events.Api;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Moq;
 
 namespace EventManagement.Bookings.Tests
@@ -86,12 +87,25 @@ namespace EventManagement.Bookings.Tests
         {
             _eventsClient
                 .Setup(client => client.EventsGetAsync(It.IsAny<Guid>()))
-                .ThrowsAsync(new ApiException("Event not found", 404, string.Empty, null, null));
+                .ThrowsAsync(new ApiException("Мероприятие не найдено", 404, string.Empty, null, null));
 
             var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
 
-            await action.Should().ThrowAsync<ApiException>();
+            var exception = await action.Should().ThrowAsync<ApiException>();
+            exception.Which.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        }
 
+        [Fact]
+        public async Task CreateBookingAsync_DeletedEvent_ShouldApiException()
+        {
+            _eventsClient
+                .Setup(client => client.EventsGetAsync(It.IsAny<Guid>()))
+                .ThrowsAsync(new ApiException("Мероприятие было удалено", 410, string.Empty, null, null));
+
+            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
+
+            var exception = await action.Should().ThrowAsync<ApiException>();
+            exception.Which.StatusCode.Should().Be(StatusCodes.Status410Gone);
         }
     }
 }
