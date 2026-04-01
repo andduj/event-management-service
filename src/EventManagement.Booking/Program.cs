@@ -1,6 +1,7 @@
 using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Infrastructure;
 using EventManagement.Bookings.Presentation;
+using EventManagement.Bookings.Presentation.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -32,6 +33,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseExceptionHandling();
 app.UseHttpsRedirection();
 app.MapControllers();
 

@@ -118,7 +118,7 @@ Swagger UI доступен для каждого API в режиме Developmen
 
 В проекте реализован паттерн **быстрый ответ + отложенная обработка**:
 - `POST` на создание брони сразу возвращает `202 Accepted`;
-- фоновый сервис `BookingBackgroundService` периодически обрабатывает `Pending` брони;
+- фоновый сервис `BookingBackgroundService` в цикле обрабатывает `Pending` брони;
 - бизнес-обработка вынесена в `BookingProcessingService`;
 - для имитации внешнего вызова используется искусственная задержка;
 - после обработки статус меняется на `Confirmed`, а `ProcessedAt` заполняется текущим UTC-временем.
@@ -138,3 +138,10 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `Application` — сервисы, DTO и бизнес-правила;
 - `Infrastructure` — конфигурация DI и фоновые задачи;
 - `Presentation` — контроллеры, Swagger, middleware.
+
+## Обработка ошибок
+
+- В `EventManagement.Event` и `EventManagement.Booking` используется собственная `ExceptionHandlingMiddleware`.
+- Middleware формирует ответы в формате `application/problem+json` (`ProblemDetails`).
+- В `Booking` ошибки `BookingNotFoundException` и `ApiException` маппятся в соответствующие HTTP-статусы.
+- В режиме Development в ответ дополнительно добавляются `traceId` и `stackTrace`.

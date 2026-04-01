@@ -13,10 +13,14 @@ namespace EventManagement.Bookings.Application.Services
     /// </summary>
     public class BookingProcessingService : IBookingProcessingService
     {
-        private const int ProcessingDelayMilliseconds = 2000;
         private readonly IBookingRepository _bookingRepository;
         private readonly ILogger<BookingProcessingService> _logger;
 
+        /// <summary>
+        /// Инициализирует новый экземпляр сервиса фоновой обработки бронирований.
+        /// </summary>
+        /// <param name="bookingRepository">Репозиторий бронирований.</param>
+        /// <param name="logger">Логгер приложения.</param>
         public BookingProcessingService(IBookingRepository bookingRepository, ILogger<BookingProcessingService> logger)
         {
             _bookingRepository = bookingRepository;
@@ -32,7 +36,6 @@ namespace EventManagement.Bookings.Application.Services
             {
                 try
                 {
-                    await Task.Delay(ProcessingDelayMilliseconds, cancellationToken);
                     booking.Status = BookingStatus.Confirmed;
                     booking.ProcessedAt = DateTime.UtcNow;
                     await _bookingRepository.UpdateBookingAsync(booking);

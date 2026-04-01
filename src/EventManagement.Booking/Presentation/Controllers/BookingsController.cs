@@ -1,7 +1,5 @@
 using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Exceptions;
-using EventManagement.Events.Api;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -39,16 +37,8 @@ namespace EventManagement.Bookings.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CreateBookingAsync(Guid id)
         {
-            try
-            {
-                var bookingInfo = await _bookingService.CreateBookingAsync(id);
-
-                return Accepted($"/bookings/{bookingInfo.Id}", bookingInfo);
-            }
-            catch (ApiException exception) when (exception.StatusCode == StatusCodes.Status404NotFound)
-            {
-                return NotFound();
-            }
+            var bookingInfo = await _bookingService.CreateBookingAsync(id);
+            return Accepted($"/bookings/{bookingInfo.Id}", bookingInfo);
         }
 
         /// <summary>
@@ -63,15 +53,8 @@ namespace EventManagement.Bookings.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BookingDto>> GetBookingByIdAsync(Guid id)
         {
-            try
-            {
-                var booking = await _bookingService.GetBookingByIdAsync(id);
-                return Ok(booking);
-            }
-            catch (BookingNotFoundException)
-            {
-                return NotFound();
-            }
+            var booking = await _bookingService.GetBookingByIdAsync(id);
+            return Ok(booking);
         }
     }
 }

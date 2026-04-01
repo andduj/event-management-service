@@ -12,26 +12,38 @@ namespace EventManagement.Bookings.Infrastructure
     /// </summary>
     public class BookingBackgroundService : BackgroundService
     {
+        private const int IntervalInMilliseconds = 2000;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<BookingBackgroundService> _logger;
 
+        /// <summary>
+        /// Инициализирует новый экземпляр фонового сервиса обработки бронирований.
+        /// </summary>
+        /// <param name="scopeFactory">Фабрика скоупов DI-контейнера.</param>
+        /// <param name="logger">Логгер приложения.</param>
         public BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger<BookingBackgroundService> logger)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        /// <summary>
+        /// Запускает цикл фоновой обработки бронирований.
+        /// </summary>
+        /// <param name="cancellationToken">Токен остановки фонового сервиса.</param>
+        /// <returns>Задача выполнения фонового сервиса.</returns>
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             _logger.Info("Сервис обработки бронирований начал работу");
 
             try
             {
-                while (!stoppingToken.IsCancellationRequested)
+                while (!cancellationToken.IsCancellationRequested)
                 {
+                    await Task.Delay(IntervalInMilliseconds, cancellationToken);
                     using var scope = _scopeFactory.CreateScope();
                     var bookingProcessingService = scope.ServiceProvider.GetRequiredService<IBookingProcessingService>();
-                    await bookingProcessingService.ProcessPendingBookingsAsync(stoppingToken);
+                    await bookingProcessingService.ProcessPendingBookingsAsync(cancellationToken);
                 }
             }            
             finally

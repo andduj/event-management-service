@@ -1,15 +1,13 @@
-using EventManagement.Events.Exceptions;
+using EventManagement.Bookings.Exceptions;
+using EventManagement.Events.Api;
 using EventManagement.Logging;
-using FluentValidation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace EventManagement.Events.Presentation.Middleware
+namespace EventManagement.Bookings.Presentation.Middleware
 {
     /// <summary>
     /// Класс для глобальной обработки исключений.
@@ -64,31 +62,16 @@ namespace EventManagement.Events.Presentation.Middleware
             }
 
             int statusCode = MapStatusCode(exception);
-
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/problem+json";
 
-            var problemDetails = new ProblemDetails
+            var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
             {
                 Status = statusCode,
                 Title = GetTitleForStatusCode(statusCode),
                 Detail = exception.Message,
                 Instance = context.Request.Path
             };
-
-            if (exception is ValidationException validationException)
-            {
-                problemDetails.Title = "Validation Error";
-
-                var errors = validationException.Errors
-                    .GroupBy(exception => exception.PropertyName)
-                    .ToDictionary(
-                        group => group.Key,
-                        group => group.Select(e => e.ErrorMessage).ToArray()
-                    );
-
-                problemDetails.Extensions["errors"] = errors;
-            }
 
             if (_webHostEnvironment.IsDevelopment())
             {
@@ -103,23 +86,13 @@ namespace EventManagement.Events.Presentation.Middleware
         {
             switch (statusCode)
             {
-                case 400:
+                case StatusCodes.Status400BadRequest:
                     return "Bad Request";
-                case 401:
+                case StatusCodes.Status401Unauthorized:
                     return "Unauthorized";
-                case 403:
-                    return "Forbidden";
-                case 404:
+                case StatusCodes.Status404NotFound:
                     return "Not Found";
-                case 405:
-                    return "Method Not Allowed";
-                case 409:
-                    return "Conflict";
-                case 415:
-                    return "Unsupported Media Type";
-                case 422:
-                    return "Unprocessable Entity";
-                case 500:
+                case StatusCodes.Status500InternalServerError:
                     return "Internal Server Error";
                 default:
                     return "An error occurred";
@@ -128,27 +101,19 @@ namespace EventManagement.Events.Presentation.Middleware
 
         private static int MapStatusCode(Exception exception)
         {
-            int statusCode;
             switch (exception)
             {
-                case ValidationException:
-                    statusCode = StatusCodes.Status400BadRequest;
-                    break;
-                case EventNotFoundException:
-                    statusCode = StatusCodes.Status404NotFound;
-                    break;
+                case BookingNotFoundException:
+                    return StatusCodes.Status404NotFound;
+                case ApiException apiException:
+                    return apiException.StatusCode;
                 case ArgumentException:
-                    statusCode = StatusCodes.Status400BadRequest;
-                    break;
+                    return StatusCodes.Status400BadRequest;
                 case UnauthorizedAccessException:
-                    statusCode = StatusCodes.Status401Unauthorized;
-                    break;
-                case NullReferenceException:
+                    return StatusCodes.Status401Unauthorized;
                 default:
-                    statusCode = StatusCodes.Status500InternalServerError;
-                    break;
+                    return StatusCodes.Status500InternalServerError;
             }
-            return statusCode;
         }
     }
 }
