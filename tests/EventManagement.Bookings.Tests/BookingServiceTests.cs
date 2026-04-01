@@ -16,6 +16,8 @@ namespace EventManagement.Bookings.Tests
         {
             _bookingService = fixture.BookingService;
             _eventsClient = fixture.EventsClient;
+
+            _eventsClient.Reset();
         }
 
         [Fact]
