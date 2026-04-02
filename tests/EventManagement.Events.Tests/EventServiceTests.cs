@@ -191,7 +191,7 @@ namespace EventManagement.Events.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("    ")]
-        public async Task Add_InvalidTitle_ShouldThrowValidationException(string title)
+        public async Task Add_InvalidTitle_ShouldThrowValidationException(string? title)
         {
             var addEventRequest = _fixture.Create<AddEventRequest>();
             addEventRequest.Title = title;

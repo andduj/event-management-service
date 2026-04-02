@@ -10,7 +10,7 @@ namespace EventManagement.Events.Application.Requests
         /// <summary>
         /// Заголовок мероприятия.
         /// </summary>
-        public string Title { get; set; } = string.Empty;
+        public string? Title { get; set; } = string.Empty;
 
         /// <summary>
         /// Подробное описание мероприятия.

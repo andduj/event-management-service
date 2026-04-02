@@ -12,7 +12,7 @@ namespace EventManagement.Bookings.Infrastructure
     /// </summary>
     public class BookingBackgroundService : BackgroundService
     {
-        private const int IntervalInMilliseconds = 2000;
+        private const int IntervalInMilliseconds = 5000;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<BookingBackgroundService> _logger;
 
@@ -40,10 +40,10 @@ namespace EventManagement.Bookings.Infrastructure
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    await Task.Delay(IntervalInMilliseconds, cancellationToken);
                     using var scope = _scopeFactory.CreateScope();
                     var bookingProcessingService = scope.ServiceProvider.GetRequiredService<IBookingProcessingService>();
                     await bookingProcessingService.ProcessPendingBookingsAsync(cancellationToken);
+                    await Task.Delay(IntervalInMilliseconds, cancellationToken);
                 }
             }            
             finally
