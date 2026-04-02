@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "src\\EventManagement.Event\\EventManagement.Events.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\EventManagement.Booking\\EventManagement.Bookings.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

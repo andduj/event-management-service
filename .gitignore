@@ -5,10 +5,15 @@
 # Visual Studio cache (корневая папка .vs)
 .vs/
 
-/src/obj
-/src/bin
+# Сборка .NET — везде в репозитории (включая вложенные пути вроде .../Booking/Booking/obj)
+**/bin/
+**/obj/
+[Bb]in/
+[Oo]bj/
+
 /src/.vs
-/tests/EventService.Tests/bin/Debug/net8.0
-/tests/EventService.Tests/obj
-/EventService.Logging/obj
-/EventService.Logging/bin/Debug/net8.0
+
+# Лишняя вложенная копия проекта Booking (второй obj → duplicate Assembly* при сборке)
+/src/EventManagement.Booking/EventManagement.Booking/
+
+*.csproj.Backup.tmp

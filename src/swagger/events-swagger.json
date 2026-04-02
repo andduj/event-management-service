@@ -1,0 +1,591 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "EventManagement.Events",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/v1/Events": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Создает новое мероприятие.",
+        "requestBody": {
+          "description": "Данные для создания мероприятия.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddEventRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddEventRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Мероприятие успешно создано.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Некорректные данные запроса.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Получает список мероприятий с фильтрацией и пагинацией.",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "description": "Часть названия мероприятия (регистронезависимо).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Минимальная дата начала (включительно).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Максимальная дата окончания (включительно).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Номер страницы.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Размер страницы.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список мероприятий успешно получен.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDtoPaginatedResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDtoPaginatedResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDtoPaginatedResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Events/{id}": {
+      "delete": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Удаляет мероприятие по идентификатору.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Идентификатор мероприятия.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Мероприятие успешно удалено."
+          },
+          "404": {
+            "description": "Мероприятие с указанным id не найдено.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Получает мероприятие по идентификатору.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Идентификатор мероприятия.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Мероприятие успешно найдено.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Мероприятие с указанным id не найдено.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Обновляет существующее мероприятие.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Идентификатор мероприятия.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Данные для обновления мероприятия.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Мероприятие успешно обновлено."
+          },
+          "400": {
+            "description": "Некорректные данные запроса.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Мероприятие с указанным id не найдено.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Events/Filter": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Получает список мероприятий по фильтрам из тела запроса.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Номер страницы.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Размер страницы.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Фильтр для мероприятий.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventFilter"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventFilter"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventFilter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Список мероприятий успешно получен.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDtoPaginatedResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDtoPaginatedResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDtoPaginatedResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddEventRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Заголовок мероприятия.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Подробное описание мероприятия.",
+            "nullable": true
+          },
+          "startAt": {
+            "type": "string",
+            "description": "Дата и время начала мероприятия.",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "description": "Дата и время окончания мероприятия.",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Запрос на создание нового мероприятия."
+      },
+      "EventDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Идентификатор мероприятия.",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "description": "Заголовок мероприятия.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Подробное описание мероприятия.",
+            "nullable": true
+          },
+          "startAt": {
+            "type": "string",
+            "description": "Дата и время начала мероприятия.",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "description": "Дата и время окончания мероприятия.",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "DTO для передачи данных о мероприятии."
+      },
+      "EventDtoPaginatedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventDto"
+            },
+            "description": "Элементы текущей страницы.",
+            "nullable": true
+          },
+          "page": {
+            "type": "integer",
+            "description": "Номер текущей страницы.",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Размер страницы.",
+            "format": "int32"
+          },
+          "totalItems": {
+            "type": "integer",
+            "description": "Общее количество элементов.",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Общее количество страниц.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Результат выборки с пагинацией."
+      },
+      "EventFilter": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Заголовок мероприятия.",
+            "nullable": true
+          },
+          "startAt": {
+            "type": "string",
+            "description": "Минимальная дата начала мероприятия (включительно).",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endAt": {
+            "type": "string",
+            "description": "Максимальная дата окончания мероприятия (включительно).",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Параметры фильтрации мероприятий."
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "UpdateEventRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Заголовок мероприятия.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание мероприятия.",
+            "nullable": true
+          },
+          "startAt": {
+            "type": "string",
+            "description": "Дата и время начала мероприятия.",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "description": "Дата и время окончания мероприятия.",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Запрос на обновление мероприятия."
+      }
+    }
+  }
+}

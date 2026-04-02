@@ -1,177 +1,147 @@
 # Event Management Service
 
-Cервис для управления мероприятиями на **ASP.NET Core Web API (.NET 8)**.  
-Проект реализует REST API для создания, просмотра, обновления и удаления мероприятий (CRUD), а также фильтрацию, пагинацию и централизованную обработку ошибок.
+Сервис управления мероприятиями и бронированиями на **ASP.NET Core Web API (.NET 8)**.
+Проект включает:
+- CRUD и фильтрацию событий;
+- создание брони с быстрым ответом (`202 Accepted`);
+- отложенную обработку бронирований в фоне через `BackgroundService`.
 
 ## Технологии
 
 - **C#**, **.NET 8**
 - **ASP.NET Core Web API**
 - **Swagger / Swashbuckle**
-- **NLog** (логирование через проект `EventService.Logging`)
+- **NLog** (через проект `EventManagement.Logging`)
 - **Dependency Injection**
 - **AutoMapper**
 - **FluentValidation**
-- **LINQ / LinqKit**
-- **xUnit** (юнит-тесты)
+- **xUnit**, **Moq**, **FluentAssertions**, **AutoFixture**
 
-## Запуск проекта
+## Структура решения
 
-Предполагается, что у вас установлен **.NET SDK 8.0** или выше.
+- `src/EventManagement.Event` — API для работы с сущностью `Event`
+- `src/EventManagement.Booking` — API для работы с сущностью `Booking` и фоновой обработкой
+- `tests/EventManagement.Events.Tests` — тесты событий
+- `tests/EventManagement.Bookings.Tests` — тесты бронирований
 
-1. Клонировать репозиторий:
+## Запуск
 
-```bash
-git clone <url-репозитория>
-cd event-management-service
-```
-
-2. Восстановить зависимости и собрать проект:
+Требуется установленный **.NET SDK 8.0+**.
 
 ```bash
 dotnet restore
-dotnet build
+dotnet build EventManagement.sln
 ```
 
-3. Запустить приложение:
+Запуск API событий:
 
 ```bash
-dotnet run --project src/EventService.csproj
+dotnet run --project src/EventManagement.Event/EventManagement.Events.csproj
 ```
 
-По умолчанию приложение запускается на адресах, указанных в `launchSettings.json`, например:
-
-- `http://localhost:5167`
-- `https://localhost:7216`
-
-## Запуск тестов
-
-1. Перейти в корень репозитория:
+Запуск API бронирований:
 
 ```bash
-cd event-management-service
+dotnet run --project src/EventManagement.Booking/EventManagement.Bookings.csproj
 ```
 
-2. Запустить тесты:
-
-```bash
-dotnet test
-```
-
-Или запустить тесты по конкретному solution:
+## Тесты
 
 ```bash
 dotnet test EventManagement.sln
 ```
 
-Тесты находятся в проекте `tests/EventService.Tests`.
+Или отдельно:
 
-Проверка успешности: `dotnet test` завершится без ошибок, если все тесты пройдены.
+```bash
+dotnet test tests/EventManagement.Events.Tests/EventManagement.Events.Tests.csproj
+dotnet test tests/EventManagement.Bookings.Tests/EventManagement.Bookings.Tests.csproj
+```
 
 ## Swagger
 
-Интерактивная документация и возможность тестирования API доступны через **Swagger UI**:
-
-- `http://localhost:5167/swagger`
-- или `https://localhost:7216/swagger`
-
-Swagger отображает все эндпоинты и схемы моделей, включая комментарии из XML-документации.
+Swagger UI доступен для каждого API в режиме Development:
+- Events API: `http://localhost:5167/swagger` или `https://localhost:7216/swagger`
+- Bookings API: `http://localhost:5236/swagger` или `https://localhost:7095/swagger`
 
 ## Модель Event
 
-Сущность мероприятия `Event` содержит следующие поля:
+`Event`:
+- `Id` (`Guid`) — идентификатор;
+- `Title` (`string`) — название;
+- `Description` (`string?`) — описание;
+- `StartAt` (`DateTime`) — начало;
+- `EndAt` (`DateTime`) — окончание.
 
-- `Id` (`Guid`, обязательное) — идентификатор мероприятия
-- `Title` (`string`, обязательное) — заголовок
-- `Description` (`string?`) — описание
-- `StartAt` (`DateTime`, обязательное) — дата и время начала
-- `EndAt` (`DateTime`, обязательное) — дата и время окончания
+## Модель Booking
 
-Данные хранятся в памяти приложения в `InMemoryEventRepository`.
+`Booking`:
+- `Id` (`Guid`) — идентификатор брони;
+- `EventId` (`Guid`) — идентификатор события;
+- `Status` (`BookingStatus`) — статус брони;
+- `CreatedAt` (`DateTime`) — дата создания;
+- `ProcessedAt` (`DateTime?`) — дата обработки.
 
-## Эндпоинты API
+`BookingStatus`:
+- `Pending` — ожидает обработки;
+- `Confirmed` — подтверждена;
+- `Rejected` — отклонена.
 
-Базовый префикс для всех методов: `api/v1/events`.
+Данные бронирований хранятся в памяти приложения (`InMemoryBookingRepository`).
 
-- **GET `api/v1/events`**  
-  Получить список мероприятий с фильтрацией и пагинацией.
-  Поддерживаемые query-параметры:
-  - `title` (`string`, опционально) — поиск по названию (частичное совпадение, без учета регистра)
-  - `from` (`DateTime`, опционально) — события, начинающиеся не раньше указанной даты
-  - `to` (`DateTime`, опционально) — события, заканчивающиеся не позже указанной даты
-  - `page` (`int`, опционально, по умолчанию `1`) — номер страницы
-  - `pageSize` (`int`, опционально, по умолчанию `10`) — размер страницы
+## Эндпоинты
 
-  Формат ответа:
-  - `items` — элементы текущей страницы
-  - `page` — номер текущей страницы
-  - `pageSize` — размер страницы
-  - `totalItems` — общее количество элементов после фильтрации
-  - `totalPages` — общее количество страниц
+### Events API (`api/v1/events`)
 
-- **POST `api/v1/events/filter`**  
-  Альтернативный способ фильтрации через тело запроса (`EventFilter`) и параметры пагинации `page`, `pageSize`.
+- `GET /api/v1/events` — список событий с фильтрацией и пагинацией
+- `POST /api/v1/events/filter` — фильтрация через тело запроса
+- `GET /api/v1/events/{id}` — получить событие по id
+- `POST /api/v1/events` — создать событие (`201 Created` + `Location`)
+- `PUT /api/v1/events/{id}` — обновить событие
+- `DELETE /api/v1/events/{id}` — удалить событие
 
-- **GET `api/v1/events/{id}`**  
-  Получить мероприятие по идентификатору.
-  - `404 Not Found`, если мероприятие не найдено.
+### Bookings API
 
-- **POST `api/v1/events`**  
-  Создать новое мероприятие.
-  - Тело запроса (`application/json`):
+- `POST /api/v1/events/{id}/book`
+  - создает бронь для события;
+  - возвращает `202 Accepted`;
+  - в теле возвращает `BookingInfo` (`Id`, `EventId`, `Status`);
+  - в `Location` возвращает ссылку на ресурс брони (`/api/v1/bookings/{bookingId}`);
+  - если событие не найдено — `404 Not Found`.
 
-    ```json
-    {
-      "title": "Sample event",
-      "description": "Optional description",
-      "startAt": "2026-03-03T10:00:00Z",
-      "endAt": "2026-03-03T12:00:00Z"
-    }
-    ```
+- `GET /api/v1/bookings/{id}`
+  - возвращает текущее состояние брони;
+  - `200 OK` + `BookingDto`;
+  - если бронь не найдена — `404 Not Found`.
 
-  - Ответ: `201 Created` с созданным объектом и заголовком `Location`.
+## Отложенная фоновая обработка
 
-- **PUT `api/v1/events/{id}`**  
-  Полностью обновить мероприятие по идентификатору.
-  - Если мероприятие не найдено — `404 Not Found`.
+В проекте реализован паттерн **быстрый ответ + отложенная обработка**:
+- `POST` на создание брони сразу возвращает `202 Accepted`;
+- `BookingBackgroundService` периодически (polling) запускает обработку ожидающих заявок;
+- бизнес-обработка вынесена в `BookingProcessingService`;
+- для каждой `Pending` брони выполняется искусственная задержка (`Task.Delay`), имитирующая внешний вызов;
+- после обработки статус меняется на `Confirmed`, а `ProcessedAt` заполняется текущим UTC-временем.
 
-- **DELETE `api/v1/events/{id}`**  
-  Удалить мероприятие по идентификатору.
-  - Если мероприятие не найдено — `404 Not Found`.
+## Пример сценария использования
 
-## Валидация
+1. Создать событие через `POST /api/v1/events`.
+2. Создать бронь через `POST /api/v1/events/{id}/book`.
+3. Сразу вызвать `GET /api/v1/bookings/{bookingId}` — статус будет `Pending`.
+4. Подождать несколько секунд и повторить `GET` — статус станет `Confirmed`, поле `ProcessedAt` будет заполнено.
 
-Валидация выполняется в `EventsService` через `FluentValidation` (`EventValidator`) для доменной модели `Event`.
+## Архитектура
 
-Проверяются правила:
-
-- `Title` обязателен;
-- `StartAt` обязателен;
-- `EndAt` обязателен;
-- `EndAt` должна быть **строго позже** `StartAt`.
-
-При нарушении правил API возвращает `400 Bad Request` с деталями ошибок.
-
-## Архитектура и слои
-
-Проект разделён на несколько уровней:
-
-- `Models` — доменные модели (`Event`).
-- `Data` — работа с данными (`IEventRepository`, `InMemoryEventRepository`).
-- `Application` — бизнес-логика (`IEventsService`, `EventsService`, DTO, запросы, профили AutoMapper).
-- `Infrastructure` — регистрация инфраструктурных зависимостей.
-- `Presentation` — веб-слой (контроллеры, middleware, расширения, Swagger).
-
-Бизнес-логика вынесена в сервис `EventsService` и подключена через DI.  
-Контроллер `EventsController` не содержит бизнес-логики, а только вызывает сервис.
+Проект разделен по слоям:
+- `Models` — доменные модели;
+- `Data` — репозитории и доступ к данным;
+- `Application` — сервисы, DTO и бизнес-правила;
+- `Infrastructure` — конфигурация DI и фоновые задачи;
+- `Presentation` — контроллеры, Swagger, middleware.
 
 ## Обработка ошибок
 
-В проекте реализован глобальный middleware для обработки исключений:
-
-- `ValidationException` маппится в `400 Bad Request`.
-- `EventNotFoundException` маппится в `404 Not Found`.
-- Непредвиденные ошибки маппятся в `500 Internal Server Error`.
-- Поддерживается логирование ошибок через `ILogger`.
-
-Ответ формируется в формате `application/problem+json` (`ProblemDetails`).
+- В `EventManagement.Event` и `EventManagement.Booking` используется собственная `ExceptionHandlingMiddleware`.
+- Middleware формирует ответы в формате `application/problem+json` (`ProblemDetails`).
+- В `Booking` ошибки `BookingNotFoundException` и `ApiException` маппятся в соответствующие HTTP-статусы.
+- В режиме Development в ответ дополнительно добавляются `traceId` и `stackTrace`.
