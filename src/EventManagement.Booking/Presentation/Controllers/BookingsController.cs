@@ -32,8 +32,10 @@ namespace EventManagement.Bookings.Presentation.Controllers
         /// <returns>Информация о созданной брони.</returns>
         /// <response code="202">Бронь принята в обработку.</response>
         /// <response code="404">Событие с указанным id не найдено.</response>
+        /// <response code="409">Недостаточно свободных мест на событии; тело ответа в формате <see cref="ProblemDetails"/>.</response>
         [HttpPost("events/{id:guid}/book")]
         [ProducesResponseType(typeof(BookingInfo), StatusCodes.Status202Accepted)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CreateBookingAsync(Guid id)
         {

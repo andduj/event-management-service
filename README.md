@@ -62,7 +62,7 @@ dotnet test tests/EventManagement.Bookings.Tests/EventManagement.Bookings.Tests.
 
 Swagger UI доступен для каждого API в режиме Development:
 - Events API: `http://localhost:5167/swagger` или `https://localhost:7216/swagger`
-- Bookings API: `http://localhost:5236/swagger` или `https://localhost:7095/swagger`
+- Bookings API: `http://localhost:5237/swagger` или `https://localhost:7095/swagger`
 
 ## Модель Event
 

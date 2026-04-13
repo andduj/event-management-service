@@ -46,5 +46,13 @@ namespace EventManagement.Events.Application.Interfaces
         /// </summary>
         /// <param name="id">Уникальный идентификатор удаляемого мероприятия.</param>
         Task DeleteEventAsync(Guid id);
+
+        /// <summary>
+        /// Выполняет проверку возможности выполнить бронирование.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="count">Колличество мест для бронирования.</param>
+        /// <returns>Выполнить бронирование можно - true, иначе - false.</returns>
+        Task<bool> TryReserveSeats(Guid id, int count);
     }
 }

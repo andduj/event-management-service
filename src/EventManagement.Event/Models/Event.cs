@@ -9,8 +9,6 @@ namespace EventManagement.Events.Models
     /// </summary>
     public class Event
     {
-        private readonly Lock _lock = new Lock();
-
         /// <summary>
         /// Идентификатор мероприятия.
         /// </summary>
@@ -53,20 +51,17 @@ namespace EventManagement.Events.Models
         /// <returns></returns>
         public bool TryReserveSeats(int count = 1)
         {
-            lock(_lock)
+            if (count <= 0)
             {
-                if (count <= 0)
-                {
-                    return false;
-                }
-                if (count > AvailableSeats)
-                {
-                    return false;
-                }
-
-                AvailableSeats -= count;
-                return true;
+                return false;
             }
+            if (count > AvailableSeats)
+            {
+                return false;
+            }
+
+            AvailableSeats -= count;
+            return true;
         }
 
         /// <summary>
@@ -75,21 +70,27 @@ namespace EventManagement.Events.Models
         /// <param name="count">Число мест.</param>
         public void ReleaseSeats(int count = 1)
         {
-            lock (_lock)
+            if (count <= 0)
             {
-                if (count <= 0)
-                {
-                    return;
-                }
-                if (count + AvailableSeats > TotalSeats)
-                {
-                    return;
-                }
-
-                AvailableSeats += count;
+                return;
             }
+            if (count + AvailableSeats > TotalSeats)
+            {
+                return;
+            }
+
+            AvailableSeats += count;
         }
 
+        /// <summary>
+        /// Создает экземпляр мероприятия с инициализацией количества мест.
+        /// </summary>
+        /// <param name="title">Заголовок мероприятия.</param>
+        /// <param name="startAt">Дата и время начала мероприятия.</param>
+        /// <param name="endAt">Дата и время окончания мероприятия.</param>
+        /// <param name="totalSeats">Общее количество мест на мероприятии.</param>
+        /// <param name="description">Описание мероприятия.</param>
+        /// <returns>Новый экземпляр <see cref="Event"/>.</returns>
         public static Event Create(
             string title,
             DateTime startAt,

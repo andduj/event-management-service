@@ -339,7 +339,7 @@
         }
       }
     },
-    "/api/v1/Events/Filter": {
+    "/api/v1/Events/filter": {
       "post": {
         "tags": [
           "Events"
@@ -410,6 +410,78 @@
           }
         }
       }
+    },
+    "/api/v1/Events/{id}/reserve-seats": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Пытается зарезервировать указанное число мест на мероприятии.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Идентификатор мероприятия.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "description": "Количество мест для резервирования (по умолчанию 1).",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Результат попытки резервирования.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Мероприятие с указанным id не найдено.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -436,6 +508,12 @@
             "type": "string",
             "description": "Дата и время окончания мероприятия.",
             "format": "date-time"
+          },
+          "totalSeats": {
+            "type": "integer",
+            "description": "Общее количество мест на событии.",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -468,6 +546,16 @@
             "type": "string",
             "description": "Дата и время окончания мероприятия.",
             "format": "date-time"
+          },
+          "totalSeats": {
+            "type": "integer",
+            "description": "Общее количество мест на событии.",
+            "format": "int32"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "description": "Текущее количество свободных мест.",
+            "format": "int32"
           }
         },
         "additionalProperties": false,
@@ -581,6 +669,11 @@
             "type": "string",
             "description": "Дата и время окончания мероприятия.",
             "format": "date-time"
+          },
+          "availableSeats": {
+            "type": "integer",
+            "description": "Текущее количество свободных мест.",
+            "format": "int32"
           }
         },
         "additionalProperties": false,

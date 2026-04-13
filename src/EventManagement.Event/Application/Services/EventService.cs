@@ -90,6 +90,14 @@ namespace EventManagement.Events.Application.Services
         }
 
         /// <inheritdoc/>
+        public async Task<bool> TryReserveSeats(Guid id, int count)
+        {
+            _logger.Debug("Проверка возможности забронировать {count} мест для мероприятия Id={0}", id);
+            var eventItem = await _eventRepository.GetEventByIdAsync(id);
+            return eventItem.TryReserveSeats(count);
+        }
+
+        /// <inheritdoc/>
         public async Task UpdateEventAsync(Guid id, UpdateEventRequest updateEventRequest)
         {
             _logger.Info("Обновление мероприятия. Id={0}", id);

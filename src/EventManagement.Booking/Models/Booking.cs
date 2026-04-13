@@ -31,5 +31,17 @@ namespace EventManagement.Bookings.Models
         /// Дата и время обработки брони.
         /// </summary>
         public DateTime? ProcessedAt { get; set; }
+
+        public static Booking Create(Guid eventId)
+        {
+            return new Booking
+            {
+                Id = Guid.NewGuid(),
+                EventId = eventId,
+                Status = BookingStatus.Pending,
+                CreatedAt = DateTime.UtcNow,
+                ProcessedAt = null,
+            };
+        }
     }
 }

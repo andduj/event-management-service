@@ -91,7 +91,7 @@ namespace EventManagement.Events.Presentation.Controllers
         /// <param name="pageSize">Размер страницы.</param>
         /// <returns>Возвращает данные текущей страницы с метаданными пагинации.</returns>
         /// <response code="200">Список мероприятий успешно получен.</response>
-        [HttpPost("Filter")]
+        [HttpPost("filter")]
         [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<PaginatedResult<EventDto>>> FilterEventsAsync([FromBody] EventFilter eventFilter, int? page = 1, int? pageSize = 10)
         {
@@ -132,6 +132,25 @@ namespace EventManagement.Events.Presentation.Controllers
         {
             await _eventService.UpdateEventAsync(id, updateEventRequest);
             return NoContent();
+        }
+
+        /// <summary>
+        /// Пытается зарезервировать указанное число мест на мероприятии.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="count">Количество мест для резервирования (по умолчанию 1).</param>
+        /// <returns>
+        /// <c>true</c>, если места успешно зарезервированы; <c>false</c>, если мест недостаточно или передано некорректное число.
+        /// </returns>
+        /// <response code="200">Результат попытки резервирования.</response>
+        /// <response code="404">Мероприятие с указанным id не найдено.</response>
+        [HttpGet("{id}/reserve-seats")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<bool>> TryReserveSeats([FromRoute] Guid id, [FromQuery] int count = 1)
+        {
+            var wasReserved = await _eventService.TryReserveSeats(id, count);
+            return Ok(wasReserved);
         }
     }
 }
