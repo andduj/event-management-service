@@ -3,6 +3,7 @@ using AutoMapper;
 using EventManagement.Events.Application;
 using EventManagement.Events.Application.Requests;
 using EventManagement.Events.Application.Services;
+using EventManagement.Events.Application.Validators;
 using EventManagement.Events.Data.Repositories;
 using EventManagement.Logging;
 using Moq;
@@ -15,6 +16,8 @@ namespace EventManagement.Events.Tests
         private const int MinHours = 1;
         private const int MaxHours = 5;
         private const int Year = 2026;
+        private const int MinTotalSeats = 1;
+        private const int MaxTotalSeats = 5000;
 
         public EventService EventService { get; }
 
@@ -28,7 +31,8 @@ namespace EventManagement.Events.Tests
             EventService = new EventService(
                 new InMemoryEventRepository(),
                 mapper,
-                new EventValidator(),
+                new AddEventRequestValidator(),
+                new UpdateEventRequestValidator(),
                 new Mock<ILogger<EventService>>().Object);
 
             Fixture = new Fixture();
@@ -38,13 +42,15 @@ namespace EventManagement.Events.Tests
                 {
                     var startAt = GetRandomDateTimeUtcInYear(Year);
                     var endAt = startAt.AddHours(Random.Shared.Next(MinHours, MaxHours + 1));
+                    var totalSeats = Random.Shared.Next(MinTotalSeats, MaxTotalSeats);
 
                     return new AddEventRequest
                     {
                         Title = Fixture.Create<string>(),
                         Description = Fixture.Create<string>(),
                         StartAt = startAt,
-                        EndAt = endAt
+                        EndAt = endAt,
+                        TotalSeats = totalSeats
                     };
                 })
                 .OmitAutoProperties());
@@ -54,13 +60,16 @@ namespace EventManagement.Events.Tests
                 {
                     var startAt = GetRandomDateTimeUtcInYear(Year);
                     var endAt = startAt.AddHours(Random.Shared.Next(MinHours, MaxHours + 1));
+                    var totalSeats = Random.Shared.Next(MinTotalSeats, MaxTotalSeats);
+                    var availableSeats = Random.Shared.Next(0, totalSeats + 1);
 
                     return new UpdateEventRequest
                     {
                         Title = Fixture.Create<string>(),
                         Description = Fixture.Create<string>(),
                         StartAt = startAt,
-                        EndAt = endAt
+                        EndAt = endAt,
+                        AvailableSeats = availableSeats
                     };
                 })
                 .OmitAutoProperties());

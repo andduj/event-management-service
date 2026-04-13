@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <Target Name="ClientsGeneration" BeforeTargets="BeforeBuild;BeforeRebuild">
-    <Exec Command="$(NSwagExe_Net80) run events.json /variables:Input=$(ProjectDir)..\swagger\events-swagger.json,OutputFile=$(GeneratedEventsClient)" />
+    <Exec Command="$(NSwagExe_Net90) run events.json /variables:Input=$(ProjectDir)..\swagger\events-swagger.json,OutputFile=$(GeneratedEventsClient)" />
   </Target>
 
 </Project>

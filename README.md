@@ -1,6 +1,6 @@
 # Event Management Service
 
-Сервис управления мероприятиями и бронированиями на **ASP.NET Core Web API (.NET 8)**.
+Сервис управления мероприятиями и бронированиями на **ASP.NET Core Web API (.NET 9)**.
 Проект включает:
 - CRUD и фильтрацию событий;
 - создание брони с быстрым ответом (`202 Accepted`);
@@ -8,7 +8,7 @@
 
 ## Технологии
 
-- **C#**, **.NET 8**
+- **C#**, **.NET 9**
 - **ASP.NET Core Web API**
 - **Swagger / Swashbuckle**
 - **NLog** (через проект `EventManagement.Logging`)
@@ -26,7 +26,7 @@
 
 ## Запуск
 
-Требуется установленный **.NET SDK 8.0+**.
+Требуется установленный **.NET SDK 9.0+**.
 
 ```bash
 dotnet restore

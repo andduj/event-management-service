@@ -26,5 +26,10 @@ namespace EventManagement.Events.Application.Requests
         /// Дата и время окончания мероприятия.
         /// </summary>
         public DateTime EndAt { get; set; }
+
+        /// <summary>
+        /// Общее количество мест на событии.
+        /// </summary>
+        public int? TotalSeats { get; set; }
     }
 }

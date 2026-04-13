@@ -1,17 +1,17 @@
-using EventManagement.Events.Models;
+using EventManagement.Events.Application.Requests;
 using FluentValidation;
 
-namespace EventManagement.Events.Application
+namespace EventManagement.Events.Application.Validators
 {
     /// <summary>
-    /// Валидатор доменной модели мероприятия.
+    /// Валидатор запроса на обновление мероприятия.
     /// </summary>
-    public class EventValidator : AbstractValidator<Event>
+    public class UpdateEventRequestValidator : AbstractValidator<UpdateEventRequest>
     {
         /// <summary>
-        /// Инициализирует новый экземпляр валидатора мероприятия.
+        /// Инициализирует правила валидации.
         /// </summary>
-        public EventValidator()
+        public UpdateEventRequestValidator()
         {
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage("Заголовок мероприятия обязателен");
@@ -22,6 +22,9 @@ namespace EventManagement.Events.Application
             RuleFor(x => x.EndAt)
                 .NotEmpty().WithMessage("Дата окончания обязательна")
                 .GreaterThan(x => x.StartAt).WithMessage("Дата окончания должна быть позже даты начала");
+
+            RuleFor(x => x.AvailableSeats)
+                .GreaterThanOrEqualTo(0).WithMessage("Количество свободных мест не может быть отрицательным");
         }
     }
 }

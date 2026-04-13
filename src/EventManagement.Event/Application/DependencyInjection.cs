@@ -1,5 +1,6 @@
 using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Application.Services;
+using EventManagement.Events.Application.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +24,7 @@ namespace EventManagement.Events.Application
 
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();
-            services.AddValidatorsFromAssemblyContaining<EventValidator>();
+            services.AddValidatorsFromAssemblyContaining<AddEventRequestValidator>();
 
             return services;
         }
