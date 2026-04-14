@@ -98,16 +98,18 @@ namespace EventManagement.Events.Data.Repositories
             return await Task.FromResult(exists);
         }
 
+        /// <inheritdoc/>
         public async Task<bool> TryReserveSeats(Guid id, int count = 1)
         {
             var eventItem = await GetEventByIdAsync(id);            
             return eventItem.TryReserveSeats(count);
         }
 
+        /// <inheritdoc/>
         public async Task ReleaseSeats(Guid id, int count = 1)
         {
             var eventItem = await GetEventByIdAsync(id);
-            eventItem.ReleaseSeats();
+            eventItem.ReleaseSeats(count);
         }
 
         private static Expression<Func<Event, bool>> BuildPredicate(EventFilter filter)

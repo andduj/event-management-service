@@ -145,7 +145,7 @@ namespace EventManagement.Events.Presentation.Controllers
         /// </returns>
         /// <response code="200">Результат попытки резервирования.</response>
         /// <response code="404">Мероприятие с указанным id не найдено.</response>
-        [HttpGet("{id}/reserve-seats")]
+        [HttpPost("{id}/reserve-seats")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<bool>> TryReserveSeats([FromRoute] Guid id, [FromQuery] int count = 1)

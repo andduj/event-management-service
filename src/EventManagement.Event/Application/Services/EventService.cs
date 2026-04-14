@@ -99,13 +99,18 @@ namespace EventManagement.Events.Application.Services
         /// <inheritdoc/>
         public async Task<bool> TryReserveSeats(Guid id, int count)
         {
-            return await _eventRepository.TryReserveSeats(id, count);
+            _logger.Debug("Попытка резервирования {0} мест для мероприятия Id={1}", count, id);
+            bool wasReserved = await _eventRepository.TryReserveSeats(id, count);
+            _logger.Debug("Результат резервирования для мероприятия Id={0}: {1}", id, wasReserved);
+            return wasReserved;
         }
 
         /// <inheritdoc/>
         public async Task ReleaseSeats(Guid id, int count)
         {
+            _logger.Debug("Освобождение {0} мест для мероприятия Id={1}", count, id);
             await _eventRepository.ReleaseSeats(id, count);
+            _logger.Debug("Места успешно освобождены для мероприятия Id={0}", id);
         }
 
         /// <inheritdoc/>

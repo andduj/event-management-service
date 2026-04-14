@@ -32,18 +32,29 @@ namespace EventManagement.Bookings.Models
         /// </summary>
         public DateTime? ProcessedAt { get; set; }
 
+        /// <summary>
+        /// Подтверждает бронь и фиксирует время обработки.
+        /// </summary>
         public void Confirm()
         {
             Status = BookingStatus.Confirmed;
             ProcessedAt = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// Отклоняет бронь и фиксирует время обработки.
+        /// </summary>
         public void Reject()
         {
             Status = BookingStatus.Rejected;
             ProcessedAt = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// Создает новую бронь в статусе ожидания обработки.
+        /// </summary>
+        /// <param name="eventId">Идентификатор события.</param>
+        /// <returns>Новая бронь.</returns>
         public static Booking Create(Guid eventId)
         {
             return new Booking

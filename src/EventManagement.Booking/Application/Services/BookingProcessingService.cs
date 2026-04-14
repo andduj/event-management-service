@@ -50,19 +50,21 @@ namespace EventManagement.Bookings.Application.Services
             {
                 return;
             }
+            await Task.Delay(DelayInMilliseconds, cancellationToken);
             await _processingSemaphore.WaitAsync(cancellationToken);
-            EventDto? eventDto = null;
             try
             {
-                eventDto = await _eventsClient.EventsGetAsync(booking.EventId);
-                await Task.Delay(DelayInMilliseconds, cancellationToken);
-                booking.Confirm();
+                bool exists = await _eventsClient.ExistsAsync(booking.EventId, cancellationToken);
+                if (exists)
+                {
+                    booking.Confirm();
+                }
+                else
+                {
+                    booking.Reject();
+                    _logger.Warn("Мероприятия с id={0} не существует", booking.EventId);
+                }
                 await _bookingRepository.UpdateBookingAsync(booking, cancellationToken);
-            }
-            catch (ApiException exception) when (exception.StatusCode == StatusCodes.Status404NotFound)
-            {
-                booking.Reject();
-                _logger.Warn("Мероприятия с id={0} не существует", booking.EventId);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -70,20 +72,32 @@ namespace EventManagement.Bookings.Application.Services
             }
             catch (Exception exception)
             {
-                booking.Reject();
-                await _bookingRepository.UpdateBookingAsync(booking, cancellationToken);
-                if (eventDto != null)
-                {
-                    await _eventsClient.ReleaseSeatsAsync(eventDto.Id, 1, cancellationToken);
-                }               
+                await TryReleaseSeats(booking, cancellationToken);
 
                 _logger.Error(exception, "Ошибка при обработке бронирования {0}", booking.Id);
-                throw;
             }
             finally
             {
                 _processingSemaphore.Release();
             }
+        }
+
+        private async Task TryReleaseSeats(Booking booking, CancellationToken cancellationToken)
+        {
+            try
+            {
+                booking.Reject();
+                await _bookingRepository.UpdateBookingAsync(booking, cancellationToken);
+                await _eventsClient.ReleaseSeatsAsync(booking.EventId, 1, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "Не удалось освободить место для EventId={0}", booking.EventId);
+            }            
         }
     }
 }

@@ -50,8 +50,19 @@ namespace EventManagement.Events.Application.Interfaces
 
 
 
+        /// <summary>
+        /// Пытается зарезервировать указанное количество мест для мероприятия.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="count">Количество мест для резервирования.</param>
+        /// <returns><c>true</c>, если резервирование выполнено; иначе <c>false</c>.</returns>
         Task<bool> TryReserveSeats(Guid id, int count);
 
+        /// <summary>
+        /// Освобождает указанное количество мест для мероприятия.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="count">Количество мест для освобождения.</param>
         Task ReleaseSeats(Guid id, int count);
 
         /// <summary>
