@@ -39,7 +39,6 @@ namespace EventManagement.Bookings.Application.Services
         public async Task<BookingInfo> CreateBookingAsync(Guid eventId)
         {
             _logger.Info("Создание новой брони. EventId={0}", eventId);
-            await _eventsClient.EventsGetAsync(eventId);
 
             Booking addedBooking;
             await _semaphoreSlim.WaitAsync();

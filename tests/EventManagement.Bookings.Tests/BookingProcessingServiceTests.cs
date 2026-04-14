@@ -2,6 +2,7 @@ using AutoFixture;
 using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Models;
+using EventManagement.Events.Api;
 using EventManagement.Logging;
 using FluentAssertions;
 using Moq;
@@ -27,11 +28,16 @@ namespace EventManagement.Bookings.Tests
 
             var updatedBookings = new List<Booking>();
             bookingRepository
-                .Setup(repository => repository.UpdateBookingAsync(It.IsAny<Booking>()))
-                .Callback<Booking>(updatedBookings.Add)
+                .Setup(repository => repository.UpdateBookingAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
+                .Callback<Booking, CancellationToken>((booking, _) => updatedBookings.Add(booking))
                 .Returns(Task.CompletedTask);
 
-            var service = new BookingProcessingService(bookingRepository.Object, new Mock<ILogger<BookingProcessingService>>().Object);
+            var eventsClient = new Mock<IEventsClient>();
+            eventsClient
+                .Setup(client => client.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            var service = new BookingProcessingService(bookingRepository.Object, eventsClient.Object, new Mock<ILogger<BookingProcessingService>>().Object);
 
             await service.ProcessPendingBookingsAsync(CancellationToken.None);
 

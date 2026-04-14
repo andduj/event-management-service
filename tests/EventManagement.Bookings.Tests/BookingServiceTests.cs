@@ -1,3 +1,4 @@
+using AutoMapper.Configuration.Annotations;
 using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Exceptions;

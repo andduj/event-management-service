@@ -2,6 +2,7 @@ using EventManagement.Events.Application.DTOs;
 using EventManagement.Events.Application.Filters;
 using EventManagement.Events.Application.Requests;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventManagement.Events.Application.Interfaces
@@ -47,12 +48,18 @@ namespace EventManagement.Events.Application.Interfaces
         /// <param name="id">Уникальный идентификатор удаляемого мероприятия.</param>
         Task DeleteEventAsync(Guid id);
 
+
+
+        Task<bool> TryReserveSeats(Guid id, int count);
+
+        Task ReleaseSeats(Guid id, int count);
+
         /// <summary>
-        /// Выполняет проверку возможности выполнить бронирование.
+        /// Проверяет существование мероприятия по идентификатору.
         /// </summary>
         /// <param name="id">Идентификатор мероприятия.</param>
-        /// <param name="count">Колличество мест для бронирования.</param>
-        /// <returns>Выполнить бронирование можно - true, иначе - false.</returns>
-        Task<bool> TryReserveSeats(Guid id, int count);
+        /// <returns><c>true</c>, если мероприятие существует; иначе <c>false</c>.</returns>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        Task<bool> Exists(Guid id, CancellationToken cancellationToken = default);
     }
 }

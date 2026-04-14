@@ -4,6 +4,7 @@ using EventManagement.Bookings.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventManagement.Bookings.Data.Repositories
@@ -51,8 +52,9 @@ namespace EventManagement.Bookings.Data.Repositories
         }
 
         /// <inheritdoc/>
-        public Task UpdateBookingAsync(Booking booking)
+        public Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var existingBooking = _bookings.FirstOrDefault(item => item.Id == booking.Id);
             if (existingBooking == null)
             {

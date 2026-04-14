@@ -1,6 +1,7 @@
 using EventManagement.Bookings.Models;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventManagement.Bookings.Data.Interfaces
@@ -35,6 +36,7 @@ namespace EventManagement.Bookings.Data.Interfaces
         /// Обновляет существующую бронь.
         /// </summary>
         /// <param name="booking">Бронь с обновленными данными.</param>
-        Task UpdateBookingAsync(Booking booking);
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default);
     }
 }

@@ -7,6 +7,7 @@ using EventManagement.Events.Data.Interfaces;
 using FluentValidation;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using EventManagement.Logging;
 using EventManagement.Events.Models;
@@ -62,6 +63,12 @@ namespace EventManagement.Events.Application.Services
         }
 
         /// <inheritdoc/>
+        public async Task<bool> Exists(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _eventRepository.Exists(id, cancellationToken);
+        }
+
+        /// <inheritdoc/>
         public async Task<PaginatedResult<EventDto>> FilterAsync(EventFilter eventFilter, int page, int pageSize)
         {
             _logger.Debug("Получение списка мероприятий. Page={0}, PageSize={1}", page, pageSize);
@@ -92,9 +99,13 @@ namespace EventManagement.Events.Application.Services
         /// <inheritdoc/>
         public async Task<bool> TryReserveSeats(Guid id, int count)
         {
-            _logger.Debug("Проверка возможности забронировать {count} мест для мероприятия Id={0}", id);
-            var eventItem = await _eventRepository.GetEventByIdAsync(id);
-            return eventItem.TryReserveSeats(count);
+            return await _eventRepository.TryReserveSeats(id, count);
+        }
+
+        /// <inheritdoc/>
+        public async Task ReleaseSeats(Guid id, int count)
+        {
+            await _eventRepository.ReleaseSeats(id, count);
         }
 
         /// <inheritdoc/>

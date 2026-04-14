@@ -5,6 +5,7 @@ using EventManagement.Events.Application.Requests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventManagement.Events.Presentation.Controllers
@@ -151,6 +152,38 @@ namespace EventManagement.Events.Presentation.Controllers
         {
             var wasReserved = await _eventService.TryReserveSeats(id, count);
             return Ok(wasReserved);
+        }
+
+        /// <summary>
+        /// Освобождает указанное количество мест на мероприятии.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="count">Количество мест для освобождения (по умолчанию 1).</param>
+        /// <returns>Возвращает код 204 (No Content) при успешном освобождении мест.</returns>
+        /// <response code="204">Места успешно освобождены.</response>
+        /// <response code="404">Мероприятие с указанным id не найдено.</response>
+        [HttpPost("{id}/release-seats")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> ReleaseSeats([FromRoute] Guid id, [FromQuery] int count = 1)
+        {
+            await _eventService.ReleaseSeats(id, count);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Проверяет существование мероприятия по идентификатору.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        /// <returns><c>true</c>, если мероприятие существует; иначе <c>false</c>.</returns>
+        /// <response code="200">Результат проверки существования мероприятия.</response>
+        [HttpGet("{id}/exists")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        public async Task<ActionResult<bool>> Exists([FromRoute] Guid id, CancellationToken cancellationToken)
+        {
+            bool exists = await _eventService.Exists(id, cancellationToken);
+            return Ok(exists);
         }
     }
 }

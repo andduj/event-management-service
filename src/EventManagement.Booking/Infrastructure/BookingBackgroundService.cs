@@ -2,6 +2,7 @@ using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,7 +46,15 @@ namespace EventManagement.Bookings.Infrastructure
                     await bookingProcessingService.ProcessPendingBookingsAsync(cancellationToken);
                     await Task.Delay(IntervalInMilliseconds, cancellationToken);
                 }
-            }            
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "При обработки бронирований возникла ошибка");
+            }
             finally
             {
                 _logger.Info("Сервис обработки бронирований завершает работу");

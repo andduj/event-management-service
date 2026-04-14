@@ -12,6 +12,7 @@ namespace EventManagement.Bookings.Tests
     public class BookingServiceFixture
     {
         public Mock<IEventsClient> EventsClient { get; }
+
         public IBookingRepository BookingRepository { get; }
 
         public BookingService BookingService { get; }
