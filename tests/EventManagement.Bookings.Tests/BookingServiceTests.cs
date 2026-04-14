@@ -22,6 +22,10 @@ namespace EventManagement.Bookings.Tests
             _bookingRepository = fixture.BookingRepository;
 
             _eventsClient.Reset();
+
+            _eventsClient
+                .Setup(client => client.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int?>()))
+                .ReturnsAsync(true);
         }
 
         [Fact]
