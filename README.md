@@ -4,6 +4,7 @@
 Проект включает:
 - CRUD и фильтрацию событий;
 - создание брони с быстрым ответом (`202 Accepted`);
+- резервирование/освобождение мест на событиях;
 - отложенную обработку бронирований в фоне через `BackgroundService`.
 
 ## Технологии
@@ -71,7 +72,9 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `Title` (`string`) — название;
 - `Description` (`string?`) — описание;
 - `StartAt` (`DateTime`) — начало;
-- `EndAt` (`DateTime`) — окончание.
+- `EndAt` (`DateTime`) — окончание;
+- `TotalSeats` (`int`) — общее количество мест;
+- `AvailableSeats` (`int`) — текущее количество свободных мест.
 
 ## Модель Booking
 
@@ -110,7 +113,8 @@ Swagger UI доступен для каждого API в режиме Developmen
   - возвращает `202 Accepted`;
   - в теле возвращает `BookingInfo` (`Id`, `EventId`, `Status`);
   - в `Location` возвращает ссылку на ресурс брони (`/api/v1/bookings/{bookingId}`);
-  - если событие не найдено — `404 Not Found`.
+  - если событие не найдено — `404 Not Found`;
+  - если мест больше нет — `409 Conflict`.
 
 - `GET /api/v1/bookings/{id}`
   - возвращает текущее состояние брони;

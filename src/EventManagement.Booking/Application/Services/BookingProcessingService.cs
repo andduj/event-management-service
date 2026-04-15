@@ -15,7 +15,7 @@ namespace EventManagement.Bookings.Application.Services
     /// </summary>
     public class BookingProcessingService : IBookingProcessingService
     {
-        private const int DelayInMilliseconds = 2000;
+        private const int ProcessingDelay = 2000;
         private readonly IBookingRepository _bookingRepository;
         private readonly IEventsClient _eventsClient;
         private readonly ILogger<BookingProcessingService> _logger;
@@ -49,7 +49,8 @@ namespace EventManagement.Bookings.Application.Services
             {
                 return;
             }
-            await Task.Delay(DelayInMilliseconds, cancellationToken);
+            _logger.Debug("Начало обработки бронирования. BookingId={0}, EventId={1}", booking.Id, booking.EventId);
+            await Task.Delay(ProcessingDelay, cancellationToken);
             await _processingSemaphore.WaitAsync(cancellationToken);
             try
             {
@@ -78,6 +79,7 @@ namespace EventManagement.Bookings.Application.Services
             finally
             {
                 _processingSemaphore.Release();
+                _logger.Debug("Завершена обработка бронирования. BookingId={0}, Status={1}", booking.Id, booking.Status);
             }
         }
 
