@@ -13,9 +13,6 @@ namespace EventManagement.Events.Tests
 {
     public class EventServiceFixture
     {
-        private const int MinHours = 1;
-        private const int MaxHours = 5;
-        private const int Year = 2026;
         private const int MinTotalSeats = 1;
         private const int MaxTotalSeats = 5000;
 
@@ -40,16 +37,15 @@ namespace EventManagement.Events.Tests
             Fixture.Customize<AddEventRequest>(composer => composer
                 .FromFactory(() =>
                 {
-                    var startAt = GetRandomDateTimeUtcInYear(Year);
-                    var endAt = startAt.AddHours(Random.Shared.Next(MinHours, MaxHours + 1));
                     var totalSeats = Random.Shared.Next(MinTotalSeats, MaxTotalSeats);
+                    var startAt = DateTime.UtcNow;
 
                     return new AddEventRequest
                     {
                         Title = Fixture.Create<string>(),
                         Description = Fixture.Create<string>(),
                         StartAt = startAt,
-                        EndAt = endAt,
+                        EndAt = startAt.AddHours(1),
                         TotalSeats = totalSeats
                     };
                 })
@@ -58,34 +54,20 @@ namespace EventManagement.Events.Tests
             Fixture.Customize<UpdateEventRequest>(composer => composer
                 .FromFactory(() =>
                 {
-                    var startAt = GetRandomDateTimeUtcInYear(Year);
-                    var endAt = startAt.AddHours(Random.Shared.Next(MinHours, MaxHours + 1));
                     var totalSeats = Random.Shared.Next(MinTotalSeats, MaxTotalSeats);
                     var availableSeats = Random.Shared.Next(0, totalSeats + 1);
+                    var startAt = DateTime.UtcNow;
 
                     return new UpdateEventRequest
                     {
                         Title = Fixture.Create<string>(),
                         Description = Fixture.Create<string>(),
                         StartAt = startAt,
-                        EndAt = endAt,
+                        EndAt = startAt.AddHours(1),
                         AvailableSeats = availableSeats
                     };
                 })
                 .OmitAutoProperties());
-        }
-
-        private static DateTime GetRandomDateTimeUtcInYear(int year)
-        {
-            var daysInYear = DateTime.IsLeapYear(year) ? 366 : 365;
-            var dayOfYear = Random.Shared.Next(1, daysInYear + 1);
-            var date = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddDays(dayOfYear - 1);
-
-            var hour = Random.Shared.Next(0, 24);
-            var minute = Random.Shared.Next(0, 60);
-            var second = Random.Shared.Next(0, 60);
-
-            return date.AddHours(hour).AddMinutes(minute).AddSeconds(second);
         }
     }
 }

@@ -1,12 +1,12 @@
-using AutoMapper.Configuration.Annotations;
 using EventManagement.Bookings.Application.Services;
+using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Exceptions;
 using EventManagement.Bookings.Models;
 using EventManagement.Events.Api;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Moq;
+using System.Net;
 
 namespace EventManagement.Bookings.Tests
 {
@@ -15,18 +15,22 @@ namespace EventManagement.Bookings.Tests
         public readonly BookingService _bookingService;
         public readonly Mock<IEventsClient> _eventsClient;
         public readonly IBookingRepository _bookingRepository;
+        public readonly BookingServiceFixture _fixture;
 
-        public BookingServiceTests(BookingServiceFixture fixture) 
+        public BookingServiceTests(BookingServiceFixture fixture)
         {
+            _fixture = fixture;
             _bookingService = fixture.BookingService;
             _eventsClient = fixture.EventsClient;
             _bookingRepository = fixture.BookingRepository;
 
-            _eventsClient.Reset();
-
             _eventsClient
                 .Setup(client => client.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int?>()))
                 .ReturnsAsync(true);
+
+            _eventsClient
+                .Setup(client => client.EventsGetAsync(It.IsAny<Guid>()))
+                .ReturnsAsync((Guid eventId) => _fixture.CreateTestEvent(eventId, 10));
         }
 
         [Fact]
@@ -50,6 +54,105 @@ namespace EventManagement.Bookings.Tests
             }
 
             bookingInfoIds.Should().OnlyHaveUniqueItems();
+        }
+
+        [Fact]
+        public async Task CreateBookingAsync_CreateBooking_ShouldDecreaseAvailableSeatsByOne()
+        {
+            var eventId = Guid.NewGuid();
+            int availableSeats = 3;
+
+            _eventsClient
+                .Setup(client => client.EventsGetAsync(eventId))
+                .ReturnsAsync(() => _fixture.CreateTestEvent(eventId, totalSeats: 3, availableSeats));
+
+            _eventsClient
+                .Setup(client => client.ReserveSeatsAsync(eventId, 1))
+                .ReturnsAsync(() =>
+                {
+                    if (availableSeats <= 0)
+                    {
+                        return false;
+                    }
+
+                    availableSeats--;
+                    return true;
+                });
+
+            await _bookingService.CreateBookingAsync(eventId);
+
+            availableSeats.Should().Be(2);
+            _eventsClient.Verify(client => client.ReserveSeatsAsync(eventId, 1), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateBookingAsync_MultipleBookingsUntilLimit_AllShouldBeSuccessfulAndUnique()
+        {
+            const int limit = 3;
+            var eventId = Guid.NewGuid();
+            int availableSeats = limit;
+            var createdBookingIds = new List<Guid>();
+
+            _eventsClient
+                .Setup(client => client.EventsGetAsync(eventId))
+                .ReturnsAsync(() => _fixture.CreateTestEvent(eventId, totalSeats: limit, availableSeats));
+
+            _eventsClient
+                .Setup(client => client.ReserveSeatsAsync(eventId, 1))
+                .ReturnsAsync(() =>
+                {
+                    if (availableSeats <= 0)
+                    {
+                        return false;
+                    }
+
+                    availableSeats--;
+                    return true;
+                });
+
+            for (int i = 0; i < limit; i++)
+            {
+                var bookingInfo = await _bookingService.CreateBookingAsync(eventId);
+                createdBookingIds.Add(bookingInfo.Id);
+            }
+
+            createdBookingIds.Should().HaveCount(limit);
+            createdBookingIds.Should().OnlyHaveUniqueItems();
+            availableSeats.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task CreateBookingAsync_WhenSeatsAreExhausted_ShouldThrowNoAvailableSeatsException()
+        {
+            const int limit = 2;
+            var eventId = Guid.NewGuid();
+            int availableSeats = limit;
+
+            _eventsClient
+                .Setup(client => client.EventsGetAsync(eventId))
+                .ReturnsAsync(() => _fixture.CreateTestEvent(eventId, totalSeats: limit, availableSeats));
+
+            _eventsClient
+                .Setup(client => client.ReserveSeatsAsync(eventId, 1))
+                .ReturnsAsync(() =>
+                {
+                    if (availableSeats <= 0)
+                    {
+                        return false;
+                    }
+
+                    availableSeats--;
+                    return true;
+                });
+
+            for (int i = 0; i < limit; i++)
+            {
+                await _bookingService.CreateBookingAsync(eventId);
+            }
+
+            var action = () => _bookingService.CreateBookingAsync(eventId);
+
+            await action.Should().ThrowAsync<NoAvailableSeatsException>();
         }
 
         [Fact]
@@ -88,7 +191,7 @@ namespace EventManagement.Bookings.Tests
         }
 
         [Fact]
-        public async Task CreateBookingAsync_NotExistedEvent_ShouldApiException()
+        public async Task CreateBookingAsync_NotExistedEvent_ShouldApiExceptionWithNotFoundStatus()
         {
             _eventsClient
                 .Setup(client => client.EventsGetAsync(It.IsAny<Guid>()))
@@ -97,7 +200,7 @@ namespace EventManagement.Bookings.Tests
             var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
 
             var exception = await action.Should().ThrowAsync<ApiException>();
-            exception.Which.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+            exception.Which.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
         }
 
         [Fact]
@@ -110,7 +213,129 @@ namespace EventManagement.Bookings.Tests
             var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
 
             var exception = await action.Should().ThrowAsync<ApiException>();
-            exception.Which.StatusCode.Should().Be(StatusCodes.Status410Gone);
+            exception.Which.StatusCode.Should().Be((int)HttpStatusCode.Gone);
+        }
+
+        [Fact]
+        public async Task CreateBookingAsync_WhenNoAvailableSeats_ShouldThrowNoAvailableSeatsException()
+        {
+            _eventsClient
+                .Setup(client => client.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int?>()))
+                .ReturnsAsync(false);
+
+            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
+
+            await action.Should().ThrowAsync<NoAvailableSeatsException>();
+        }
+
+        [Fact]
+        public async Task CreateBookingAsync_ConcurrentRequests_ShouldPreventOverbooking()
+        {
+            const int totalSeats = 5;
+            const int concurrentRequests = 20;
+            var eventId = Guid.NewGuid();
+            int availableSeats = totalSeats;
+            var seatsLock = new object();
+            var startSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            _eventsClient
+                .Setup(client => client.EventsGetAsync(eventId))
+                .ReturnsAsync(() => _fixture.CreateTestEvent(eventId, totalSeats, availableSeats));
+
+            _eventsClient
+                .Setup(client => client.ReserveSeatsAsync(eventId, 1))
+                .ReturnsAsync(() =>
+                {
+                    lock (seatsLock)
+                    {
+                        if (availableSeats <= 0)
+                        {
+                            return false;
+                        }
+
+                        availableSeats--;
+                        return true;
+                    }
+                });
+
+            var tasks = Enumerable.Range(0, concurrentRequests)
+                .Select(_ => Task.Run(async () =>
+                {
+                    await startSignal.Task;
+                    return await CreateBookingWithResultAsync(eventId);
+                }));
+
+            startSignal.SetResult();
+
+            var results = await Task.WhenAll(tasks);
+            var successfulBookingIds = results
+                .Where(result => result.Success)
+                .Select(result => result.BookingInfo!.Id)
+                .ToList();
+
+            results.Count(result => result.Success).Should().Be(totalSeats);
+            results.Count(result => result.Exception is NoAvailableSeatsException).Should().Be(concurrentRequests - totalSeats);
+            results.Count(result => !result.Success && result.Exception is not NoAvailableSeatsException).Should().Be(0);
+            successfulBookingIds.Should().OnlyHaveUniqueItems();
+            availableSeats.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task CreateBookingAsync_ConcurrentRequests_ShouldReturnUniqueBookingIds()
+        {
+            const int totalSeats = 10;
+            var eventId = Guid.NewGuid();
+            int availableSeats = totalSeats;
+            var seatsLock = new object();
+            var startSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            _eventsClient
+                .Setup(client => client.EventsGetAsync(eventId))
+                .ReturnsAsync(() => _fixture.CreateTestEvent(eventId, totalSeats, availableSeats));
+
+            _eventsClient
+                .Setup(client => client.ReserveSeatsAsync(eventId, 1))
+                .ReturnsAsync(() =>
+                {
+                    lock (seatsLock)
+                    {
+                        if (availableSeats <= 0)
+                        {
+                            return false;
+                        }
+
+                        availableSeats--;
+                        return true;
+                    }
+                });
+
+            var tasks = Enumerable.Range(0, totalSeats)
+                .Select(_ => Task.Run(async () =>
+                {
+                    await startSignal.Task;
+                    return await _bookingService.CreateBookingAsync(eventId);
+                }));
+
+            startSignal.SetResult();
+
+            var bookings = await Task.WhenAll(tasks);
+
+            bookings.Should().HaveCount(totalSeats);
+            bookings.Select(booking => booking.Id).Should().OnlyHaveUniqueItems();
+            availableSeats.Should().Be(0);
+        }
+
+        private async Task<(bool Success, BookingInfo? BookingInfo, Exception? Exception)> CreateBookingWithResultAsync(Guid eventId)
+        {
+            try
+            {
+                var bookingInfo = await _bookingService.CreateBookingAsync(eventId);
+                return (true, bookingInfo, null);
+            }
+            catch (Exception exception)
+            {
+                return (false, null, exception);
+            }
         }
     }
 }
