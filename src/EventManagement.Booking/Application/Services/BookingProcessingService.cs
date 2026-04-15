@@ -3,7 +3,6 @@ using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Models;
 using EventManagement.Events.Api;
 using EventManagement.Logging;
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
 using System.Threading;
