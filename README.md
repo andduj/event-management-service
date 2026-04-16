@@ -149,6 +149,10 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `Infrastructure` — конфигурация DI и фоновые задачи;
 - `Presentation` — контроллеры, Swagger, middleware.
 
+## Известные ограничения
+
+- **NSwag.MSBuild** (генерация `EventsClient` при сборке `EventManagement.Events.Api`): сборка может завершиться ошибкой, если **полный путь к каталогу решения содержит пробелы** — это ограничение цепочки NSwag/вызовов при компиляции, а не логики приложения. Обходной путь: держать репозиторий в пути **без пробелов** (например `D:\work\event-management-service`), либо временно отключать/обходить шаг генерации в таком окружении.
+
 ## Обработка ошибок
 
 - В `EventManagement.Event` и `EventManagement.Booking` используется собственная `ExceptionHandlingMiddleware`.

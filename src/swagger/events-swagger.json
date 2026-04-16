@@ -5,7 +5,7 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/v1/Events": {
+    "/api/v1/events": {
       "post": {
         "tags": [
           "Events"
@@ -151,7 +151,7 @@
         }
       }
     },
-    "/api/v1/Events/{id}": {
+    "/api/v1/events/{id}": {
       "delete": {
         "tags": [
           "Events"
@@ -200,6 +200,7 @@
           "Events"
         ],
         "summary": "Получает мероприятие по идентификатору.",
+        "operationId": "GetEventById",
         "parameters": [
           {
             "name": "id",
@@ -339,7 +340,7 @@
         }
       }
     },
-    "/api/v1/Events/filter": {
+    "/api/v1/events/filter": {
       "post": {
         "tags": [
           "Events"
@@ -411,7 +412,7 @@
         }
       }
     },
-    "/api/v1/Events/{id}/reserve-seats": {
+    "/api/v1/events/{id}/reserve-seats": {
       "post": {
         "tags": [
           "Events"
@@ -483,7 +484,7 @@
         }
       }
     },
-    "/api/v1/Events/{id}/release-seats": {
+    "/api/v1/events/{id}/release-seats": {
       "post": {
         "tags": [
           "Events"
@@ -538,7 +539,7 @@
         }
       }
     },
-    "/api/v1/Events/{id}/exists": {
+    "/api/v1/events/{id}/exists": {
       "get": {
         "tags": [
           "Events"

@@ -14,7 +14,7 @@ namespace EventManagement.Events.Presentation.Controllers
     /// Контроллер для работы с мероприятиями.
     /// </summary>
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/events")]
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
@@ -41,7 +41,7 @@ namespace EventManagement.Events.Presentation.Controllers
         public async Task<ActionResult> CreateEventAsync([FromBody] AddEventRequest addEventRequest)
         {
             var addedEvent = await _eventService.CreateEventAsync(addEventRequest);
-            return CreatedAtAction(nameof(GetEventByIdAsync), new { id = addedEvent.Id }, addedEvent);
+            return CreatedAtRoute("GetEventById", new { id = addedEvent.Id }, addedEvent);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace EventManagement.Events.Presentation.Controllers
         /// <returns>Возвращает мероприятие с кодом 200 (OK).</returns>
         /// <response code="200">Мероприятие успешно найдено.</response>
         /// <response code="404">Мероприятие с указанным id не найдено.</response>
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetEventById")]
         [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<EventDto>> GetEventByIdAsync(Guid id)

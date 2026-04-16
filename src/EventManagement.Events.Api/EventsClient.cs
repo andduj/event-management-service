@@ -283,8 +283,8 @@ namespace EventManagement.Events.Api
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/v1/Events"
-                    urlBuilder_.Append("api/v1/Events");
+                    // Operation Path: "api/v1/events"
+                    urlBuilder_.Append("api/v1/events");
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -387,8 +387,8 @@ namespace EventManagement.Events.Api
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/v1/Events"
-                    urlBuilder_.Append("api/v1/Events");
+                    // Operation Path: "api/v1/events"
+                    urlBuilder_.Append("api/v1/events");
                     urlBuilder_.Append('?');
                     if (title != null)
                     {
@@ -497,8 +497,8 @@ namespace EventManagement.Events.Api
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/v1/Events/{id}"
-                    urlBuilder_.Append("api/v1/Events/");
+                    // Operation Path: "api/v1/events/{id}"
+                    urlBuilder_.Append("api/v1/events/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
                     PrepareRequest(client_, request_, urlBuilder_);
@@ -592,8 +592,8 @@ namespace EventManagement.Events.Api
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/v1/Events/{id}"
-                    urlBuilder_.Append("api/v1/Events/");
+                    // Operation Path: "api/v1/events/{id}"
+                    urlBuilder_.Append("api/v1/events/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
                     PrepareRequest(client_, request_, urlBuilder_);
@@ -697,8 +697,8 @@ namespace EventManagement.Events.Api
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/v1/Events/{id}"
-                    urlBuilder_.Append("api/v1/Events/");
+                    // Operation Path: "api/v1/events/{id}"
+                    urlBuilder_.Append("api/v1/events/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
 
                     PrepareRequest(client_, request_, urlBuilder_);
@@ -807,8 +807,8 @@ namespace EventManagement.Events.Api
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/v1/Events/filter"
-                    urlBuilder_.Append("api/v1/Events/filter");
+                    // Operation Path: "api/v1/events/filter"
+                    urlBuilder_.Append("api/v1/events/filter");
                     urlBuilder_.Append('?');
                     if (page != null)
                     {
@@ -909,8 +909,8 @@ namespace EventManagement.Events.Api
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/v1/Events/{id}/reserve-seats"
-                    urlBuilder_.Append("api/v1/Events/");
+                    // Operation Path: "api/v1/events/{id}/reserve-seats"
+                    urlBuilder_.Append("api/v1/events/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/reserve-seats");
                     urlBuilder_.Append('?');
@@ -1018,8 +1018,8 @@ namespace EventManagement.Events.Api
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/v1/Events/{id}/release-seats"
-                    urlBuilder_.Append("api/v1/Events/");
+                    // Operation Path: "api/v1/events/{id}/release-seats"
+                    urlBuilder_.Append("api/v1/events/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/release-seats");
                     urlBuilder_.Append('?');
@@ -1120,8 +1120,8 @@ namespace EventManagement.Events.Api
 
                     var urlBuilder_ = new System.Text.StringBuilder();
                     if (!string.IsNullOrEmpty(_baseUrl)) urlBuilder_.Append(_baseUrl);
-                    // Operation Path: "api/v1/Events/{id}/exists"
-                    urlBuilder_.Append("api/v1/Events/");
+                    // Operation Path: "api/v1/events/{id}/exists"
+                    urlBuilder_.Append("api/v1/events/");
                     urlBuilder_.Append(System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
                     urlBuilder_.Append("/exists");
 
