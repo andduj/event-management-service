@@ -3,6 +3,7 @@ using EventManagement.Events.Application.Filters;
 using EventManagement.Events.Exceptions;
 using EventManagement.Events.Models;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventManagement.Events.Data.Interfaces
@@ -49,5 +50,28 @@ namespace EventManagement.Events.Data.Interfaces
         /// </summary>
         /// <param name="id">Уникальный идентификатор мероприятия для удаления (GUID).</param>
         Task DeleteEventAsync(Guid id);
+
+        /// <summary>
+        /// Проверяет существование мероприятия по идентификатору.
+        /// </summary>
+        /// <param name="id">Уникальный идентификатор мероприятия (GUID).</param>
+        /// <returns><c>true</c>, если мероприятие найдено; иначе <c>false</c>.</returns>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        Task<bool> Exists(Guid id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Пытается зарезервировать указанное количество мест для мероприятия.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="count">Количество мест для резервирования.</param>
+        /// <returns><c>true</c>, если резервирование выполнено; иначе <c>false</c>.</returns>
+        Task<bool> TryReserveSeats(Guid id, int count);
+
+        /// <summary>
+        /// Освобождает указанное количество мест для мероприятия.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="count">Количество мест для освобождения.</param>
+        Task ReleaseSeats(Guid id, int count);
     }
 }

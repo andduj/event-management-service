@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventManagement.Events.Data.Repositories
@@ -25,27 +26,21 @@ namespace EventManagement.Events.Data.Repositories
         }
         
         /// <inheritdoc/>
-        public Task<Event> CreateEventAsync(Event newEvent)
+        public async Task<Event> CreateEventAsync(Event newEvent)
         {
             _events.Add(newEvent);
-            return Task.FromResult(newEvent);
+            return await Task.FromResult(newEvent);
         }
 
         /// <inheritdoc/>
-        public Task DeleteEventAsync(Guid id)
+        public async Task DeleteEventAsync(Guid id)
         {
-            var eventItem = _events.FirstOrDefault(e => e.Id == id);
-            if (eventItem == null)
-            {
-                throw new EventNotFoundException($"Мероприятие с id={id} не найдено.");
-            }
-
+            var eventItem = await GetEventByIdAsync(id);
             _events.Remove(eventItem);
-            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
-        public Task<PaginatedResult<Event>> FilterAsync(EventFilter eventFilter, int page, int pageSize)
+        public async Task<PaginatedResult<Event>> FilterAsync(EventFilter eventFilter, int page, int pageSize)
         {
             var predicate = BuildPredicate(eventFilter);
             var query = _events
@@ -70,11 +65,11 @@ namespace EventManagement.Events.Data.Repositories
                 TotalPages = totalPages
             };
 
-            return Task.FromResult(result);
+            return await Task.FromResult(result);
         }
 
         /// <inheritdoc/>
-        public Task<Event> GetEventByIdAsync(Guid id)
+        public async Task<Event> GetEventByIdAsync(Guid id)
         {
             var eventItem = _events.FirstOrDefault(e => e.Id == id);
             if (eventItem == null)
@@ -82,24 +77,39 @@ namespace EventManagement.Events.Data.Repositories
                 throw new EventNotFoundException($"Мероприятие с id={id} не найдено.");
             }
 
-            return Task.FromResult(eventItem);
+            return await Task.FromResult(eventItem);
         }
 
         /// <inheritdoc/>
-        public Task UpdateEventAsync(Event updatedEvent)
+        public async Task UpdateEventAsync(Event updatedEvent)
         {
-            var eventItem = _events.FirstOrDefault(e => e.Id == updatedEvent.Id);
-            if (eventItem == null)
-            {
-                throw new EventNotFoundException($"Мероприятие с id={updatedEvent.Id} не найдено.");
-            }
-
+            var eventItem = await GetEventByIdAsync(updatedEvent.Id);
             eventItem.Title = updatedEvent.Title;
             eventItem.Description = updatedEvent.Description;
             eventItem.StartAt = updatedEvent.StartAt;
             eventItem.EndAt = updatedEvent.EndAt;
+        }
 
-            return Task.CompletedTask;
+        /// <inheritdoc/>
+        public async Task<bool> Exists(Guid id, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            bool exists = _events.Any(e => e.Id == id);
+            return await Task.FromResult(exists);
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> TryReserveSeats(Guid id, int count = 1)
+        {
+            var eventItem = await GetEventByIdAsync(id);            
+            return eventItem.TryReserveSeats(count);
+        }
+
+        /// <inheritdoc/>
+        public async Task ReleaseSeats(Guid id, int count = 1)
+        {
+            var eventItem = await GetEventByIdAsync(id);
+            eventItem.ReleaseSeats(count);
         }
 
         private static Expression<Func<Event, bool>> BuildPredicate(EventFilter filter)

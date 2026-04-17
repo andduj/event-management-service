@@ -5,6 +5,7 @@ using EventManagement.Events.Application.Requests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventManagement.Events.Presentation.Controllers
@@ -13,7 +14,7 @@ namespace EventManagement.Events.Presentation.Controllers
     /// Контроллер для работы с мероприятиями.
     /// </summary>
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/events")]
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
@@ -40,7 +41,7 @@ namespace EventManagement.Events.Presentation.Controllers
         public async Task<ActionResult> CreateEventAsync([FromBody] AddEventRequest addEventRequest)
         {
             var addedEvent = await _eventService.CreateEventAsync(addEventRequest);
-            return CreatedAtAction(nameof(GetEventByIdAsync), new { id = addedEvent.Id }, addedEvent);
+            return CreatedAtRoute("GetEventById", new { id = addedEvent.Id }, addedEvent);
         }
 
         /// <summary>
@@ -91,7 +92,7 @@ namespace EventManagement.Events.Presentation.Controllers
         /// <param name="pageSize">Размер страницы.</param>
         /// <returns>Возвращает данные текущей страницы с метаданными пагинации.</returns>
         /// <response code="200">Список мероприятий успешно получен.</response>
-        [HttpPost("Filter")]
+        [HttpPost("filter")]
         [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<PaginatedResult<EventDto>>> FilterEventsAsync([FromBody] EventFilter eventFilter, int? page = 1, int? pageSize = 10)
         {
@@ -106,7 +107,7 @@ namespace EventManagement.Events.Presentation.Controllers
         /// <returns>Возвращает мероприятие с кодом 200 (OK).</returns>
         /// <response code="200">Мероприятие успешно найдено.</response>
         /// <response code="404">Мероприятие с указанным id не найдено.</response>
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetEventById")]
         [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<EventDto>> GetEventByIdAsync(Guid id)
@@ -132,6 +133,57 @@ namespace EventManagement.Events.Presentation.Controllers
         {
             await _eventService.UpdateEventAsync(id, updateEventRequest);
             return NoContent();
+        }
+
+        /// <summary>
+        /// Пытается зарезервировать указанное число мест на мероприятии.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="count">Количество мест для резервирования (по умолчанию 1).</param>
+        /// <returns>
+        /// <c>true</c>, если места успешно зарезервированы; <c>false</c>, если мест недостаточно или передано некорректное число.
+        /// </returns>
+        /// <response code="200">Результат попытки резервирования.</response>
+        /// <response code="404">Мероприятие с указанным id не найдено.</response>
+        [HttpPost("{id}/reserve-seats")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<bool>> TryReserveSeats([FromRoute] Guid id, [FromQuery] int count = 1)
+        {
+            var wasReserved = await _eventService.TryReserveSeats(id, count);
+            return Ok(wasReserved);
+        }
+
+        /// <summary>
+        /// Освобождает указанное количество мест на мероприятии.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="count">Количество мест для освобождения (по умолчанию 1).</param>
+        /// <returns>Возвращает код 204 (No Content) при успешном освобождении мест.</returns>
+        /// <response code="204">Места успешно освобождены.</response>
+        /// <response code="404">Мероприятие с указанным id не найдено.</response>
+        [HttpPost("{id}/release-seats")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> ReleaseSeats([FromRoute] Guid id, [FromQuery] int count = 1)
+        {
+            await _eventService.ReleaseSeats(id, count);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Проверяет существование мероприятия по идентификатору.
+        /// </summary>
+        /// <param name="id">Идентификатор мероприятия.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        /// <returns><c>true</c>, если мероприятие существует; иначе <c>false</c>.</returns>
+        /// <response code="200">Результат проверки существования мероприятия.</response>
+        [HttpGet("{id}/exists")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        public async Task<ActionResult<bool>> Exists([FromRoute] Guid id, CancellationToken cancellationToken)
+        {
+            bool exists = await _eventService.Exists(id, cancellationToken);
+            return Ok(exists);
         }
     }
 }

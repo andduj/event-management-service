@@ -2,6 +2,7 @@ using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,7 +13,7 @@ namespace EventManagement.Bookings.Infrastructure
     /// </summary>
     public class BookingBackgroundService : BackgroundService
     {
-        private const int IntervalInMilliseconds = 5000;
+        private const int PollingInterval = 5000;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<BookingBackgroundService> _logger;
 
@@ -43,9 +44,17 @@ namespace EventManagement.Bookings.Infrastructure
                     using var scope = _scopeFactory.CreateScope();
                     var bookingProcessingService = scope.ServiceProvider.GetRequiredService<IBookingProcessingService>();
                     await bookingProcessingService.ProcessPendingBookingsAsync(cancellationToken);
-                    await Task.Delay(IntervalInMilliseconds, cancellationToken);
+                    await Task.Delay(PollingInterval, cancellationToken);
                 }
-            }            
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "При обработки бронирований возникла ошибка");
+            }
             finally
             {
                 _logger.Info("Сервис обработки бронирований завершает работу");

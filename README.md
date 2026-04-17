@@ -1,14 +1,15 @@
 # Event Management Service
 
-Сервис управления мероприятиями и бронированиями на **ASP.NET Core Web API (.NET 8)**.
+Сервис управления мероприятиями и бронированиями на **ASP.NET Core Web API (.NET 9)**.
 Проект включает:
 - CRUD и фильтрацию событий;
 - создание брони с быстрым ответом (`202 Accepted`);
+- резервирование/освобождение мест на событиях;
 - отложенную обработку бронирований в фоне через `BackgroundService`.
 
 ## Технологии
 
-- **C#**, **.NET 8**
+- **C#**, **.NET 9**
 - **ASP.NET Core Web API**
 - **Swagger / Swashbuckle**
 - **NLog** (через проект `EventManagement.Logging`)
@@ -26,7 +27,7 @@
 
 ## Запуск
 
-Требуется установленный **.NET SDK 8.0+**.
+Требуется установленный **.NET SDK 9.0+**.
 
 ```bash
 dotnet restore
@@ -62,7 +63,7 @@ dotnet test tests/EventManagement.Bookings.Tests/EventManagement.Bookings.Tests.
 
 Swagger UI доступен для каждого API в режиме Development:
 - Events API: `http://localhost:5167/swagger` или `https://localhost:7216/swagger`
-- Bookings API: `http://localhost:5236/swagger` или `https://localhost:7095/swagger`
+- Bookings API: `http://localhost:5237/swagger` или `https://localhost:7095/swagger`
 
 ## Модель Event
 
@@ -71,7 +72,9 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `Title` (`string`) — название;
 - `Description` (`string?`) — описание;
 - `StartAt` (`DateTime`) — начало;
-- `EndAt` (`DateTime`) — окончание.
+- `EndAt` (`DateTime`) — окончание;
+- `TotalSeats` (`int`) — общее количество мест;
+- `AvailableSeats` (`int`) — текущее количество свободных мест.
 
 ## Модель Booking
 
@@ -99,6 +102,9 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `POST /api/v1/events` — создать событие (`201 Created` + `Location`)
 - `PUT /api/v1/events/{id}` — обновить событие
 - `DELETE /api/v1/events/{id}` — удалить событие
+- `GET /api/v1/events/{id}/exists` — проверить, существует ли событие
+- `POST /api/v1/events/{id}/reserve-seats?count=1` — попытка резервирования мест (`true/false`)
+- `POST /api/v1/events/{id}/release-seats?count=1` — освобождение мест (`204 No Content`)
 
 ### Bookings API
 
@@ -107,7 +113,8 @@ Swagger UI доступен для каждого API в режиме Developmen
   - возвращает `202 Accepted`;
   - в теле возвращает `BookingInfo` (`Id`, `EventId`, `Status`);
   - в `Location` возвращает ссылку на ресурс брони (`/api/v1/bookings/{bookingId}`);
-  - если событие не найдено — `404 Not Found`.
+  - если событие не найдено — `404 Not Found`;
+  - если мест больше нет — `409 Conflict`.
 
 - `GET /api/v1/bookings/{id}`
   - возвращает текущее состояние брони;
@@ -120,8 +127,11 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `POST` на создание брони сразу возвращает `202 Accepted`;
 - `BookingBackgroundService` периодически (polling) запускает обработку ожидающих заявок;
 - бизнес-обработка вынесена в `BookingProcessingService`;
-- для каждой `Pending` брони выполняется искусственная задержка (`Task.Delay`), имитирующая внешний вызов;
-- после обработки статус меняется на `Confirmed`, а `ProcessedAt` заполняется текущим UTC-временем.
+- для каждой `Pending` брони выполняется искусственная задержка (`Task.Delay`) до критической секции;
+- если событие найдено — бронь подтверждается (`Confirmed`);
+- если событие не найдено — бронь отклоняется (`Rejected`) и сохраняется;
+- при ошибках обработки бронь отклоняется и выполняется компенсация через освобождение места;
+- после обработки `ProcessedAt` заполняется текущим UTC-временем.
 
 ## Пример сценария использования
 
@@ -138,6 +148,10 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `Application` — сервисы, DTO и бизнес-правила;
 - `Infrastructure` — конфигурация DI и фоновые задачи;
 - `Presentation` — контроллеры, Swagger, middleware.
+
+## Известные ограничения
+
+- **NSwag.MSBuild** (генерация `EventsClient` при сборке `EventManagement.Events.Api`): сборка может завершиться ошибкой, если **полный путь к каталогу решения содержит пробелы** — это ограничение цепочки NSwag/вызовов при компиляции, а не логики приложения. Обходной путь: держать репозиторий в пути **без пробелов** (например `D:\work\event-management-service`), либо временно отключать/обходить шаг генерации в таком окружении.
 
 ## Обработка ошибок
 

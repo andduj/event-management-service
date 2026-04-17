@@ -7,6 +7,7 @@ using EventManagement.Events.Data.Interfaces;
 using FluentValidation;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using EventManagement.Logging;
 using EventManagement.Events.Models;
@@ -20,14 +21,21 @@ namespace EventManagement.Events.Application.Services
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
-        private readonly IValidator<Event> _validator;
+        private readonly IValidator<AddEventRequest> _addEventRequestValidator;
+        private readonly IValidator<UpdateEventRequest> _updateEventRequestValidator;
         private readonly ILogger<EventService> _logger;
 
-        public EventService(IEventRepository eventRepository, IMapper mapper, IValidator<Event> validator, ILogger<EventService> logger)
+        public EventService(
+            IEventRepository eventRepository,
+            IMapper mapper,
+            IValidator<AddEventRequest> addEventRequestValidator,
+            IValidator<UpdateEventRequest> updateEventRequestValidator,
+            ILogger<EventService> logger)
         {
             _eventRepository = eventRepository;
             _mapper = mapper;
-            _validator = validator;
+            _addEventRequestValidator = addEventRequestValidator;
+            _updateEventRequestValidator = updateEventRequestValidator;
             _logger = logger;
         }
 
@@ -35,9 +43,13 @@ namespace EventManagement.Events.Application.Services
         public async Task<EventDto> CreateEventAsync(AddEventRequest addEventRequest)
         {
             _logger.Info("Создание нового мероприятия.");
-            var newEvent = _mapper.Map<Event>(addEventRequest);
-            _validator.ValidateAndThrow(newEvent);
-            newEvent.Id = Guid.NewGuid();
+            DefaultValidatorExtensions.ValidateAndThrow(_addEventRequestValidator, addEventRequest);
+            var newEvent = Event.Create(
+                addEventRequest.Title ?? string.Empty,
+                addEventRequest.StartAt,
+                addEventRequest.EndAt,
+                addEventRequest.TotalSeats!.Value,
+                addEventRequest.Description);
             var addedEvent = await _eventRepository.CreateEventAsync(newEvent);
             _logger.Info("Мероприятие успешно создано. Id={0}", addedEvent.Id);
             return _mapper.Map<EventDto>(addedEvent);
@@ -48,6 +60,12 @@ namespace EventManagement.Events.Application.Services
         {
             _logger.Info("Удаление мероприятия. Id={0}", id);
             await _eventRepository.DeleteEventAsync(id);
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> Exists(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _eventRepository.Exists(id, cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -79,13 +97,33 @@ namespace EventManagement.Events.Application.Services
         }
 
         /// <inheritdoc/>
+        public async Task<bool> TryReserveSeats(Guid id, int count)
+        {
+            _logger.Debug("Попытка резервирования {0} мест для мероприятия Id={1}", count, id);
+            bool wasReserved = await _eventRepository.TryReserveSeats(id, count);
+            _logger.Debug("Результат резервирования для мероприятия Id={0}: {1}", id, wasReserved);
+            return wasReserved;
+        }
+
+        /// <inheritdoc/>
+        public async Task ReleaseSeats(Guid id, int count)
+        {
+            _logger.Debug("Освобождение {0} мест для мероприятия Id={1}", count, id);
+            await _eventRepository.ReleaseSeats(id, count);
+            _logger.Debug("Места успешно освобождены для мероприятия Id={0}", id);
+        }
+
+        /// <inheritdoc/>
         public async Task UpdateEventAsync(Guid id, UpdateEventRequest updateEventRequest)
         {
             _logger.Info("Обновление мероприятия. Id={0}", id);
-            var updatedEvent = _mapper.Map<Event>(updateEventRequest);
-            _validator.ValidateAndThrow(updatedEvent);
-            updatedEvent.Id = id;
-            await _eventRepository.UpdateEventAsync(updatedEvent);
+            DefaultValidatorExtensions.ValidateAndThrow(_updateEventRequestValidator, updateEventRequest);
+            var eventItem = await _eventRepository.GetEventByIdAsync(id);
+            eventItem.Title = updateEventRequest.Title;
+            eventItem.Description = updateEventRequest.Description;
+            eventItem.StartAt = updateEventRequest.StartAt;
+            eventItem.EndAt = updateEventRequest.EndAt;
+            await _eventRepository.UpdateEventAsync(eventItem);
         }
     }
 }

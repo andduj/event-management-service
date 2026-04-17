@@ -92,6 +92,8 @@ namespace EventManagement.Bookings.Presentation.Middleware
                     return "Unauthorized";
                 case StatusCodes.Status404NotFound:
                     return "Not Found";
+                case StatusCodes.Status409Conflict:
+                    return "Conflict";
                 case StatusCodes.Status500InternalServerError:
                     return "Internal Server Error";
                 default:
@@ -105,6 +107,8 @@ namespace EventManagement.Bookings.Presentation.Middleware
             {
                 case BookingNotFoundException:
                     return StatusCodes.Status404NotFound;
+                case NoAvailableSeatsException:
+                    return StatusCodes.Status409Conflict;
                 case ApiException apiException:
                     return apiException.StatusCode;
                 case ArgumentException:
