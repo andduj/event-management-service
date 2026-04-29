@@ -20,8 +20,6 @@ namespace EventManagement.Bookings.Application.Services
         private readonly IEventsClient _eventsClient;
         private readonly ILogger<BookingProcessingService> _logger;
 
-        private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
-
         /// <summary>
         /// Инициализирует новый экземпляр сервиса фоновой обработки бронирований.
         /// </summary>
@@ -51,7 +49,6 @@ namespace EventManagement.Bookings.Application.Services
             }
             _logger.Debug("Начало обработки бронирования. BookingId={0}, EventId={1}", booking.Id, booking.EventId);
             await Task.Delay(ProcessingDelay, cancellationToken);
-            await _processingSemaphore.WaitAsync(cancellationToken);
             try
             {
                 bool exists = await _eventsClient.ExistsAsync(booking.EventId, cancellationToken);
@@ -78,7 +75,6 @@ namespace EventManagement.Bookings.Application.Services
             }
             finally
             {
-                _processingSemaphore.Release();
                 _logger.Debug("Завершена обработка бронирования. BookingId={0}, Status={1}", booking.Id, booking.Status);
             }
         }

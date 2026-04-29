@@ -14,7 +14,11 @@ namespace EventManagement.Events.Application.Validators
         public AddEventRequestValidator()
         {
             RuleFor(x => x.Title)
-                .NotEmpty().WithMessage("Заголовок мероприятия обязателен");
+                .NotEmpty().WithMessage("Заголовок мероприятия обязателен")
+                .MaximumLength(200).WithMessage("Заголовок не должен превышать 200 символов");
+
+            RuleFor(x => x.Description)
+                .MaximumLength(1000).WithMessage("Описание не должно превышать 1000 символов");
 
             RuleFor(x => x.StartAt)
                 .NotEmpty().WithMessage("Дата начала обязательна");
