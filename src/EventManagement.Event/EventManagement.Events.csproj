@@ -6,6 +6,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <UserSecretsId>event-management-events-api</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

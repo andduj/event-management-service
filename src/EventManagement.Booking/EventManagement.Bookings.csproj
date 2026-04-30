@@ -7,6 +7,7 @@
     <RootNamespace>EventManagement.Bookings</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <UserSecretsId>event-management-bookings-api</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
