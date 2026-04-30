@@ -16,6 +16,8 @@
 - **Dependency Injection**
 - **AutoMapper**
 - **FluentValidation**
+- **Entity Framework Core**
+- **PostgreSQL** (`Npgsql`)
 - **xUnit**, **Moq**, **FluentAssertions**, **AutoFixture**
 
 ## Структура решения
@@ -27,12 +29,37 @@
 
 ## Запуск
 
-Требуется установленный **.NET SDK 9.0+**.
+Требуется:
+- **.NET SDK 9.0+**
+- **Docker** (для локального PostgreSQL)
 
 ```bash
 dotnet restore
 dotnet build EventManagement.sln
 ```
+
+Запуск PostgreSQL:
+
+```bash
+docker compose -f docker/docker-compose.yaml up -d
+```
+
+Строка подключения по умолчанию:
+
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Host=localhost;Port=5432;Database=eventapi;Username=;Password="
+}
+```
+
+Пароль к базе хранится в **User Secrets** (не в репозитории). Для локальной настройки:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=postgres" --project src/EventManagement.Event/EventManagement.Events.csproj
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=postgres" --project src/EventManagement.Booking/EventManagement.Bookings.csproj
+```
+
+Схема базы создается автоматически при старте каждого API через `Database.EnsureCreated()`.
 
 Запуск API событий:
 
@@ -90,7 +117,8 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `Confirmed` — подтверждена;
 - `Rejected` — отклонена.
 
-Данные бронирований хранятся в памяти приложения (`InMemoryBookingRepository`).
+`Booking` и `Event` находятся в разных микросервисах, поэтому между ними нет навигационных свойств EF Core.
+В `Booking` хранится только `EventId`, а существование/состояние события проверяется через HTTP-вызовы в сервис событий.
 
 ## Эндпоинты
 
@@ -125,9 +153,10 @@ Swagger UI доступен для каждого API в режиме Developmen
 
 В проекте реализован паттерн **быстрый ответ + отложенная обработка**:
 - `POST` на создание брони сразу возвращает `202 Accepted`;
-- `BookingBackgroundService` периодически (polling) запускает обработку ожидающих заявок;
+- `BookingBackgroundService` циклически запускает обработку ожидающих заявок;
 - бизнес-обработка вынесена в `BookingProcessingService`;
-- для каждой `Pending` брони выполняется искусственная задержка (`Task.Delay`) до критической секции;
+- список `Pending` бронирований читается в отдельном DI-scope;
+- каждая бронь обрабатывается в отдельном DI-scope (отдельный `DbContext` на задачу);
 - если событие найдено — бронь подтверждается (`Confirmed`);
 - если событие не найдено — бронь отклоняется (`Rejected`) и сохраняется;
 - при ошибках обработки бронь отклоняется и выполняется компенсация через освобождение места;
@@ -142,12 +171,18 @@ Swagger UI доступен для каждого API в режиме Developmen
 
 ## Архитектура
 
+Сервис состоит из двух независимых API:
+- `Event` — управление мероприятиями;
+- `Booking` — создание и фоновая обработка бронирований.
+
 Проект разделен по слоям:
 - `Models` — доменные модели;
 - `Data` — репозитории и доступ к данным;
 - `Application` — сервисы, DTO и бизнес-правила;
 - `Infrastructure` — конфигурация DI и фоновые задачи;
 - `Presentation` — контроллеры, Swagger, middleware.
+
+Для локального наполнения данных в `Event` API используется `EventsFactory`: при пустой таблице `events` тестовые мероприятия добавляются автоматически при запуске.
 
 ## Известные ограничения
 
