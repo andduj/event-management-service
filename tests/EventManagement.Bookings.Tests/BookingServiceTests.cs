@@ -1,10 +1,11 @@
-using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Application.DTOs;
+using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Exceptions;
 using EventManagement.Bookings.Models;
 using EventManagement.Events.Api;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System.Net;
 
@@ -12,7 +13,7 @@ namespace EventManagement.Bookings.Tests
 {
     public class BookingServiceTests : IClassFixture<BookingServiceFixture>
     {
-        public readonly BookingService _bookingService;
+        public readonly IBookingService _bookingService;
         public readonly Mock<IEventsClient> _eventsClient;
         public readonly IBookingRepository _bookingRepository;
         public readonly BookingServiceFixture _fixture;
@@ -262,7 +263,7 @@ namespace EventManagement.Bookings.Tests
                 .Select(_ => Task.Run(async () =>
                 {
                     await startSignal.Task;
-                    return await CreateBookingWithResultAsync(eventId);
+                    return await CreateBookingWithResultAsyncInScope(eventId);
                 }));
 
             startSignal.SetResult();
@@ -313,7 +314,9 @@ namespace EventManagement.Bookings.Tests
                 .Select(_ => Task.Run(async () =>
                 {
                     await startSignal.Task;
-                    return await _bookingService.CreateBookingAsync(eventId);
+                    using var scope = _fixture.ServiceProvider.CreateScope();
+                    var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+                    return await bookingService.CreateBookingAsync(eventId);
                 }));
 
             startSignal.SetResult();
@@ -325,11 +328,13 @@ namespace EventManagement.Bookings.Tests
             availableSeats.Should().Be(0);
         }
 
-        private async Task<(bool Success, BookingInfo? BookingInfo, Exception? Exception)> CreateBookingWithResultAsync(Guid eventId)
+        private async Task<(bool Success, BookingInfo? BookingInfo, Exception? Exception)> CreateBookingWithResultAsyncInScope(Guid eventId)
         {
             try
             {
-                var bookingInfo = await _bookingService.CreateBookingAsync(eventId);
+                using var scope = _fixture.ServiceProvider.CreateScope();
+                var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+                var bookingInfo = await bookingService.CreateBookingAsync(eventId);
                 return (true, bookingInfo, null);
             }
             catch (Exception exception)

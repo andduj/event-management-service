@@ -75,8 +75,7 @@ namespace EventManagement.Events.Application.Services
             var paginatedResult = await _eventRepository.FilterAsync(eventFilter, page, pageSize);
             var events = paginatedResult.Items
                 .Select(_mapper.Map<EventDto>)
-                .ToList()
-                .AsReadOnly();
+                .ToList();
 
             return new PaginatedResult<EventDto>
             {

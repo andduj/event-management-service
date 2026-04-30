@@ -51,7 +51,15 @@ namespace EventManagement.Events.Data.Repositories
 
             if (!string.IsNullOrWhiteSpace(eventFilter.Title))
             {
-                query = query.Where(e => EF.Functions.ILike(e.Title, $"%{eventFilter.Title}%"));
+                if (_context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
+                {
+                    var titleFilter = eventFilter.Title.ToLowerInvariant();
+                    query = query.Where(e => e.Title.ToLowerInvariant().Contains(titleFilter));
+                }
+                else
+                {
+                    query = query.Where(e => EF.Functions.ILike(e.Title, $"%{eventFilter.Title}%"));
+                }
             }
 
             if (eventFilter.StartAt.HasValue)
@@ -72,7 +80,7 @@ namespace EventManagement.Events.Data.Repositories
 
             return new PaginatedResult<Event>
             {
-                Items = items.AsReadOnly(),
+                Items = items,
                 Page = page,
                 PageSize = pageSize,
                 TotalItems = totalItems,

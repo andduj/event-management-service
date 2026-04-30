@@ -3,6 +3,8 @@ using EventManagement.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,7 +15,6 @@ namespace EventManagement.Bookings.Infrastructure
     /// </summary>
     public class BookingBackgroundService : BackgroundService
     {
-        private const int PollingInterval = 5000;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<BookingBackgroundService> _logger;
 
@@ -41,10 +42,9 @@ namespace EventManagement.Bookings.Infrastructure
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    using var scope = _scopeFactory.CreateScope();
-                    var bookingProcessingService = scope.ServiceProvider.GetRequiredService<IBookingProcessingService>();
-                    await bookingProcessingService.ProcessPendingBookingsAsync(cancellationToken);
-                    await Task.Delay(PollingInterval, cancellationToken);
+                    var pendingBookingIds = await GetPendingBookingIdsAsync(cancellationToken);
+                    var tasks = pendingBookingIds.Select(bookingId => ProcessBookingInScopeAsync(bookingId, cancellationToken));
+                    await Task.WhenAll(tasks);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -59,6 +59,20 @@ namespace EventManagement.Bookings.Infrastructure
             {
                 _logger.Info("Сервис обработки бронирований завершает работу");
             }
+        }
+
+        private async Task<List<Guid>> GetPendingBookingIdsAsync(CancellationToken cancellationToken)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var bookingProcessingService = scope.ServiceProvider.GetRequiredService<IBookingProcessingService>();
+            return await bookingProcessingService.GetPendingBookingIdsAsync(cancellationToken);
+        }
+
+        private async Task ProcessBookingInScopeAsync(Guid bookingId, CancellationToken cancellationToken)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var bookingProcessingService = scope.ServiceProvider.GetRequiredService<IBookingProcessingService>();
+            await bookingProcessingService.ProcessBookingAsync(bookingId, cancellationToken);
         }
     }
 }

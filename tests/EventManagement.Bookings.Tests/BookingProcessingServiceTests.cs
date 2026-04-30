@@ -81,10 +81,7 @@ namespace EventManagement.Bookings.Tests
         public async Task ProcessPendingBookingsAsync_WhenProcessingFails_ShouldRejectBookingAndReleaseSeat()
         {
             var eventId = Guid.NewGuid();
-            var pendingBooking = _fixtureData
-                .Build<Booking>()
-                .With(booking => booking.EventId, eventId)
-                .Create();
+            var pendingBooking = Booking.Create(eventId);
             var bookings = new List<Booking> { pendingBooking };
             var updatedBookings = new List<Booking>();
             _bookingRepository
@@ -120,10 +117,7 @@ namespace EventManagement.Bookings.Tests
             var availableSeats = 1;
             var pendingBookings = new List<Booking>
             {
-                _fixtureData
-                    .Build<Booking>()
-                    .With(booking => booking.EventId, eventId)
-                    .Create()
+                Booking.Create(eventId)
             };
             _bookingRepository
                 .Setup(repository => repository.GetBookingsAsync(BookingStatus.Pending))
