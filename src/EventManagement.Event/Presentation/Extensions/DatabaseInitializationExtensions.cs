@@ -1,6 +1,8 @@
 using EventManagement.Events.DataAccess;
+using EventManagement.Events.Data.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 
 namespace EventManagement.Events.Presentation.Extensions
 {
@@ -19,6 +21,12 @@ namespace EventManagement.Events.Presentation.Extensions
             using var scope = app.ApplicationServices.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<EventsDbContext>();
             db.Database.EnsureCreated();
+            if (!db.Events.Any())
+            {
+                var events = EventsFactory.Create();
+                db.Events.AddRange(events);
+                db.SaveChanges();
+            }
 
             return app;
         }
