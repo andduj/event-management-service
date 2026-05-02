@@ -182,7 +182,10 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `Infrastructure` — конфигурация DI и фоновые задачи;
 - `Presentation` — контроллеры, Swagger, middleware.
 
-Для локального наполнения данных в `Event` API используется `EventsFactory`: при пустой таблице `events` тестовые мероприятия добавляются автоматически при запуске.
+Для локального наполнения данных в `Event` API используется `EventsDataSeeder` + `EventsFactory`.
+Сидирование управляется флагом `DatabaseInitialization:SeedOnStartup`:
+- `false` в `appsettings.json`;
+- `true` в `appsettings.Development.json`.
 
 ## Известные ограничения
 

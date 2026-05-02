@@ -1,8 +1,8 @@
 using EventManagement.Events.DataAccess;
-using EventManagement.Events.Data.Repositories;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
+using System.Threading;
 
 namespace EventManagement.Events.Presentation.Extensions
 {
@@ -20,12 +20,14 @@ namespace EventManagement.Events.Presentation.Extensions
         {
             using var scope = app.ApplicationServices.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<EventsDbContext>();
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
             db.Database.EnsureCreated();
-            if (!db.Events.Any())
+            bool seedOnStartup = configuration.GetValue<bool>("DatabaseInitialization:SeedOnStartup");
+            if (seedOnStartup)
             {
-                var events = EventsFactory.Create();
-                db.Events.AddRange(events);
-                db.SaveChanges();
+                EventsDataSeeder.SeedIfNeededAsync(db, CancellationToken.None)
+                    .GetAwaiter()
+                    .GetResult();
             }
 
             return app;
