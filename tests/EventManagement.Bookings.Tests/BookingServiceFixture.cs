@@ -1,22 +1,29 @@
 using AutoFixture;
-using AutoMapper;
 using EventManagement.Bookings.Application;
+using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Data.Repositories;
+using EventManagement.Bookings.DataAccess;
 using EventManagement.Events.Api;
 using EventManagement.Logging;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 namespace EventManagement.Bookings.Tests
 {
     public class BookingServiceFixture
     {
+        public IServiceProvider ServiceProvider { get; }
+
+        public IServiceScope Scope { get; }
+
         public Mock<IEventsClient> EventsClient { get; }
 
         public IBookingRepository BookingRepository { get; }
 
-        public BookingService BookingService { get; }
+        public IBookingService BookingService { get; }
 
         public IFixture Fixture { get; }
 
@@ -33,12 +40,20 @@ namespace EventManagement.Bookings.Tests
 
         public BookingServiceFixture()
         {
-            var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())
-                .CreateMapper();
+            var dbName = Guid.NewGuid().ToString();
+            var services = new ServiceCollection();
 
             EventsClient = new Mock<IEventsClient>();
+            services.AddSingleton(EventsClient.Object);
+            services.AddSingleton(new Mock<ILogger<BookingService>>().Object);
+            services.AddDbContext<BookingsDbContext>(options => options.UseInMemoryDatabase(dbName));
+            services.AddScoped<IBookingRepository, BookingRepository>();
+            services.AddScoped<IBookingService, BookingService>();
+            services.AddAutoMapper(typeof(MappingProfile));
 
-            BookingRepository = new InMemoryBookingRepository();
+            ServiceProvider = services.BuildServiceProvider();
+            Scope = ServiceProvider.CreateScope();
+            BookingRepository = Scope.ServiceProvider.GetRequiredService<IBookingRepository>();
 
             Fixture = new Fixture();
             Fixture.Customize<EventDto>(composer => composer
@@ -58,11 +73,7 @@ namespace EventManagement.Bookings.Tests
                 })
                 .OmitAutoProperties());
 
-            BookingService = new BookingService(
-                BookingRepository,
-                EventsClient.Object,
-                mapper,
-                new Mock<ILogger<BookingService>>().Object);
+            BookingService = Scope.ServiceProvider.GetRequiredService<IBookingService>();
         }
     }
 }

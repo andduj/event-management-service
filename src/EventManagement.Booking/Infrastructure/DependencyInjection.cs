@@ -1,6 +1,8 @@
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Data.Repositories;
+using EventManagement.Bookings.DataAccess;
 using EventManagement.Events.Api;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -21,7 +23,10 @@ namespace EventManagement.Bookings.Infrastructure
         /// <returns>Модифицированная коллекция сервисов.</returns>
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IBookingRepository, InMemoryBookingRepository>();
+            string connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Строка подключения 'DefaultConnection' не настроена.");
+            services.AddDbContext<BookingsDbContext>(options => options.UseNpgsql(connectionString));
+            services.AddScoped<IBookingRepository, BookingRepository>();
             services.AddSingleton(typeof(Logging.ILogger<>), typeof(Logging.Logger<>));
             services.AddHostedService<BookingBackgroundService>();
 

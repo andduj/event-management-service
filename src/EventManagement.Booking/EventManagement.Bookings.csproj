@@ -7,11 +7,14 @@
     <RootNamespace>EventManagement.Bookings</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <UserSecretsId>event-management-bookings-api</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Fall.AutoMaper" Version="1.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.15" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="6.1.2" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 

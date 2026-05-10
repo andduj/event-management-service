@@ -1,13 +1,21 @@
 using AutoFixture;
-using AutoMapper;
 using EventManagement.Events.Application;
+using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Application.Requests;
 using EventManagement.Events.Application.Services;
 using EventManagement.Events.Application.Validators;
+using EventManagement.Events.Data.Interfaces;
 using EventManagement.Events.Data.Repositories;
+using EventManagement.Events.DataAccess;
+using EventManagement.Events.Models;
 using EventManagement.Logging;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EventManagement.Events.Tests
 {
@@ -16,21 +24,26 @@ namespace EventManagement.Events.Tests
         private const int MinTotalSeats = 1;
         private const int MaxTotalSeats = 5000;
 
-        public EventService EventService { get; }
+        public IServiceScope Scope { get; }
+
+        public IServiceProvider ServiceProvider { get; }
 
         public IFixture Fixture { get; }
 
         public EventServiceFixture()
         {
-            var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>())
-                .CreateMapper();
-
-            EventService = new EventService(
-                new InMemoryEventRepository(),
-                mapper,
-                new AddEventRequestValidator(),
-                new UpdateEventRequestValidator(),
-                new Mock<ILogger<EventService>>().Object);
+            var dbName = Guid.NewGuid().ToString();
+            var services = new ServiceCollection();
+            services.AddDbContext<EventsDbContext>(options => options.UseInMemoryDatabase(dbName));
+            services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IEventService, EventService>();
+            services.AddScoped<IValidator<AddEventRequest>, AddEventRequestValidator>();
+            services.AddScoped<IValidator<UpdateEventRequest>, UpdateEventRequestValidator>();
+            services.AddAutoMapper(typeof(MappingProfile));
+            services.AddSingleton(new Mock<ILogger<EventService>>().Object);
+            ServiceProvider = services.BuildServiceProvider();
+            Scope = ServiceProvider.CreateScope();
+            SeedEvents();
 
             Fixture = new Fixture();
 
@@ -68,6 +81,45 @@ namespace EventManagement.Events.Tests
                     };
                 })
                 .OmitAutoProperties());
+        }
+
+        public IEventService EventService => Scope.ServiceProvider.GetRequiredService<IEventService>();
+
+        private void SeedEvents()
+        {
+            using var scope = ServiceProvider.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<EventsDbContext>();
+
+            if (db.Events.Any())
+            {
+                return;
+            }
+
+            var titles = new[] { "Концерт", "Салют", "Фестиваль" };
+            var periods = new[]
+            {
+                (new DateTime(2026, 1, 1), new DateTime(2026, 1, 30)),
+                (new DateTime(2026, 5, 1), new DateTime(2026, 5, 30)),
+                (new DateTime(2026, 10, 1), new DateTime(2026, 10, 30))
+            };
+
+            var seededEvents = new List<Event>();
+            for (int i = 0; i < 12; i++)
+            {
+                for (int j = 0; j < titles.Length; j++)
+                {
+                    var (startAt, endAt) = periods[j];
+                    seededEvents.Add(Event.Create(
+                        title: titles[j],
+                        startAt: startAt.AddHours(i),
+                        endAt: endAt.AddHours(i),
+                        totalSeats: 100,
+                        description: $"Seed event {i}-{j}"));
+                }
+            }
+
+            db.Events.AddRange(seededEvents);
+            db.SaveChanges();
         }
     }
 }

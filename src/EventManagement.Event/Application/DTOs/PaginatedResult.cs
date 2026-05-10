@@ -1,6 +1,4 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace EventManagement.Events.Application.DTOs
 {
@@ -12,7 +10,7 @@ namespace EventManagement.Events.Application.DTOs
         /// <summary>
         /// Элементы текущей страницы.
         /// </summary>
-        public ReadOnlyCollection<T> Items { get; set; } = Array.Empty<T>().ToList().AsReadOnly();
+        public List<T> Items { get; set; } = [];
 
         /// <summary>
         /// Номер текущей страницы.

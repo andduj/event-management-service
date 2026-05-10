@@ -7,6 +7,10 @@ namespace EventManagement.Bookings.Models
     /// </summary>
     public class Booking
     {
+        private Booking()
+        {
+        }
+
         /// <summary>
         /// Уникальный идентификатор брони.
         /// </summary>

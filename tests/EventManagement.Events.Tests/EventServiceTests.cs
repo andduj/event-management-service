@@ -1,7 +1,7 @@
 using AutoFixture;
 using EventManagement.Events.Application.Filters;
+using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Application.Requests;
-using EventManagement.Events.Application.Services;
 using EventManagement.Events.Exceptions;
 using FluentAssertions;
 using FluentValidation;
@@ -13,7 +13,7 @@ namespace EventManagement.Events.Tests
 {
     public class EventServiceTests : IClassFixture<EventServiceFixture>
     {
-        private readonly EventService _eventService;
+        private readonly IEventService _eventService;
         private readonly IFixture _fixture;
 
         public static IEnumerable<object[]> DateTimePeriods()

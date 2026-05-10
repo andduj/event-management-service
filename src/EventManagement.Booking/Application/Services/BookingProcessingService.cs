@@ -4,6 +4,7 @@ using EventManagement.Bookings.Models;
 using EventManagement.Events.Api;
 using EventManagement.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,12 +16,9 @@ namespace EventManagement.Bookings.Application.Services
     /// </summary>
     public class BookingProcessingService : IBookingProcessingService
     {
-        private const int ProcessingDelay = 2000;
         private readonly IBookingRepository _bookingRepository;
         private readonly IEventsClient _eventsClient;
         private readonly ILogger<BookingProcessingService> _logger;
-
-        private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
 
         /// <summary>
         /// Инициализирует новый экземпляр сервиса фоновой обработки бронирований.
@@ -36,22 +34,40 @@ namespace EventManagement.Bookings.Application.Services
         }
 
         /// <inheritdoc/>
+        public async Task<List<Guid>> GetPendingBookingIdsAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var pendingBookings = await _bookingRepository.GetBookingsAsync(BookingStatus.Pending);
+            return pendingBookings.Select(booking => booking.Id).ToList();
+        }
+
+        /// <inheritdoc/>
+        public async Task ProcessBookingAsync(Guid bookingId, CancellationToken cancellationToken)
+        {
+            var booking = await _bookingRepository.GetBookingByIdAsync(bookingId);
+            if (booking.Status != BookingStatus.Pending)
+            {
+                return;
+            }
+
+            await ProcessBookingCoreAsync(booking, cancellationToken);
+        }
+
+        /// <inheritdoc/>
         public async Task ProcessPendingBookingsAsync(CancellationToken cancellationToken)
         {
             var pendingBookings = await _bookingRepository.GetBookingsAsync(BookingStatus.Pending);
-            var tasks = pendingBookings.Select(booking => ProcessBookingAsync(booking, cancellationToken));
+            var tasks = pendingBookings.Select(booking => ProcessBookingCoreAsync(booking, cancellationToken));
             await Task.WhenAll(tasks);
         }
 
-        private async Task ProcessBookingAsync(Booking booking, CancellationToken cancellationToken)
+        private async Task ProcessBookingCoreAsync(Booking booking, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
                 return;
             }
             _logger.Debug("Начало обработки бронирования. BookingId={0}, EventId={1}", booking.Id, booking.EventId);
-            await Task.Delay(ProcessingDelay, cancellationToken);
-            await _processingSemaphore.WaitAsync(cancellationToken);
             try
             {
                 bool exists = await _eventsClient.ExistsAsync(booking.EventId, cancellationToken);
@@ -78,7 +94,6 @@ namespace EventManagement.Bookings.Application.Services
             }
             finally
             {
-                _processingSemaphore.Release();
                 _logger.Debug("Завершена обработка бронирования. BookingId={0}, Status={1}", booking.Id, booking.Status);
             }
         }

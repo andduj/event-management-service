@@ -1,8 +1,11 @@
 using EventManagement.Events.Data.Interfaces;
 using EventManagement.Events.Data.Repositories;
+using EventManagement.Events.DataAccess;
 using EventManagement.Logging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace EventManagement.Events.Infrastructure
 {
@@ -19,7 +22,10 @@ namespace EventManagement.Events.Infrastructure
         /// <returns>Модифицированная коллекция сервисов.</returns>
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IEventRepository, InMemoryEventRepository>();
+            string connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Строка подключения 'DefaultConnection' не настроена.");
+            services.AddDbContext<EventsDbContext>(options => options.UseNpgsql(connectionString));
+            services.AddScoped<IEventRepository, EventRepository>();
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
 
             return services;

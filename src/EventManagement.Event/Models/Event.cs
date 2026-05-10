@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using FluentValidation;
 
 namespace EventManagement.Events.Models
@@ -9,6 +8,11 @@ namespace EventManagement.Events.Models
     /// </summary>
     public class Event
     {
+        private Event()
+        {
+            Title = null!;
+        }
+
         /// <summary>
         /// Идентификатор мероприятия.
         /// </summary>
