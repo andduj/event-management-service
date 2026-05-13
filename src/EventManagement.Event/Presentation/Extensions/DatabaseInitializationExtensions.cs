@@ -1,5 +1,6 @@
 using EventManagement.Events.DataAccess;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
@@ -21,7 +22,7 @@ namespace EventManagement.Events.Presentation.Extensions
             using var scope = app.ApplicationServices.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<EventsDbContext>();
             var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-            db.Database.EnsureCreated();
+            db.Database.Migrate();
             bool seedOnStartup = configuration.GetValue<bool>("DatabaseInitialization:SeedOnStartup");
             if (seedOnStartup)
             {
