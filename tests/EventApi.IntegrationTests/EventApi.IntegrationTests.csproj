@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <RootNamespace>EventApi.IntegrationTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\EventManagement.Events.Api\EventManagement.Events.Api.csproj" />
+    <ProjectReference Include="..\..\src\EventManagement.Event\EventManagement.Events.csproj" />
+    <ProjectReference Include="..\..\src\EventManagement.Booking\EventManagement.Bookings.csproj" />
   </ItemGroup>
 
 </Project>
