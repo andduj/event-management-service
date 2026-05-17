@@ -52,19 +52,18 @@ dotnet build EventManagement.sln
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-Строка подключения по умолчанию:
+`docker-compose` поднимает **два** контейнера PostgreSQL:
 
-```json
-"ConnectionStrings": {
-  "DefaultConnection": "Host=localhost;Port=5432;Database=eventapi;Username=;Password="
-}
-```
+| Сервис | Контейнер | Порт | База |
+|--------|-----------|------|------|
+| Events API | `events-postgres` | `5436` | `events` |
+| Bookings API | `bookings-postgres` | `5435` | `bookings` |
 
-Пароль к базе хранится в **User Secrets** (не в репозитории). Для локальной настройки:
+Пароль — в **User Secrets**:
 
 ```bash
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=postgres" --project src/EventManagement.Event/EventManagement.Events.csproj
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=postgres" --project src/EventManagement.Booking/EventManagement.Bookings.csproj
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5436;Database=events;Username=postgres;Password=postgres" --project src/EventManagement.Event/EventManagement.Events.csproj
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5435;Database=bookings;Username=postgres;Password=postgres" --project src/EventManagement.Booking/EventManagement.Bookings.csproj
 ```
 
 ### Схема базы и миграции EF Core
@@ -80,9 +79,9 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Po
 | `EventsDbContext` | `src/EventManagement.Event` | `events` | `Migrations/InitialCreate` |
 | `BookingsDbContext` | `src/EventManagement.Booking` | `bookings` | `Migrations/InitialCreate` |
 
-Локально оба API обычно указывают на **одну базу** (`Database=eventapi`). При первом развёртывании сначала примените миграции событий, затем бронирований (запуск Events API, потом Bookings API, либо команды `database update` ниже в этом порядке).
+У каждого сервиса **свой** PostgreSQL (локально — два контейнера в compose) — **database per service**. Миграции независимы: запустите каждый API или `database update` для своего контекста.
 
-В таблице `bookings` колонка `EventId` хранит ссылку на событие логически; между микросервисами нет навигационных свойств EF и проверка события при бронировании идёт через HTTP (`IEventsClient`).
+В `bookings` колонка `EventId` — логическая ссылка на событие в другом сервисе; **FK между базами невозможен**. Проверка существования события при бронировании — через HTTP (`IEventsClient`).
 
 CLI **dotnet-ef** подключён как **локальный инструмент** (файл `.config/dotnet-tools.json`). Перед работой с миграциями из корня репозитория:
 
@@ -249,12 +248,11 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `Event` — управление мероприятиями;
 - `Booking` — создание и фоновая обработка бронирований.
 
-Граница между сервисами проходит по HTTP API:
-- `Booking` **не использует** `DbContext` или репозитории `Event`-сервиса напрямую;
-- взаимодействие выполняется через клиент `IEventsClient` (контракт `Event` API);
-- репозитории в каждом сервисе работают только со «своими» сущностями и своим `DbContext`; при локальной разработке оба API могут указывать на **одну** базу PostgreSQL, но доступ к чужим таблицам через чужой контекст не выполняется.
+Граница между сервисами:
+- **HTTP** — `IEventsClient` для проверки события, резервирования мест;
+- **Данные** — отдельные БД `events` и `bookings`; `Booking` не обращается к `EventsDbContext` и таблице `events`.
 
-Это сделано намеренно, чтобы сохранить изоляцию сервисов и независимость хранения данных.
+Репозитории работают только со своим `DbContext` и своей базой.
 
 Проект разделен по слоям:
 - `Models` — доменные модели;
