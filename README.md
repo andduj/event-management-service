@@ -46,20 +46,34 @@ dotnet restore
 dotnet build EventManagement.sln
 ```
 
-Запуск PostgreSQL:
+Запуск PostgreSQL (**перед** стартом API):
 
 ```bash
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-`docker-compose` поднимает **два** контейнера PostgreSQL:
+Проверка, что контейнеры работают:
 
-| Сервис | Контейнер | Порт | База |
-|--------|-----------|------|------|
-| Events API | `events-postgres` | `5436` | `events` |
-| Bookings API | `bookings-postgres` | `5435` | `bookings` |
+```bash
+docker ps --filter "name=postgres"
+```
 
-Пароль — в **User Secrets**:
+Остановка и удаление данных (полный сброс томов):
+
+```bash
+docker compose -f docker/docker-compose.yml down -v
+```
+
+`docker-compose` поднимает **два** контейнера PostgreSQL (database per service):
+
+| Сервис | Контейнер | Порт на хосте | База | Логин / пароль |
+|--------|-----------|---------------|------|----------------|
+| Events API | `events-postgres` | `5436` | `events` | `postgres` / `postgres` |
+| Bookings API | `bookings-postgres` | `5435` | `bookings` | `postgres` / `postgres` |
+
+Порты **5436** и **5435** выбраны намеренно: стандартный PostgreSQL на Windows часто уже слушает **5432**, и контейнер Events на `5432` с ним конфликтует.
+
+Строки подключения задаются в **User Secrets** (в `appsettings.json` только шаблон без пароля):
 
 ```bash
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5436;Database=events;Username=postgres;Password=postgres" --project src/EventManagement.Event/EventManagement.Events.csproj
