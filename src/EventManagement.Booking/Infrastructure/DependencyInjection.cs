@@ -28,6 +28,7 @@ namespace EventManagement.Bookings.Infrastructure
             services.AddDbContext<BookingsDbContext>(options => options.UseNpgsql(connectionString));
             services.AddScoped<IBookingRepository, BookingRepository>();
             services.AddSingleton(typeof(Logging.ILogger<>), typeof(Logging.Logger<>));
+            services.Configure<BookingProcessingOptions>(configuration.GetSection(BookingProcessingOptions.SectionName));
             services.AddHostedService<BookingBackgroundService>();
 
             string eventsBaseUrl = configuration["ExternalServices:EventsBaseUrl"] ?? "https://localhost:7216";
