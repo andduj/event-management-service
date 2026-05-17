@@ -18,7 +18,7 @@ namespace EventManagement.Bookings.Application
         {
             services.AddScoped<IBookingService, BookingService>();
             services.AddScoped<IBookingProcessingService, BookingProcessingService>();
-            services.AddAutoMapper(typeof(Program));
+            services.AddAutoMapper(typeof(MappingProfile));
             return services;
         }
     }

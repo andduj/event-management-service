@@ -20,7 +20,7 @@ namespace EventManagement.Events.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IEventService, EventService>();
-            services.AddAutoMapper(typeof(Program));
+            services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();

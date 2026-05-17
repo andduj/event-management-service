@@ -16,16 +16,24 @@
 - **Dependency Injection**
 - **AutoMapper**
 - **FluentValidation**
-- **Entity Framework Core**
+- **Entity Framework Core** (миграции, репозитории)
 - **PostgreSQL** (`Npgsql`)
+- **Testcontainers** (интеграционные тесты)
 - **xUnit**, **Moq**, **FluentAssertions**, **AutoFixture**
 
 ## Структура решения
 
 - `src/EventManagement.Event` — API для работы с сущностью `Event`
 - `src/EventManagement.Booking` — API для работы с сущностью `Booking` и фоновой обработкой
-- `tests/EventManagement.Events.Tests` — тесты событий
-- `tests/EventManagement.Bookings.Tests` — тесты бронирований
+- `tests/EventManagement.Events.Tests` — модульные тесты событий
+- `tests/EventManagement.Bookings.Tests` — модульные тесты бронирований
+- `tests/EventApi.IntegrationTests` — интеграционные тесты слоя данных (репозитории, миграции; PostgreSQL через Testcontainers)
+
+### Sprint 6: миграции, репозитории, интеграционные тесты
+
+- Схема БД управляется **миграциями EF Core** (`Migrate()` при старте API).
+- Доступ к данным вынесен в репозитории `IEventRepository` / `IBookingRepository`; сервисы не используют `DbContext` напрямую.
+- Интеграционные тесты поднимают реальный PostgreSQL в Docker (Testcontainers) и проверяют репозитории на живой базе.
 
 ## Запуск
 
@@ -38,28 +46,80 @@ dotnet restore
 dotnet build EventManagement.sln
 ```
 
-Запуск PostgreSQL:
+Запуск PostgreSQL (**перед** стартом API):
 
 ```bash
-docker compose -f docker/docker-compose.yaml up -d
+docker compose -f docker/docker-compose.yml up -d
 ```
 
-Строка подключения по умолчанию:
-
-```json
-"ConnectionStrings": {
-  "DefaultConnection": "Host=localhost;Port=5432;Database=eventapi;Username=;Password="
-}
-```
-
-Пароль к базе хранится в **User Secrets** (не в репозитории). Для локальной настройки:
+Проверка, что контейнеры работают:
 
 ```bash
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=postgres" --project src/EventManagement.Event/EventManagement.Events.csproj
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=postgres" --project src/EventManagement.Booking/EventManagement.Bookings.csproj
+docker ps --filter "name=postgres"
 ```
 
-Схема базы создается автоматически при старте каждого API через `Database.EnsureCreated()`.
+Остановка и удаление данных (полный сброс томов):
+
+```bash
+docker compose -f docker/docker-compose.yml down -v
+```
+
+`docker-compose` поднимает **два** контейнера PostgreSQL (database per service):
+
+| Сервис | Контейнер | Порт на хосте | База | Логин / пароль |
+|--------|-----------|---------------|------|----------------|
+| Events API | `events-postgres` | `5436` | `events` | `postgres` / `postgres` |
+| Bookings API | `bookings-postgres` | `5435` | `bookings` | `postgres` / `postgres` |
+
+Порты **5436** и **5435** выбраны намеренно: стандартный PostgreSQL на Windows часто уже слушает **5432**, и контейнер Events на `5432` с ним конфликтует.
+
+Строки подключения задаются в **User Secrets** (в `appsettings.json` только шаблон без пароля):
+
+```bash
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5436;Database=events;Username=postgres;Password=postgres" --project src/EventManagement.Event/EventManagement.Events.csproj
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5435;Database=bookings;Username=postgres;Password=postgres" --project src/EventManagement.Booking/EventManagement.Bookings.csproj
+```
+
+### Схема базы и миграции EF Core
+
+Схема PostgreSQL **не создаётся через `EnsureCreated()`**: при старте каждого API вызывается `Database.Migrate()`, поэтому структура таблиц задаётся **миграциями EF Core**.
+
+> Если раньше база создавалась через `EnsureCreated()`, удалите её перед первым запуском с миграциями (иначе EF может не применить миграции к уже существующей схеме).
+
+В решении два контекста и два набора миграций:
+
+| Контекст | Проект | Таблица | Миграция |
+|----------|--------|---------|----------|
+| `EventsDbContext` | `src/EventManagement.Event` | `events` | `Migrations/InitialCreate` |
+| `BookingsDbContext` | `src/EventManagement.Booking` | `bookings` | `Migrations/InitialCreate` |
+
+У каждого сервиса **свой** PostgreSQL (локально — два контейнера в compose) — **database per service**. Миграции независимы: запустите каждый API или `database update` для своего контекста.
+
+В `bookings` колонка `EventId` — логическая ссылка на событие в другом сервисе; **FK между базами невозможен**. Проверка существования события при бронировании — через HTTP (`IEventsClient`).
+
+CLI **dotnet-ef** подключён как **локальный инструмент** (файл `.config/dotnet-tools.json`). Перед работой с миграциями из корня репозитория:
+
+```bash
+dotnet tool restore
+```
+
+Создание новой миграции (пример имени `InitialCreate` замените при необходимости):
+
+```bash
+dotnet tool run dotnet-ef -- migrations add InitialCreate --project src/EventManagement.Event/EventManagement.Events.csproj --startup-project src/EventManagement.Event/EventManagement.Events.csproj --context EventsDbContext
+
+dotnet tool run dotnet-ef -- migrations add InitialCreate --project src/EventManagement.Booking/EventManagement.Bookings.csproj --startup-project src/EventManagement.Booking/EventManagement.Bookings.csproj --context BookingsDbContext
+```
+
+Применить все неприменённые миграции к базе из командной строки (альтернатива — просто запустить API, там уже вызывается `Migrate()`):
+
+```bash
+dotnet tool run dotnet-ef -- database update --project src/EventManagement.Event/EventManagement.Events.csproj --startup-project src/EventManagement.Event/EventManagement.Events.csproj --context EventsDbContext
+
+dotnet tool run dotnet-ef -- database update --project src/EventManagement.Booking/EventManagement.Bookings.csproj --startup-project src/EventManagement.Booking/EventManagement.Bookings.csproj --context BookingsDbContext
+```
+
+Если `dotnet-ef` не видит строку подключения, передайте её явно: добавьте в конец команды параметр `--connection "..."` с теми же `Host`, `Database`, `Username` и `Password`, что в User Secrets.
 
 Запуск API событий:
 
@@ -75,15 +135,42 @@ dotnet run --project src/EventManagement.Booking/EventManagement.Bookings.csproj
 
 ## Тесты
 
+Сборка и запуск всех тестов решения:
+
 ```bash
 dotnet test EventManagement.sln
 ```
 
-Или отдельно:
+Отдельно модульные тесты:
 
 ```bash
 dotnet test tests/EventManagement.Events.Tests/EventManagement.Events.Tests.csproj
 dotnet test tests/EventManagement.Bookings.Tests/EventManagement.Bookings.Tests.csproj
+```
+
+### Интеграционные тесты
+
+Проект `tests/EventApi.IntegrationTests` проверяет слой доступа к данным на **реальном PostgreSQL** через **Testcontainers**.
+
+**Требования:** запущенный Docker (Docker Desktop или демон Docker). Без него тесты завершатся ошибкой подключения к контейнеру.
+
+**Как устроено:**
+
+- Один контейнер PostgreSQL на весь прогон (`PostgresDbFixture`, `IAsyncLifetime`).
+- Две базы внутри контейнера (`events` и `bookings`) — отдельные строки подключения, как у двух сервисов на одном сервере.
+- Перед каждым тестом базы сбрасываются: `EnsureDeleted()` + `Migrate()` (`ResetAsync`) — тесты не зависят от порядка запуска.
+- Строка подключения берётся из Testcontainers, порт не захардкожен.
+
+**Что покрыто:**
+
+| Область | Тесты |
+|---------|--------|
+| Миграции | наличие таблиц `events` и `bookings` после `Migrate()` |
+| `EventRepository` | CRUD, `Exists`, `TryReserveSeats`, `ReleaseSeats`, фильтры (`Title`, `StartAt`, `EndAt`), пагинация |
+| `BookingRepository` | create, get, update, выборка по `BookingStatus` |
+
+```bash
+dotnet test tests/EventApi.IntegrationTests/EventApi.IntegrationTests.csproj
 ```
 
 ## Swagger
@@ -175,12 +262,20 @@ Swagger UI доступен для каждого API в режиме Developmen
 - `Event` — управление мероприятиями;
 - `Booking` — создание и фоновая обработка бронирований.
 
+Граница между сервисами:
+- **HTTP** — `IEventsClient` для проверки события, резервирования мест;
+- **Данные** — отдельные БД `events` и `bookings`; `Booking` не обращается к `EventsDbContext` и таблице `events`.
+
+Репозитории работают только со своим `DbContext` и своей базой.
+
 Проект разделен по слоям:
 - `Models` — доменные модели;
-- `Data` — репозитории и доступ к данным;
-- `Application` — сервисы, DTO и бизнес-правила;
-- `Infrastructure` — конфигурация DI и фоновые задачи;
-- `Presentation` — контроллеры, Swagger, middleware.
+- `Data` / `DataAccess` — интерфейсы и реализации репозиториев (`EventRepository`, `BookingRepository`), `DbContext`, конфигурации EF;
+- `Application` — сервисы, DTO и бизнес-правила (работают только через репозитории);
+- `Infrastructure` — регистрация DI (`AddScoped` для репозиториев), фоновые задачи;
+- `Presentation` — контроллеры, Swagger, middleware, `Database.Migrate()` при старте.
+
+`BookingBackgroundService` получает scoped-зависимости через `IServiceScopeFactory` (отдельный scope на чтение очереди и на обработку каждой брони).
 
 Для локального наполнения данных в `Event` API используется `EventsDataSeeder` + `EventsFactory`.
 Сидирование управляется флагом `DatabaseInitialization:SeedOnStartup`:

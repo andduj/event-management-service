@@ -1,5 +1,6 @@
 using EventManagement.Bookings.DataAccess;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EventManagement.Bookings.Presentation.Extensions
@@ -18,7 +19,7 @@ namespace EventManagement.Bookings.Presentation.Extensions
         {
             using var scope = app.ApplicationServices.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<BookingsDbContext>();
-            db.Database.EnsureCreated();
+            db.Database.Migrate();
 
             return app;
         }
