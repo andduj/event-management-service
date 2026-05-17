@@ -71,8 +71,6 @@ docker compose -f docker/docker-compose.yml down -v
 | Events API | `events-postgres` | `5436` | `events` | `postgres` / `postgres` |
 | Bookings API | `bookings-postgres` | `5435` | `bookings` | `postgres` / `postgres` |
 
-Порты **5436** и **5435** выбраны намеренно: стандартный PostgreSQL на Windows часто уже слушает **5432**, и контейнер Events на `5432` с ним конфликтует.
-
 Строки подключения задаются в **User Secrets** (в `appsettings.json` только шаблон без пароля):
 
 ```bash
@@ -81,10 +79,6 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Po
 ```
 
 ### Схема базы и миграции EF Core
-
-Схема PostgreSQL **не создаётся через `EnsureCreated()`**: при старте каждого API вызывается `Database.Migrate()`, поэтому структура таблиц задаётся **миграциями EF Core**.
-
-> Если раньше база создавалась через `EnsureCreated()`, удалите её перед первым запуском с миграциями (иначе EF может не применить миграции к уже существующей схеме).
 
 В решении два контекста и два набора миграций:
 
@@ -118,8 +112,6 @@ dotnet tool run dotnet-ef -- database update --project src/EventManagement.Event
 
 dotnet tool run dotnet-ef -- database update --project src/EventManagement.Booking/EventManagement.Bookings.csproj --startup-project src/EventManagement.Booking/EventManagement.Bookings.csproj --context BookingsDbContext
 ```
-
-Если `dotnet-ef` не видит строку подключения, передайте её явно: добавьте в конец команды параметр `--connection "..."` с теми же `Host`, `Database`, `Username` и `Password`, что в User Secrets.
 
 Запуск API событий:
 
