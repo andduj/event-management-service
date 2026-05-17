@@ -29,12 +29,6 @@
 - `tests/EventManagement.Bookings.Tests` — модульные тесты бронирований
 - `tests/EventApi.IntegrationTests` — интеграционные тесты слоя данных (репозитории, миграции; PostgreSQL через Testcontainers)
 
-### Sprint 6: миграции, репозитории, интеграционные тесты
-
-- Схема БД управляется **миграциями EF Core** (`Migrate()` при старте API).
-- Доступ к данным вынесен в репозитории `IEventRepository` / `IBookingRepository`; сервисы не используют `DbContext` напрямую.
-- Интеграционные тесты поднимают реальный PostgreSQL в Docker (Testcontainers) и проверяют репозитории на живой базе.
-
 ## Запуск
 
 Требуется:
