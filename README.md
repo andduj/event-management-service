@@ -240,7 +240,7 @@ Swagger UI доступен для каждого API в режиме Developmen
 
 В проекте реализован паттерн **быстрый ответ + отложенная обработка**:
 - `POST` на создание брони сразу возвращает `202 Accepted`;
-- `BookingBackgroundService` циклически запускает обработку ожидающих заявок;
+- `BookingBackgroundService` циклически опрашивает очередь с интервалом из `BookingProcessing:PollingIntervalSeconds` (`PeriodicTimer`, по умолчанию 5 с, в Development — 2 с);
 - бизнес-обработка вынесена в `BookingProcessingService`;
 - список `Pending` бронирований читается в отдельном DI-scope;
 - каждая бронь обрабатывается в отдельном DI-scope (отдельный `DbContext` на задачу);
