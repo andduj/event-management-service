@@ -26,6 +26,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EventManagement.Logging\EventManagement.Logging.csproj" />
+    <ProjectReference Include="..\EventManagement.Events.Application\EventManagement.Events.Application.csproj" />
+    <ProjectReference Include="..\EventManagement.Events.Infrastructure\EventManagement.Events.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
