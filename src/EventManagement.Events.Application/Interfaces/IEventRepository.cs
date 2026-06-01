@@ -1,12 +1,12 @@
-using EventManagement.Events.Application.DTOs;
+﻿using EventManagement.Events.Application.DTOs;
 using EventManagement.Events.Application.Filters;
-using EventManagement.Events.Exceptions;
-using EventManagement.Events.Models;
+using EventManagement.Events.Domain.Exceptions;
+using EventManagement.Events.Domain.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventManagement.Events.Data.Interfaces
+namespace EventManagement.Events.Application.Interfaces
 {
     /// <summary>
     /// Репозиторий для управления мероприятиями.

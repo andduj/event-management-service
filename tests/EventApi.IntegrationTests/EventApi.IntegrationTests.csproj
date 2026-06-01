@@ -24,7 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\EventManagement.Event\EventManagement.Events.csproj" />
+    <ProjectReference Include="..\..\src\EventManagement.Events.Application\EventManagement.Events.Application.csproj" />
+    <ProjectReference Include="..\..\src\EventManagement.Events.Infrastructure\EventManagement.Events.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\EventManagement.Booking\EventManagement.Bookings.csproj" />
   </ItemGroup>
 

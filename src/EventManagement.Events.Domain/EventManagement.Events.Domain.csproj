@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
-    <RootNamespace>EventManagement.Events.Domain</RootNamespace>
     <Nullable>enable</Nullable>
+    <RootNamespace>EventManagement.Events.Domain</RootNamespace>
   </PropertyGroup>
 
 </Project>

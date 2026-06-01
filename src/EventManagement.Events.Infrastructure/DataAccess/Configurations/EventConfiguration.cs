@@ -1,8 +1,8 @@
-using EventManagement.Events.Models;
+﻿using EventManagement.Events.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace EventManagement.Events.DataAccess.Configurations
+namespace EventManagement.Events.Infrastructure.DataAccess.Configurations
 {
     internal sealed class EventConfiguration : IEntityTypeConfiguration<Event>
     {

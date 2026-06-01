@@ -1,7 +1,6 @@
-using System;
-using FluentValidation;
+﻿using System;
 
-namespace EventManagement.Events.Models
+namespace EventManagement.Events.Domain.Models
 {
     /// <summary>
     /// Мероприятие.
@@ -104,7 +103,7 @@ namespace EventManagement.Events.Models
         {
             if (totalSeats <= 0)
             {
-                throw new ValidationException("Значение должно быть больше 0");
+                throw new ArgumentOutOfRangeException(nameof(totalSeats), "Значение должно быть больше 0");
             }
 
             return new Event

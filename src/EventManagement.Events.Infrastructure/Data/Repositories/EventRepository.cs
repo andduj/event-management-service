@@ -1,16 +1,16 @@
-using EventManagement.Events.Application.DTOs;
+﻿using EventManagement.Events.Application.DTOs;
 using EventManagement.Events.Application.Filters;
-using EventManagement.Events.Data.Interfaces;
-using EventManagement.Events.DataAccess;
-using EventManagement.Events.Exceptions;
-using EventManagement.Events.Models;
+using EventManagement.Events.Application.Interfaces;
+using EventManagement.Events.Infrastructure.DataAccess;
+using EventManagement.Events.Domain.Exceptions;
+using EventManagement.Events.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventManagement.Events.Data.Repositories
+namespace EventManagement.Events.Infrastructure.Data.Repositories
 {
     /// <summary>
     /// Репозиторий мероприятий на базе EF Core.

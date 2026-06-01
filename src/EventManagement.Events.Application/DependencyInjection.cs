@@ -2,7 +2,6 @@ using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Application.Services;
 using EventManagement.Events.Application.Validators;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EventManagement.Events.Application
@@ -17,13 +16,10 @@ namespace EventManagement.Events.Application
         /// </summary>
         /// <param name="services">Коллекция сервисов (контейнер DI).</param>
         /// <returns>Модифицированная коллекция сервисов для дальнейшей настройки.</returns>
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddScoped<IEventService, EventService>();
             services.AddAutoMapper(typeof(MappingProfile));
-
-            services.AddFluentValidationAutoValidation();
-            services.AddFluentValidationClientsideAdapters();
             services.AddValidatorsFromAssemblyContaining<AddEventRequestValidator>();
 
             return services;

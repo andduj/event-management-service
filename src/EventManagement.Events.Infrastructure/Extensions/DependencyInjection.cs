@@ -1,16 +1,16 @@
-using EventManagement.Events.Data.Interfaces;
-using EventManagement.Events.Data.Repositories;
-using EventManagement.Events.DataAccess;
+using EventManagement.Events.Application.Interfaces;
+using EventManagement.Events.Infrastructure.Data.Repositories;
+using EventManagement.Events.Infrastructure.DataAccess;
 using EventManagement.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace EventManagement.Events.Infrastructure
+namespace EventManagement.Events.Infrastructure.Extensions
 {
     /// <summary>
-    /// Класс для регистрации зависимостей уровня инфраструктуры в DI контейнере.
+    /// Регистрация зависимостей уровня инфраструктуры в DI-контейнере.
     /// </summary>
     public static class DependencyInjection
     {
@@ -20,7 +20,7 @@ namespace EventManagement.Events.Infrastructure
         /// <param name="services">Коллекция сервисов (контейнер DI).</param>
         /// <param name="configuration">Конфигурация приложения.</param>
         /// <returns>Модифицированная коллекция сервисов.</returns>
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             string connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Строка подключения 'DefaultConnection' не настроена.");

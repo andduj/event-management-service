@@ -1,9 +1,9 @@
-using EventManagement.Events.Data.Repositories;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using EventManagement.Events.Infrastructure.Data;
 
-namespace EventManagement.Events.DataAccess
+namespace EventManagement.Events.Infrastructure.DataAccess
 {
     /// <summary>
     /// Сидер тестовых мероприятий.

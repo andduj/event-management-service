@@ -22,10 +22,10 @@ namespace EventManagement.Events.Presentation.Controllers
         /// <summary>
         /// Конструктор контролера мероприятий.
         /// </summary>
-        /// <param name="EventService">Сервис мероприятий.</param>
-        public EventsController(IEventService EventService)
+        /// <param name="eventService">Сервис мероприятий.</param>
+        public EventsController(IEventService eventService)
         {
-            _eventService = EventService;
+            _eventService = eventService;
         }
 
         /// <summary>

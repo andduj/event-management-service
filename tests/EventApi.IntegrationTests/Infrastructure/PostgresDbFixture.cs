@@ -1,5 +1,5 @@
-using EventManagement.Bookings.DataAccess;
-using EventManagement.Events.DataAccess;
+﻿using EventManagement.Bookings.DataAccess;
+using EventManagement.Events.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Testcontainers.PostgreSql;

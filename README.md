@@ -23,11 +23,28 @@
 
 ## Структура решения
 
-- `src/EventManagement.Event` — API для работы с сущностью `Event`
-- `src/EventManagement.Booking` — API для работы с сущностью `Booking` и фоновой обработкой
-- `tests/EventManagement.Events.Tests` — модульные тесты событий
+### Events API (чистая архитектура, sprint-7)
+
+| Слой | Проект | Назначение |
+|------|--------|------------|
+| Domain | `src/EventManagement.Events.Domain` | `Event`, доменные исключения |
+| Application | `src/EventManagement.Events.Application` | use cases, DTO, порты (`IEventRepository`), валидация |
+| Infrastructure | `src/EventManagement.Events.Infrastructure` | EF Core, репозитории, миграции, сидер |
+| Presentation | `src/EventManagement.Event` (`EventManagement.Events`) | Web API, контроллеры, Swagger, composition root |
+
+Зависимости: `Domain` ← `Application` ← `Infrastructure` ← `Presentation` (Web). **Application не ссылается на Infrastructure.**
+
+Вспомогательные проекты: `EventManagement.Logging`, `EventManagement.Events.Api` (HTTP-клиент к Events для Bookings).
+
+### Bookings API (пока монолитный Web-проект)
+
+- `src/EventManagement.Booking` — API бронирований и фоновая обработка
+
+### Тесты
+
+- `tests/EventManagement.Events.Tests` — модульные тесты Events (Application + Infrastructure)
 - `tests/EventManagement.Bookings.Tests` — модульные тесты бронирований
-- `tests/EventApi.IntegrationTests` — интеграционные тесты слоя данных (репозитории, миграции; PostgreSQL через Testcontainers)
+- `tests/EventApi.IntegrationTests` — интеграционные тесты репозиториев и миграций (PostgreSQL через Testcontainers)
 
 ## Запуск
 
@@ -76,10 +93,10 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Po
 
 В решении два контекста и два набора миграций:
 
-| Контекст | Проект | Таблица | Миграция |
-|----------|--------|---------|----------|
-| `EventsDbContext` | `src/EventManagement.Event` | `events` | `Migrations/InitialCreate` |
-| `BookingsDbContext` | `src/EventManagement.Booking` | `bookings` | `Migrations/InitialCreate` |
+| Контекст | Проект (миграции) | Startup-проект | Таблица |
+|----------|-------------------|----------------|---------|
+| `EventsDbContext` | `src/EventManagement.Events.Infrastructure` | `src/EventManagement.Event` | `events` |
+| `BookingsDbContext` | `src/EventManagement.Booking` | `src/EventManagement.Booking` | `bookings` |
 
 У каждого сервиса **свой** PostgreSQL (локально — два контейнера в compose) — **database per service**. Миграции независимы: запустите каждый API или `database update` для своего контекста.
 
@@ -94,7 +111,7 @@ dotnet tool restore
 Создание новой миграции (пример имени `InitialCreate` замените при необходимости):
 
 ```bash
-dotnet tool run dotnet-ef -- migrations add InitialCreate --project src/EventManagement.Event/EventManagement.Events.csproj --startup-project src/EventManagement.Event/EventManagement.Events.csproj --context EventsDbContext
+dotnet tool run dotnet-ef -- migrations add InitialCreate --project src/EventManagement.Events.Infrastructure/EventManagement.Events.Infrastructure.csproj --startup-project src/EventManagement.Event/EventManagement.Events.csproj --context EventsDbContext
 
 dotnet tool run dotnet-ef -- migrations add InitialCreate --project src/EventManagement.Booking/EventManagement.Bookings.csproj --startup-project src/EventManagement.Booking/EventManagement.Bookings.csproj --context BookingsDbContext
 ```
@@ -102,7 +119,7 @@ dotnet tool run dotnet-ef -- migrations add InitialCreate --project src/EventMan
 Применить все неприменённые миграции к базе из командной строки (альтернатива — просто запустить API, там уже вызывается `Migrate()`):
 
 ```bash
-dotnet tool run dotnet-ef -- database update --project src/EventManagement.Event/EventManagement.Events.csproj --startup-project src/EventManagement.Event/EventManagement.Events.csproj --context EventsDbContext
+dotnet tool run dotnet-ef -- database update --project src/EventManagement.Events.Infrastructure/EventManagement.Events.Infrastructure.csproj --startup-project src/EventManagement.Event/EventManagement.Events.csproj --context EventsDbContext
 
 dotnet tool run dotnet-ef -- database update --project src/EventManagement.Booking/EventManagement.Bookings.csproj --startup-project src/EventManagement.Booking/EventManagement.Bookings.csproj --context BookingsDbContext
 ```
@@ -245,28 +262,27 @@ Swagger UI доступен для каждого API в режиме Developmen
 ## Архитектура
 
 Сервис состоит из двух независимых API:
-- `Event` — управление мероприятиями;
-- `Booking` — создание и фоновая обработка бронирований.
+- **Events** — управление мероприятиями (отдельные сборки Domain / Application / Infrastructure / Presentation);
+- **Bookings** — создание и фоновая обработка бронирований (пока один Web-проект с папками слоёв).
 
 Граница между сервисами:
 - **HTTP** — `IEventsClient` для проверки события, резервирования мест;
 - **Данные** — отдельные БД `events` и `bookings`; `Booking` не обращается к `EventsDbContext` и таблице `events`.
 
-Репозитории работают только со своим `DbContext` и своей базой.
+### Events API
 
-Проект разделен по слоям:
-- `Models` — доменные модели;
-- `Data` / `DataAccess` — интерфейсы и реализации репозиториев (`EventRepository`, `BookingRepository`), `DbContext`, конфигурации EF;
-- `Application` — сервисы, DTO и бизнес-правила (работают только через репозитории);
-- `Infrastructure` — регистрация DI (`AddScoped` для репозиториев), фоновые задачи;
-- `Presentation` — контроллеры, Swagger, middleware, `Database.Migrate()` при старте.
+- **Domain** — сущность `Event`, `EventNotFoundException` (без EF и ASP.NET).
+- **Application** — `EventService`, DTO, FluentValidation; порт `IEventRepository`.
+- **Infrastructure** — `EventsDbContext`, `EventRepository`, миграции, `AddInfrastructureServices`, `UseEventsDatabaseInitialization`.
+- **Presentation** (`EventManagement.Events`) — тонкие контроллеры, Swagger, exception middleware; composition root в `Program.cs` (`AddApplicationServices`, `AddInfrastructureServices`, `AddPresentationServices`).
 
-`BookingBackgroundService` получает scoped-зависимости через `IServiceScopeFactory` (отдельный scope на чтение очереди и на обработку каждой брони).
+### Bookings API
 
-Для локального наполнения данных в `Event` API используется `EventsDataSeeder` + `EventsFactory`.
-Сидирование управляется флагом `DatabaseInitialization:SeedOnStartup`:
-- `false` в `appsettings.json`;
-- `true` в `appsettings.Development.json`.
+- Папки `Models`, `Application`, `Infrastructure`, `Presentation` внутри одной сборки;
+- `BookingBackgroundService` — scoped-зависимости через `IServiceScopeFactory`.
+
+Для локального наполнения Events используется `EventsDataSeeder` + `EventsFactory` (Infrastructure).
+Сидирование: `DatabaseInitialization:SeedOnStartup` — `false` в `appsettings.json`, `true` в `appsettings.Development.json`.
 
 ## Известные ограничения
 

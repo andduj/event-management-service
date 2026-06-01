@@ -1,6 +1,6 @@
-using System.Data.Common;
+﻿using System.Data.Common;
 using EventManagement.Bookings.DataAccess;
-using EventManagement.Events.DataAccess;
+using EventManagement.Events.Infrastructure.DataAccess;
 using EventApi.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 

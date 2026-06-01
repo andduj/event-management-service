@@ -1,7 +1,7 @@
-using EventManagement.Events.Models;
+﻿using EventManagement.Events.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventManagement.Events.DataAccess
+namespace EventManagement.Events.Infrastructure.DataAccess
 {
     public sealed class EventsDbContext : DbContext
     {
