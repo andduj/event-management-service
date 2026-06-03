@@ -52,16 +52,6 @@ namespace EventManagement.Bookings.Application.Services
             await ProcessBookingCoreAsync(booking, cancellationToken);
         }
 
-        /// <inheritdoc/>
-        public async Task ProcessPendingBookingsAsync(CancellationToken cancellationToken)
-        {
-            var pendingBookings = await _bookingRepository.GetBookingsAsync(BookingStatus.Pending);
-            foreach (var booking in pendingBookings)
-            {
-                await ProcessBookingCoreAsync(booking, cancellationToken);
-            }
-        }
-
         private async Task ProcessBookingCoreAsync(Booking booking, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)

@@ -51,7 +51,7 @@ namespace EventManagement.Bookings.Infrastructure
             {
                 do
                 {
-                    await ProcessPendingBookingsAsync(cancellationToken);
+                    await PollAndProcessPendingBookingsAsync(cancellationToken);
                 }
                 while (await timer.WaitForNextTickAsync(cancellationToken));
             }
@@ -69,7 +69,7 @@ namespace EventManagement.Bookings.Infrastructure
             }
         }
 
-        private async Task ProcessPendingBookingsAsync(CancellationToken cancellationToken)
+        private async Task PollAndProcessPendingBookingsAsync(CancellationToken cancellationToken)
         {
             var pendingBookingIds = await GetPendingBookingIdsAsync(cancellationToken);
             if (pendingBookingIds.Count == 0)

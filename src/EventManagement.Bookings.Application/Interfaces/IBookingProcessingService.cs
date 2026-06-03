@@ -22,11 +22,5 @@ namespace EventManagement.Bookings.Application.Interfaces
         /// <param name="bookingId">Идентификатор бронирования.</param>
         /// <param name="cancellationToken">Токен отмены.</param>
         Task ProcessBookingAsync(Guid bookingId, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Обрабатывает бронирования в статусе Pending.
-        /// </summary>
-        /// <param name="cancellationToken">Токен отмены.</param>
-        Task ProcessPendingBookingsAsync(CancellationToken cancellationToken);
     }
 }
