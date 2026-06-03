@@ -13,7 +13,7 @@ namespace EventManagement.Bookings.Presentation
         /// </summary>
         /// <param name="services">Коллекция сервисов (контейнер DI).</param>
         /// <returns>Модифицированная коллекция сервисов для дальнейшей настройки.</returns>
-        public static IServiceCollection AddPresentation(this IServiceCollection services)
+        public static IServiceCollection AddPresentationServices(this IServiceCollection services)
         {
             services.AddControllers();
             services.AddEndpointsApiExplorer();

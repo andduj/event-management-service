@@ -1,7 +1,7 @@
-using EventManagement.Bookings.Data.Repositories;
-using EventManagement.Bookings.DataAccess;
-using EventManagement.Bookings.Exceptions;
-using EventManagement.Bookings.Models;
+﻿using EventManagement.Bookings.Infrastructure.Data.Repositories;
+using EventManagement.Bookings.Infrastructure.DataAccess;
+using EventManagement.Bookings.Domain.Exceptions;
+using EventManagement.Bookings.Domain.Models;
 using EventApi.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 

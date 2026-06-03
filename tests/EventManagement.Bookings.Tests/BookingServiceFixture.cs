@@ -1,10 +1,9 @@
-using AutoFixture;
+﻿using AutoFixture;
 using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Application.Services;
-using EventManagement.Bookings.Data.Interfaces;
-using EventManagement.Bookings.Data.Repositories;
-using EventManagement.Bookings.DataAccess;
+using EventManagement.Bookings.Infrastructure.Data.Repositories;
+using EventManagement.Bookings.Infrastructure.DataAccess;
 using EventManagement.Events.Api;
 using EventManagement.Logging;
 using Microsoft.EntityFrameworkCore;

@@ -1,4 +1,4 @@
-using EventManagement.Bookings.Exceptions;
+﻿using EventManagement.Bookings.Domain.Exceptions;
 using EventManagement.Events.Api;
 using EventManagement.Logging;
 using Microsoft.AspNetCore.Hosting;

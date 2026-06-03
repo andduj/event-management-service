@@ -1,4 +1,4 @@
-﻿using EventManagement.Bookings.DataAccess;
+﻿using EventManagement.Bookings.Infrastructure.DataAccess;
 using EventManagement.Events.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;

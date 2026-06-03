@@ -1,8 +1,7 @@
-using EventManagement.Bookings.Application.DTOs;
+﻿using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Data.Interfaces;
-using EventManagement.Bookings.Exceptions;
-using EventManagement.Bookings.Models;
+using EventManagement.Bookings.Domain.Exceptions;
+using EventManagement.Bookings.Domain.Models;
 using EventManagement.Events.Api;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;

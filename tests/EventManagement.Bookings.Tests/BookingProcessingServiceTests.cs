@@ -1,7 +1,7 @@
-using AutoFixture;
+﻿using AutoFixture;
 using EventManagement.Bookings.Application.Services;
-using EventManagement.Bookings.Data.Interfaces;
-using EventManagement.Bookings.Models;
+using EventManagement.Bookings.Application.Interfaces;
+using EventManagement.Bookings.Domain.Models;
 using EventManagement.Events.Api;
 using FluentAssertions;
 using Moq;
