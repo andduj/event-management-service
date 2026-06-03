@@ -1,7 +1,6 @@
 using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Infrastructure.Extensions;
-using EventManagement.Bookings.Presentation;
-using EventManagement.Bookings.Presentation.Extensions;
+using EventManagement.Bookings.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

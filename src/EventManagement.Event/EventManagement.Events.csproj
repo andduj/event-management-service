@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <UserSecretsId>event-management-events-api</UserSecretsId>
-    <RootNamespace>EventManagement.Events.Presentation</RootNamespace>
+    <RootNamespace>EventManagement.Events</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

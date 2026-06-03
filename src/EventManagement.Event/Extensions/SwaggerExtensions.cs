@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace EventManagement.Bookings.Presentation.Extensions
+namespace EventManagement.Events.Extensions
 {
     /// <summary>
     /// Класс-расширение для настройки Swagger документации в приложении.

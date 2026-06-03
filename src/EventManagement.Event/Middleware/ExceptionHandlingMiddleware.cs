@@ -9,7 +9,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EventManagement.Events.Presentation.Middleware
+namespace EventManagement.Events.Middleware
 {
     /// <summary>
     /// Класс для глобальной обработки исключений.

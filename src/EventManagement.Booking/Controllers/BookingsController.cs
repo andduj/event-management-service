@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 
-namespace EventManagement.Bookings.Presentation.Controllers
+namespace EventManagement.Bookings.Controllers
 {
     /// <summary>
     /// Контроллер для получения информации о бронированиях.

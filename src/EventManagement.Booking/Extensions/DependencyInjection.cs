@@ -1,7 +1,6 @@
-using EventManagement.Bookings.Presentation.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EventManagement.Bookings.Presentation
+namespace EventManagement.Bookings.Extensions
 {
     /// <summary>
     /// Класс для регистрации зависимостей уровня представления в DI контейнере.

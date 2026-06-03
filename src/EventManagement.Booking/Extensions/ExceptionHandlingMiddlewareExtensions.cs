@@ -1,7 +1,7 @@
-using EventManagement.Bookings.Presentation.Middleware;
+using EventManagement.Bookings.Middleware;
 using Microsoft.AspNetCore.Builder;
 
-namespace EventManagement.Bookings.Presentation.Extensions
+namespace EventManagement.Bookings.Extensions
 {
     /// <summary>
     /// Класс-расширение для регистрации middleware обработки исключений в конвейере HTTP-запросов.

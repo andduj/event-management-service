@@ -8,7 +8,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventManagement.Events.Presentation.Controllers
+namespace EventManagement.Events.Controllers
 {
     /// <summary>
     /// Контроллер для работы с мероприятиями.

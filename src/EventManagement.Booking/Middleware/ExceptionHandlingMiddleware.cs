@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading.Tasks;
 
-namespace EventManagement.Bookings.Presentation.Middleware
+namespace EventManagement.Bookings.Middleware
 {
     /// <summary>
     /// Класс для глобальной обработки исключений.
