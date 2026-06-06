@@ -1,8 +1,8 @@
-using EventManagement.Events.Application.Filters;
-using EventManagement.Events.Data.Repositories;
-using EventManagement.Events.DataAccess;
-using EventManagement.Events.Exceptions;
-using EventManagement.Events.Models;
+﻿using EventManagement.Events.Application.Filters;
+using EventManagement.Events.Infrastructure.Data.Repositories;
+using EventManagement.Events.Infrastructure.DataAccess;
+using EventManagement.Events.Domain.Exceptions;
+using EventManagement.Events.Domain.Models;
 using EventApi.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
