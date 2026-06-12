@@ -1,7 +1,6 @@
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Models;
-using EventManagement.Events.Api;
 using EventManagement.Logging;
 using System;
 using System.Collections.Generic;
@@ -17,19 +16,19 @@ namespace EventManagement.Bookings.Application.Services
     public class BookingProcessingService : IBookingProcessingService
     {
         private readonly IBookingRepository _bookingRepository;
-        private readonly IEventsClient _eventsClient;
+        private readonly IEventsGateway _eventsGateway;
         private readonly ILogger<BookingProcessingService> _logger;
 
         /// <summary>
         /// Инициализирует новый экземпляр сервиса фоновой обработки бронирований.
         /// </summary>
         /// <param name="bookingRepository">Репозиторий бронирований.</param>
-        /// <param name="eventsClient">Сервис мероприятий.</param>
+        /// <param name="eventsGateway">Порт для взаимодействия с Events API.</param>
         /// <param name="logger">Логгер приложения.</param>
-        public BookingProcessingService(IBookingRepository bookingRepository, IEventsClient eventsClient, ILogger<BookingProcessingService> logger)
+        public BookingProcessingService(IBookingRepository bookingRepository, IEventsGateway eventsGateway, ILogger<BookingProcessingService> logger)
         {
             _bookingRepository = bookingRepository;
-            _eventsClient = eventsClient;
+            _eventsGateway = eventsGateway;
             _logger = logger;
         }
 
@@ -70,7 +69,7 @@ namespace EventManagement.Bookings.Application.Services
             _logger.Debug("Начало обработки бронирования. BookingId={0}, EventId={1}", booking.Id, booking.EventId);
             try
             {
-                bool exists = await _eventsClient.ExistsAsync(booking.EventId, cancellationToken);
+                bool exists = await _eventsGateway.EventExistsAsync(booking.EventId, cancellationToken);
                 if (exists)
                 {
                     booking.Confirm();
@@ -104,7 +103,7 @@ namespace EventManagement.Bookings.Application.Services
             {
                 booking.Reject();
                 await _bookingRepository.UpdateBookingAsync(booking, cancellationToken);
-                await _eventsClient.ReleaseSeatsAsync(booking.EventId, 1, cancellationToken);
+                await _eventsGateway.ReleaseSeatsAsync(booking.EventId, 1, cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {

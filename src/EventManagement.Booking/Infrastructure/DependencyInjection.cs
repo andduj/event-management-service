@@ -1,3 +1,4 @@
+using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Data.Repositories;
 using EventManagement.Bookings.DataAccess;
@@ -42,6 +43,7 @@ namespace EventManagement.Bookings.Infrastructure
                 var httpClient = httpClientFactory.CreateClient("EventsApi");
                 return new EventsClient(eventsBaseUrl, httpClient);
             });
+            services.AddScoped<IEventsGateway, EventsGateway>();
 
             return services;
         }

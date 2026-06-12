@@ -4,7 +4,6 @@ using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Exceptions;
 using EventManagement.Bookings.Models;
-using EventManagement.Events.Api;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +16,7 @@ namespace EventManagement.Bookings.Application.Services
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepository;
-        private readonly IEventsClient _eventsClient;
+        private readonly IEventsGateway _eventsGateway;
         private readonly IMapper _mapper;
         private readonly Logging.ILogger<BookingService> _logger;
 
@@ -25,12 +24,12 @@ namespace EventManagement.Bookings.Application.Services
 
         public BookingService(
             IBookingRepository bookingRepository,
-            IEventsClient eventsClient,
+            IEventsGateway eventsGateway,
             IMapper mapper,
             Logging.ILogger<BookingService> logger)
         {
             _bookingRepository = bookingRepository;
-            _eventsClient = eventsClient;
+            _eventsGateway = eventsGateway;
             _mapper = mapper;
             _logger = logger;
         }
@@ -39,13 +38,13 @@ namespace EventManagement.Bookings.Application.Services
         public async Task<BookingInfo> CreateBookingAsync(Guid eventId)
         {
             _logger.Info("Создание новой брони. EventId={0}", eventId);
-            await _eventsClient.EventsGetAsync(eventId);
+            await _eventsGateway.EnsureEventExistsAsync(eventId);
 
             Booking addedBooking;
             await _semaphoreSlim.WaitAsync();
             try
             {
-                bool wasReserved = await _eventsClient.ReserveSeatsAsync(eventId, 1);
+                bool wasReserved = await _eventsGateway.ReserveSeatsAsync(eventId, 1);
                 if (!wasReserved)
                 {
                     throw new NoAvailableSeatsException();

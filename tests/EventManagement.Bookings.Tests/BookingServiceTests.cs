@@ -3,7 +3,6 @@ using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Data.Interfaces;
 using EventManagement.Bookings.Exceptions;
 using EventManagement.Bookings.Models;
-using EventManagement.Events.Api;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -14,7 +13,7 @@ namespace EventManagement.Bookings.Tests
     public class BookingServiceTests : IClassFixture<BookingServiceFixture>
     {
         public readonly IBookingService _bookingService;
-        public readonly Mock<IEventsClient> _eventsClient;
+        public readonly Mock<IEventsGateway> _eventsGateway;
         public readonly IBookingRepository _bookingRepository;
         public readonly BookingServiceFixture _fixture;
 
@@ -22,16 +21,16 @@ namespace EventManagement.Bookings.Tests
         {
             _fixture = fixture;
             _bookingService = fixture.BookingService;
-            _eventsClient = fixture.EventsClient;
+            _eventsGateway = fixture.EventsGateway;
             _bookingRepository = fixture.BookingRepository;
 
-            _eventsClient
-                .Setup(client => client.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int?>()))
+            _eventsGateway
+                .Setup(gateway => gateway.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
-            _eventsClient
-                .Setup(client => client.EventsGetAsync(It.IsAny<Guid>()))
-                .ReturnsAsync((Guid eventId) => _fixture.CreateTestEvent(eventId, 10));
+            _eventsGateway
+                .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
         }
 
         [Fact]
@@ -63,12 +62,8 @@ namespace EventManagement.Bookings.Tests
             var eventId = Guid.NewGuid();
             int availableSeats = 3;
 
-            _eventsClient
-                .Setup(client => client.EventsGetAsync(eventId))
-                .ReturnsAsync(() => _fixture.CreateTestEvent(eventId, totalSeats: 3, availableSeats));
-
-            _eventsClient
-                .Setup(client => client.ReserveSeatsAsync(eventId, 1))
+            _eventsGateway
+                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() =>
                 {
                     if (availableSeats <= 0)
@@ -83,7 +78,7 @@ namespace EventManagement.Bookings.Tests
             await _bookingService.CreateBookingAsync(eventId);
 
             availableSeats.Should().Be(2);
-            _eventsClient.Verify(client => client.ReserveSeatsAsync(eventId, 1), Times.Once);
+            _eventsGateway.Verify(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -94,12 +89,8 @@ namespace EventManagement.Bookings.Tests
             int availableSeats = limit;
             var createdBookingIds = new List<Guid>();
 
-            _eventsClient
-                .Setup(client => client.EventsGetAsync(eventId))
-                .ReturnsAsync(() => _fixture.CreateTestEvent(eventId, totalSeats: limit, availableSeats));
-
-            _eventsClient
-                .Setup(client => client.ReserveSeatsAsync(eventId, 1))
+            _eventsGateway
+                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() =>
                 {
                     if (availableSeats <= 0)
@@ -129,12 +120,8 @@ namespace EventManagement.Bookings.Tests
             var eventId = Guid.NewGuid();
             int availableSeats = limit;
 
-            _eventsClient
-                .Setup(client => client.EventsGetAsync(eventId))
-                .ReturnsAsync(() => _fixture.CreateTestEvent(eventId, totalSeats: limit, availableSeats));
-
-            _eventsClient
-                .Setup(client => client.ReserveSeatsAsync(eventId, 1))
+            _eventsGateway
+                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() =>
                 {
                     if (availableSeats <= 0)
@@ -192,36 +179,36 @@ namespace EventManagement.Bookings.Tests
         }
 
         [Fact]
-        public async Task CreateBookingAsync_NotExistedEvent_ShouldApiExceptionWithNotFoundStatus()
+        public async Task CreateBookingAsync_NotExistedEvent_ShouldEventsGatewayExceptionWithNotFoundStatus()
         {
-            _eventsClient
-                .Setup(client => client.EventsGetAsync(It.IsAny<Guid>()))
-                .ThrowsAsync(new ApiException("Мероприятие не найдено", 404, string.Empty, null, null));
+            _eventsGateway
+                .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new EventsGatewayException("Мероприятие не найдено", 404));
 
             var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
 
-            var exception = await action.Should().ThrowAsync<ApiException>();
+            var exception = await action.Should().ThrowAsync<EventsGatewayException>();
             exception.Which.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
         }
 
         [Fact]
-        public async Task CreateBookingAsync_DeletedEvent_ShouldApiException()
+        public async Task CreateBookingAsync_DeletedEvent_ShouldEventsGatewayException()
         {
-            _eventsClient
-                .Setup(client => client.EventsGetAsync(It.IsAny<Guid>()))
-                .ThrowsAsync(new ApiException("Мероприятие было удалено", 410, string.Empty, null, null));
+            _eventsGateway
+                .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new EventsGatewayException("Мероприятие было удалено", 410));
 
             var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
 
-            var exception = await action.Should().ThrowAsync<ApiException>();
+            var exception = await action.Should().ThrowAsync<EventsGatewayException>();
             exception.Which.StatusCode.Should().Be((int)HttpStatusCode.Gone);
         }
 
         [Fact]
         public async Task CreateBookingAsync_WhenNoAvailableSeats_ShouldThrowNoAvailableSeatsException()
         {
-            _eventsClient
-                .Setup(client => client.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int?>()))
+            _eventsGateway
+                .Setup(gateway => gateway.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
@@ -239,12 +226,8 @@ namespace EventManagement.Bookings.Tests
             var seatsLock = new object();
             var startSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            _eventsClient
-                .Setup(client => client.EventsGetAsync(eventId))
-                .ReturnsAsync(() => _fixture.CreateTestEvent(eventId, totalSeats, availableSeats));
-
-            _eventsClient
-                .Setup(client => client.ReserveSeatsAsync(eventId, 1))
+            _eventsGateway
+                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() =>
                 {
                     lock (seatsLock)
@@ -290,12 +273,8 @@ namespace EventManagement.Bookings.Tests
             var seatsLock = new object();
             var startSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            _eventsClient
-                .Setup(client => client.EventsGetAsync(eventId))
-                .ReturnsAsync(() => _fixture.CreateTestEvent(eventId, totalSeats, availableSeats));
-
-            _eventsClient
-                .Setup(client => client.ReserveSeatsAsync(eventId, 1))
+            _eventsGateway
+                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() =>
                 {
                     lock (seatsLock)

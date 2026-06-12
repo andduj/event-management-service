@@ -1,5 +1,4 @@
 using EventManagement.Bookings.Exceptions;
-using EventManagement.Events.Api;
 using EventManagement.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -109,8 +108,8 @@ namespace EventManagement.Bookings.Presentation.Middleware
                     return StatusCodes.Status404NotFound;
                 case NoAvailableSeatsException:
                     return StatusCodes.Status409Conflict;
-                case ApiException apiException:
-                    return apiException.StatusCode;
+                case EventsGatewayException eventsGatewayException:
+                    return eventsGatewayException.StatusCode;
                 case ArgumentException:
                     return StatusCodes.Status400BadRequest;
                 case UnauthorizedAccessException:
