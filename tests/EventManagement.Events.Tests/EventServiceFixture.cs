@@ -1,13 +1,12 @@
-using AutoFixture;
+﻿using AutoFixture;
 using EventManagement.Events.Application;
 using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Application.Requests;
 using EventManagement.Events.Application.Services;
 using EventManagement.Events.Application.Validators;
-using EventManagement.Events.Data.Interfaces;
-using EventManagement.Events.Data.Repositories;
-using EventManagement.Events.DataAccess;
-using EventManagement.Events.Models;
+using EventManagement.Events.Infrastructure.Data.Repositories;
+using EventManagement.Events.Infrastructure.DataAccess;
+using EventManagement.Events.Domain.Models;
 using EventManagement.Logging;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;

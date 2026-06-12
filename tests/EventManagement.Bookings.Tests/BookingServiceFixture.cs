@@ -1,10 +1,10 @@
-using AutoFixture;
+﻿using AutoFixture;
 using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Application.Services;
-using EventManagement.Bookings.Data.Interfaces;
-using EventManagement.Bookings.Data.Repositories;
-using EventManagement.Bookings.DataAccess;
+using EventManagement.Bookings.Domain.Models;
+using EventManagement.Bookings.Infrastructure.Data.Repositories;
+using EventManagement.Bookings.Infrastructure.DataAccess;
 using EventManagement.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,8 +44,8 @@ namespace EventManagement.Bookings.Tests
             BookingRepository = Scope.ServiceProvider.GetRequiredService<IBookingRepository>();
 
             Fixture = new Fixture();
-            Fixture.Customize<Models.Booking>(composer => composer
-                .FromFactory(() => Models.Booking.Create(Guid.NewGuid()))
+            Fixture.Customize<Booking>(composer => composer
+                .FromFactory(() => Booking.Create(Guid.NewGuid()))
                 .OmitAutoProperties());
 
             BookingService = Scope.ServiceProvider.GetRequiredService<IBookingService>();

@@ -1,7 +1,6 @@
 using EventManagement.Bookings.Application;
-using EventManagement.Bookings.Infrastructure;
-using EventManagement.Bookings.Presentation;
-using EventManagement.Bookings.Presentation.Extensions;
+using EventManagement.Bookings.Infrastructure.Extensions;
+using EventManagement.Bookings.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,9 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddApplication();
-builder.Services.AddPresentation();
+builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddApplicationServices();
+builder.Services.AddPresentationServices();
 
 if (builder.Environment.IsDevelopment())
 {
@@ -26,7 +25,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 var app = builder.Build();
-app.UseDatabaseInitialization();
+app.UseBookingsDatabaseInitialization();
 
 if (app.Environment.IsDevelopment())
 {

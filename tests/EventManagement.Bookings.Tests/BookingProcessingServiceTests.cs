@@ -1,8 +1,7 @@
-using AutoFixture;
-using EventManagement.Bookings.Application.Services;
-using EventManagement.Bookings.Data.Interfaces;
-using EventManagement.Bookings.Models;
+﻿using AutoFixture;
 using EventManagement.Bookings.Application.Interfaces;
+using EventManagement.Bookings.Application.Services;
+using EventManagement.Bookings.Domain.Models;
 using FluentAssertions;
 using Moq;
 
@@ -60,6 +59,12 @@ namespace EventManagement.Bookings.Tests
             _bookingRepository
                 .Setup(repository => repository.GetBookingsAsync(BookingStatus.Pending))
                 .ReturnsAsync(bookings);
+            foreach (var booking in bookings)
+            {
+                _bookingRepository
+                    .Setup(repository => repository.GetBookingByIdAsync(booking.Id))
+                    .ReturnsAsync(booking);
+            }
             _bookingRepository
                 .Setup(repository => repository.UpdateBookingAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
                 .Callback<Booking, CancellationToken>((booking, _) => updatedBookings.Add(booking))
@@ -69,7 +74,7 @@ namespace EventManagement.Bookings.Tests
                 .Setup(gateway => gateway.EventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
-            await _bookingProcessingService.ProcessPendingBookingsAsync(CancellationToken.None);
+            await ProcessAllPendingBookingsAsync();
 
             updatedBookings.Should().HaveCount(2);
             updatedBookings.Should().OnlyContain(booking =>
@@ -88,6 +93,9 @@ namespace EventManagement.Bookings.Tests
                 .Setup(repository => repository.GetBookingsAsync(BookingStatus.Pending))
                 .ReturnsAsync(bookings);
             _bookingRepository
+                .Setup(repository => repository.GetBookingByIdAsync(pendingBooking.Id))
+                .ReturnsAsync(pendingBooking);
+            _bookingRepository
                 .Setup(repository => repository.UpdateBookingAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
                 .Callback<Booking, CancellationToken>((booking, _) => updatedBookings.Add(booking))
                 .Returns(Task.CompletedTask);
@@ -101,7 +109,7 @@ namespace EventManagement.Bookings.Tests
                 .Callback(() => availableSeats++)
                 .Returns(Task.CompletedTask);
 
-            await _bookingProcessingService.ProcessPendingBookingsAsync(CancellationToken.None);
+            await ProcessAllPendingBookingsAsync();
 
             updatedBookings.Should().ContainSingle();
             updatedBookings.Single().Status.Should().Be(BookingStatus.Rejected);
@@ -122,6 +130,9 @@ namespace EventManagement.Bookings.Tests
             _bookingRepository
                 .Setup(repository => repository.GetBookingsAsync(BookingStatus.Pending))
                 .ReturnsAsync(pendingBookings);
+            _bookingRepository
+                .Setup(repository => repository.GetBookingByIdAsync(pendingBookings[0].Id))
+                .ReturnsAsync(pendingBookings[0]);
             _bookingRepository
                 .Setup(repository => repository.UpdateBookingAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
@@ -152,11 +163,20 @@ namespace EventManagement.Bookings.Tests
                     return true;
                 });
 
-            await _bookingProcessingService.ProcessPendingBookingsAsync(CancellationToken.None);
+            await ProcessAllPendingBookingsAsync();
 
             var action = () => _bookingService.CreateBookingAsync(eventId);
 
             await action.Should().NotThrowAsync();
+        }
+
+        private async Task ProcessAllPendingBookingsAsync(CancellationToken cancellationToken = default)
+        {
+            var bookingIds = await _bookingProcessingService.GetPendingBookingIdsAsync(cancellationToken);
+            foreach (var bookingId in bookingIds)
+            {
+                await _bookingProcessingService.ProcessBookingAsync(bookingId, cancellationToken);
+            }
         }
     }
 }
