@@ -59,10 +59,6 @@ namespace EventManagement.Bookings.Infrastructure
             {
 
             }
-            catch (Exception exception)
-            {
-                _logger.Error(exception, "При обработки бронирований возникла ошибка");
-            }
             finally
             {
                 _logger.Info("Сервис обработки бронирований завершает работу");
@@ -71,7 +67,21 @@ namespace EventManagement.Bookings.Infrastructure
 
         private async Task PollAndProcessPendingBookingsAsync(CancellationToken cancellationToken)
         {
-            var pendingBookingIds = await GetPendingBookingIdsAsync(cancellationToken);
+            List<Guid> pendingBookingIds;
+            try
+            {
+                pendingBookingIds = await GetPendingBookingIdsAsync(cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "Не удалось получить список ожидающих бронирований");
+                return;
+            }
+
             if (pendingBookingIds.Count == 0)
             {
                 return;
@@ -90,9 +100,20 @@ namespace EventManagement.Bookings.Infrastructure
 
         private async Task ProcessBookingInScopeAsync(Guid bookingId, CancellationToken cancellationToken)
         {
-            using var scope = _scopeFactory.CreateScope();
-            var bookingProcessingService = scope.ServiceProvider.GetRequiredService<IBookingProcessingService>();
-            await bookingProcessingService.ProcessBookingAsync(bookingId, cancellationToken);
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var bookingProcessingService = scope.ServiceProvider.GetRequiredService<IBookingProcessingService>();
+                await bookingProcessingService.ProcessBookingAsync(bookingId, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "Ошибка при обработке бронирования {0}", bookingId);
+            }
         }
     }
 }

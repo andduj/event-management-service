@@ -52,6 +52,43 @@ namespace EventManagement.Bookings.Tests
         }
 
         [Fact]
+        public void Confirm_WhenBookingAlreadyConfirmed_ShouldBeIdempotent()
+        {
+            var booking = Booking.Create(Guid.NewGuid());
+            booking.Confirm();
+            var processedAt = booking.ProcessedAt;
+
+            booking.Confirm();
+
+            booking.Status.Should().Be(BookingStatus.Confirmed);
+            booking.ProcessedAt.Should().Be(processedAt);
+        }
+
+        [Fact]
+        public void Reject_WhenBookingAlreadyRejected_ShouldBeIdempotent()
+        {
+            var booking = Booking.Create(Guid.NewGuid());
+            booking.Reject();
+            var processedAt = booking.ProcessedAt;
+
+            booking.Reject();
+
+            booking.Status.Should().Be(BookingStatus.Rejected);
+            booking.ProcessedAt.Should().Be(processedAt);
+        }
+
+        [Fact]
+        public void Confirm_WhenBookingAlreadyRejected_ShouldThrowInvalidOperationException()
+        {
+            var booking = Booking.Create(Guid.NewGuid());
+            booking.Reject();
+
+            var action = () => booking.Confirm();
+
+            action.Should().Throw<InvalidOperationException>();
+        }
+
+        [Fact]
         public async Task ProcessPendingBookingsAsync_PendingBookings_ShouldConfirmAllBookings()
         {
             var bookings = _fixtureData.CreateMany<Booking>(2).ToList();
@@ -80,6 +117,41 @@ namespace EventManagement.Bookings.Tests
             updatedBookings.Should().OnlyContain(booking =>
                 booking.Status == BookingStatus.Confirmed);
             updatedBookings.Should().OnlyContain(booking => booking.ProcessedAt.HasValue);
+        }
+
+        [Fact]
+        public async Task ProcessPendingBookingsAsync_WhenEventDoesNotExist_ShouldRejectBookingAndReleaseSeat()
+        {
+            var eventId = Guid.NewGuid();
+            var pendingBooking = Booking.Create(eventId);
+            var bookings = new List<Booking> { pendingBooking };
+            var updatedBookings = new List<Booking>();
+            _bookingRepository
+                .Setup(repository => repository.GetBookingsAsync(BookingStatus.Pending))
+                .ReturnsAsync(bookings);
+            _bookingRepository
+                .Setup(repository => repository.GetBookingByIdAsync(pendingBooking.Id))
+                .ReturnsAsync(pendingBooking);
+            _bookingRepository
+                .Setup(repository => repository.UpdateBookingAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
+                .Callback<Booking, CancellationToken>((booking, _) => updatedBookings.Add(booking))
+                .Returns(Task.CompletedTask);
+
+            var releasedSeats = 0;
+            _eventsGateway
+                .Setup(gateway => gateway.EventExistsAsync(eventId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+            _eventsGateway
+                .Setup(gateway => gateway.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
+                .Callback(() => releasedSeats++)
+                .Returns(Task.CompletedTask);
+
+            await ProcessAllPendingBookingsAsync();
+
+            updatedBookings.Should().ContainSingle();
+            updatedBookings.Single().Status.Should().Be(BookingStatus.Rejected);
+            releasedSeats.Should().Be(1);
+            _eventsGateway.Verify(gateway => gateway.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]

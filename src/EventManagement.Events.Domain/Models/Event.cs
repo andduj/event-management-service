@@ -51,13 +51,14 @@ namespace EventManagement.Events.Domain.Models
         /// Резервирование мест.
         /// </summary>
         /// <param name="count">Число мест.</param>
-        /// <returns></returns>
+        /// <returns><c>true</c>, если места зарезервированы; иначе <c>false</c>.</returns>
         public bool TryReserveSeats(int count = 1)
         {
             if (count <= 0)
             {
                 return false;
             }
+
             if (count > AvailableSeats)
             {
                 return false;
@@ -65,6 +66,20 @@ namespace EventManagement.Events.Domain.Models
 
             AvailableSeats -= count;
             return true;
+        }
+
+        /// <summary>
+        /// Устанавливает количество свободных мест.
+        /// </summary>
+        /// <param name="availableSeats">Новое количество свободных мест.</param>
+        public void SetAvailableSeats(int availableSeats)
+        {
+            if (availableSeats > TotalSeats)
+            {
+                throw new ArgumentOutOfRangeException(nameof(availableSeats), "Количество свободных мест не может превышать общее число мест");
+            }
+
+            AvailableSeats = availableSeats;
         }
 
         /// <summary>
@@ -77,6 +92,7 @@ namespace EventManagement.Events.Domain.Models
             {
                 return;
             }
+
             if (count + AvailableSeats > TotalSeats)
             {
                 return;
@@ -101,11 +117,6 @@ namespace EventManagement.Events.Domain.Models
             int totalSeats,
             string? description = null)
         {
-            if (totalSeats <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(totalSeats), "Значение должно быть больше 0");
-            }
-
             return new Event
             {
                 Id = Guid.NewGuid(),

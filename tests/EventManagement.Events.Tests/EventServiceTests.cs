@@ -77,14 +77,30 @@ namespace EventManagement.Events.Tests
             var addEventRequest = _fixture.Create<AddEventRequest>();
             var added = await _eventService.CreateEventAsync(addEventRequest);
             var updateEventRequest = _fixture.Create<UpdateEventRequest>();
+            updateEventRequest.AvailableSeats = added.TotalSeats - 1;
 
-           await _eventService.UpdateEventAsync(added.Id, updateEventRequest);
+            await _eventService.UpdateEventAsync(added.Id, updateEventRequest);
 
             var eventItem = await _eventService.GetEventByIdAsync(added.Id);
             eventItem.Title.Should().Be(updateEventRequest.Title);
             eventItem.Description.Should().Be(updateEventRequest.Description);
             eventItem.StartAt.Should().Be(updateEventRequest.StartAt);
             eventItem.EndAt.Should().Be(updateEventRequest.EndAt);
+            eventItem.AvailableSeats.Should().Be(updateEventRequest.AvailableSeats);
+        }
+
+        [Fact]
+        public async Task Update_ExistingEvent_WhenAvailableSeatsExceedsTotalSeats_ShouldThrowArgumentOutOfRangeException()
+        {
+            var addEventRequest = _fixture.Create<AddEventRequest>();
+            addEventRequest.TotalSeats = 5;
+            var added = await _eventService.CreateEventAsync(addEventRequest);
+            var updateEventRequest = _fixture.Create<UpdateEventRequest>();
+            updateEventRequest.AvailableSeats = 10;
+
+            Func<Task> action = () => _eventService.UpdateEventAsync(added.Id, updateEventRequest);
+
+            await action.Should().ThrowAsync<ArgumentOutOfRangeException>();
         }
 
         [Fact]
@@ -219,6 +235,7 @@ namespace EventManagement.Events.Tests
             var addEventRequest = _fixture.Create<AddEventRequest>();
             var addedEvent = await _eventService.CreateEventAsync(addEventRequest);
             var updateEventRequest = _fixture.Create<UpdateEventRequest>();
+            updateEventRequest.AvailableSeats = Math.Min(updateEventRequest.AvailableSeats, addedEvent.TotalSeats);
             updateEventRequest.StartAt = DateTime.Now.AddHours(1);
             updateEventRequest.EndAt = DateTime.Now;
 

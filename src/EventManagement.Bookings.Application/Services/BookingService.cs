@@ -41,6 +41,7 @@ namespace EventManagement.Bookings.Application.Services
             await _eventsGateway.EnsureEventExistsAsync(eventId);
 
             Booking addedBooking;
+            bool seatReserved = false;
             await _semaphoreSlim.WaitAsync();
             try
             {
@@ -50,8 +51,19 @@ namespace EventManagement.Bookings.Application.Services
                     throw new NoAvailableSeatsException();
                 }
 
+                seatReserved = true;
                 var booking = Booking.Create(eventId);
                 addedBooking = await _bookingRepository.CreateBookingAsync(booking);
+                seatReserved = false;
+            }
+            catch
+            {
+                if (seatReserved)
+                {
+                    await TryReleaseSeatAsync(eventId);
+                }
+
+                throw;
             }
             finally
             {
@@ -60,6 +72,18 @@ namespace EventManagement.Bookings.Application.Services
 
             _logger.Info("Бронь успешно создана. BookingId={0}", addedBooking.Id);
             return _mapper.Map<BookingInfo>(addedBooking);
+        }
+
+        private async Task TryReleaseSeatAsync(Guid eventId)
+        {
+            try
+            {
+                await _eventsGateway.ReleaseSeatsAsync(eventId, 1);
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "Не удалось освободить место для EventId={0} после ошибки создания брони", eventId);
+            }
         }
 
         /// <inheritdoc/>

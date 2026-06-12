@@ -14,33 +14,43 @@ namespace EventManagement.Bookings.Domain.Models
         /// <summary>
         /// Уникальный идентификатор брони.
         /// </summary>
-        public required Guid Id { get; set; }
+        public Guid Id { get; private set; }
 
         /// <summary>
         /// Идентификатор события, к которому относится бронь.
         /// </summary>
-        public required Guid EventId { get; set; }
+        public Guid EventId { get; private set; }
 
         /// <summary>
         /// Текущий статус брони.
         /// </summary>
-        public required BookingStatus Status { get; set; }
+        public BookingStatus Status { get; private set; }
 
         /// <summary>
         /// Дата и время создания брони.
         /// </summary>
-        public required DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; private set; }
 
         /// <summary>
         /// Дата и время обработки брони.
         /// </summary>
-        public DateTime? ProcessedAt { get; set; }
+        public DateTime? ProcessedAt { get; private set; }
 
         /// <summary>
         /// Подтверждает бронь и фиксирует время обработки.
         /// </summary>
         public void Confirm()
         {
+            if (Status == BookingStatus.Confirmed)
+            {
+                return;
+            }
+
+            if (Status != BookingStatus.Pending)
+            {
+                throw new InvalidOperationException($"Нельзя подтвердить бронь в статусе {Status}.");
+            }
+
             Status = BookingStatus.Confirmed;
             ProcessedAt = DateTime.UtcNow;
         }
@@ -50,6 +60,16 @@ namespace EventManagement.Bookings.Domain.Models
         /// </summary>
         public void Reject()
         {
+            if (Status == BookingStatus.Rejected)
+            {
+                return;
+            }
+
+            if (Status != BookingStatus.Pending)
+            {
+                throw new InvalidOperationException($"Нельзя отклонить бронь в статусе {Status}.");
+            }
+
             Status = BookingStatus.Rejected;
             ProcessedAt = DateTime.UtcNow;
         }

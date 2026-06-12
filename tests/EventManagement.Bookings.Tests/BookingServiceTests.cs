@@ -1,7 +1,11 @@
-﻿using EventManagement.Bookings.Application.DTOs;
+﻿using AutoMapper;
+using EventManagement.Bookings.Application;
+using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
+using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Domain.Exceptions;
 using EventManagement.Bookings.Domain.Models;
+using EventManagement.Logging;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -160,7 +164,7 @@ namespace EventManagement.Bookings.Tests
         {
             var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid());
             var booking = await _bookingRepository.GetBookingByIdAsync(bookingInfo.Id);
-            booking.Status = BookingStatus.Confirmed;
+            booking.Confirm();
             await _bookingRepository.UpdateBookingAsync(booking);
 
             var updatedBooking = await _bookingService.GetBookingByIdAsync(bookingInfo.Id);
@@ -213,6 +217,41 @@ namespace EventManagement.Bookings.Tests
             var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
 
             await action.Should().ThrowAsync<NoAvailableSeatsException>();
+        }
+
+        [Fact]
+        public async Task CreateBookingAsync_WhenDatabaseSaveFails_ShouldReleaseReservedSeat()
+        {
+            var eventId = Guid.NewGuid();
+            var releasedSeats = 0;
+            var eventsGateway = new Mock<IEventsGateway>();
+            var bookingRepository = new Mock<IBookingRepository>();
+            var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
+            var bookingService = new BookingService(
+                bookingRepository.Object,
+                eventsGateway.Object,
+                mapper,
+                new Mock<ILogger<BookingService>>().Object);
+
+            eventsGateway
+                .Setup(gateway => gateway.EnsureEventExistsAsync(eventId, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            eventsGateway
+                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+            eventsGateway
+                .Setup(gateway => gateway.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
+                .Callback(() => releasedSeats++)
+                .Returns(Task.CompletedTask);
+            bookingRepository
+                .Setup(repository => repository.CreateBookingAsync(It.IsAny<Booking>()))
+                .ThrowsAsync(new Exception("Database failure"));
+
+            var action = () => bookingService.CreateBookingAsync(eventId);
+
+            await action.Should().ThrowAsync<Exception>().WithMessage("Database failure");
+            releasedSeats.Should().Be(1);
+            eventsGateway.Verify(gateway => gateway.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]

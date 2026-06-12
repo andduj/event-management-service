@@ -66,8 +66,6 @@ namespace EventManagement.Events.Tests
             Fixture.Customize<UpdateEventRequest>(composer => composer
                 .FromFactory(() =>
                 {
-                    var totalSeats = Random.Shared.Next(MinTotalSeats, MaxTotalSeats);
-                    var availableSeats = Random.Shared.Next(0, totalSeats + 1);
                     var startAt = DateTime.UtcNow;
 
                     return new UpdateEventRequest
@@ -76,7 +74,7 @@ namespace EventManagement.Events.Tests
                         Description = Fixture.Create<string>(),
                         StartAt = startAt,
                         EndAt = startAt.AddHours(1),
-                        AvailableSeats = availableSeats
+                        AvailableSeats = 0
                     };
                 })
                 .OmitAutoProperties());

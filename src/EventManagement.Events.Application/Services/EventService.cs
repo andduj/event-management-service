@@ -121,6 +121,7 @@ namespace EventManagement.Events.Application.Services
             eventItem.Description = updateEventRequest.Description;
             eventItem.StartAt = updateEventRequest.StartAt;
             eventItem.EndAt = updateEventRequest.EndAt;
+            eventItem.SetAvailableSeats(updateEventRequest.AvailableSeats);
             await _eventRepository.UpdateEventAsync(eventItem);
         }
     }

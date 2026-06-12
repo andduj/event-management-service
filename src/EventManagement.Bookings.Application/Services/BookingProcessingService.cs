@@ -64,13 +64,13 @@ namespace EventManagement.Bookings.Application.Services
                 if (exists)
                 {
                     booking.Confirm();
+                    await _bookingRepository.UpdateBookingAsync(booking, cancellationToken);
                 }
                 else
                 {
-                    booking.Reject();
                     _logger.Warn("Мероприятия с id={0} не существует", booking.EventId);
+                    await RejectAndReleaseSeatsAsync(booking, cancellationToken);
                 }
-                await _bookingRepository.UpdateBookingAsync(booking, cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -78,7 +78,7 @@ namespace EventManagement.Bookings.Application.Services
             }
             catch (Exception exception)
             {
-                await TryReleaseSeats(booking, cancellationToken);
+                await RejectAndReleaseSeatsAsync(booking, cancellationToken);
 
                 _logger.Error(exception, "Ошибка при обработке бронирования {0}", booking.Id);
             }
@@ -88,7 +88,7 @@ namespace EventManagement.Bookings.Application.Services
             }
         }
 
-        private async Task TryReleaseSeats(Booking booking, CancellationToken cancellationToken)
+        private async Task RejectAndReleaseSeatsAsync(Booking booking, CancellationToken cancellationToken)
         {
             try
             {
