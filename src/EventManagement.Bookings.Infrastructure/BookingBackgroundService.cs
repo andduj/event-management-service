@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,6 +20,7 @@ namespace EventManagement.Bookings.Infrastructure
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<BookingBackgroundService> _logger;
         private readonly TimeSpan _pollingInterval;
+        private readonly ConcurrentDictionary<Guid, SemaphoreSlim> _processingLocks = new();
 
         /// <summary>
         /// Инициализирует новый экземпляр фонового сервиса обработки бронирований.
@@ -82,12 +84,13 @@ namespace EventManagement.Bookings.Infrastructure
                 return;
             }
 
-            if (pendingBookingIds.Count == 0)
+            var uniquePendingBookingIds = pendingBookingIds.Distinct().ToList();
+            if (uniquePendingBookingIds.Count == 0)
             {
                 return;
             }
 
-            var tasks = pendingBookingIds.Select(bookingId => ProcessBookingInScopeAsync(bookingId, cancellationToken));
+            var tasks = uniquePendingBookingIds.Select(bookingId => ProcessBookingInScopeAsync(bookingId, cancellationToken));
             await Task.WhenAll(tasks);
         }
 
@@ -100,6 +103,13 @@ namespace EventManagement.Bookings.Infrastructure
 
         private async Task ProcessBookingInScopeAsync(Guid bookingId, CancellationToken cancellationToken)
         {
+            var processingLock = _processingLocks.GetOrAdd(bookingId, _ => new SemaphoreSlim(1, 1));
+            if (!await processingLock.WaitAsync(0, cancellationToken))
+            {
+                _logger.Debug("Бронирование {0} уже обрабатывается в текущем экземпляре сервиса", bookingId);
+                return;
+            }
+
             try
             {
                 using var scope = _scopeFactory.CreateScope();
@@ -113,6 +123,14 @@ namespace EventManagement.Bookings.Infrastructure
             catch (Exception exception)
             {
                 _logger.Error(exception, "Ошибка при обработке бронирования {0}", bookingId);
+            }
+            finally
+            {
+                processingLock.Release();
+                if (processingLock.CurrentCount == 1)
+                {
+                    _processingLocks.TryRemove(bookingId, out _);
+                }
             }
         }
     }

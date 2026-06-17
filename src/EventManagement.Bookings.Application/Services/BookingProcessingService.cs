@@ -64,7 +64,10 @@ namespace EventManagement.Bookings.Application.Services
                 if (exists)
                 {
                     booking.Confirm();
-                    await _bookingRepository.UpdateBookingAsync(booking, cancellationToken);
+                    if (!await TryPersistStatusChangeAsync(booking, cancellationToken))
+                    {
+                        return;
+                    }
                 }
                 else
                 {
@@ -88,12 +91,27 @@ namespace EventManagement.Bookings.Application.Services
             }
         }
 
+        private async Task<bool> TryPersistStatusChangeAsync(Booking booking, CancellationToken cancellationToken)
+        {
+            bool wasUpdated = await _bookingRepository.TryUpdateBookingAsync(booking, BookingStatus.Pending, cancellationToken);
+            if (!wasUpdated)
+            {
+                _logger.Debug("Бронирование {0} уже обработано другим процессом", booking.Id);
+            }
+
+            return wasUpdated;
+        }
+
         private async Task RejectAndReleaseSeatsAsync(Booking booking, CancellationToken cancellationToken)
         {
             try
             {
                 booking.Reject();
-                await _bookingRepository.UpdateBookingAsync(booking, cancellationToken);
+                if (!await TryPersistStatusChangeAsync(booking, cancellationToken))
+                {
+                    return;
+                }
+
                 await _eventsGateway.ReleaseSeatsAsync(booking.EventId, 1, cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

@@ -38,5 +38,14 @@ namespace EventManagement.Bookings.Application.Interfaces
         /// <param name="booking">Бронь с обновленными данными.</param>
         /// <param name="cancellationToken">Токен отмены операции.</param>
         Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновляет бронь только если её текущий статус совпадает с ожидаемым.
+        /// </summary>
+        /// <param name="booking">Бронь с обновлёнными данными.</param>
+        /// <param name="expectedStatus">Ожидаемый текущий статус.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        /// <returns><c>true</c>, если обновление выполнено; иначе <c>false</c>.</returns>
+        Task<bool> TryUpdateBookingAsync(Booking booking, BookingStatus expectedStatus, CancellationToken cancellationToken = default);
     }
 }

@@ -41,7 +41,7 @@
 | Слой | Проект | Назначение |
 |------|--------|------------|
 | Domain | `src/EventManagement.Bookings.Domain` | `Booking`, `BookingStatus`, доменные исключения |
-| Application | `src/EventManagement.Bookings.Application` | `BookingService`, фоновая обработка, DTO, порт `IBookingRepository` |
+| Application | `src/EventManagement.Bookings.Application` | `BookingService`, фоновая обработка, DTO, порты `IBookingRepository`, `IEventsGateway` |
 | Infrastructure | `src/EventManagement.Bookings.Infrastructure` | EF Core, репозиторий, миграции, `BookingBackgroundService`, клиент Events API |
 | Presentation | `src/EventManagement.Booking` (`EventManagement.Bookings`) | Web API, контроллеры, Swagger, composition root |
 
@@ -49,8 +49,8 @@
 
 ### Тесты
 
-- `tests/EventManagement.Events.Tests` — модульные тесты Events (Application + Infrastructure)
-- `tests/EventManagement.Bookings.Tests` — модульные тесты Bookings (Application + Infrastructure)
+- `tests/EventManagement.Events.Tests` — модульные тесты Events (преимущественно Application)
+- `tests/EventManagement.Bookings.Tests` — модульные тесты Bookings (преимущественно Application)
 - `tests/EventApi.IntegrationTests` — интеграционные тесты репозиториев и миграций (PostgreSQL через Testcontainers)
 
 ## Запуск
@@ -107,7 +107,7 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Po
 
 У каждого сервиса **свой** PostgreSQL (локально — два контейнера в compose) — **database per service**. Миграции независимы: запустите каждый API или `database update` для своего контекста.
 
-В `bookings` колонка `EventId` — логическая ссылка на событие в другом сервисе; **FK между базами невозможен**. Проверка существования события при бронировании — через HTTP (`IEventsClient`).
+В `bookings` колонка `EventId` — логическая ссылка на событие в другом сервисе; **FK между базами невозможен**. В Application вызовы к Events идут через порт `IEventsGateway` (HTTP-адаптер в Infrastructure поверх NSwag-клиента `IEventsClient`).
 
 CLI **dotnet-ef** подключён как **локальный инструмент** (файл `.config/dotnet-tools.json`). Перед работой с миграциями из корня репозитория:
 
@@ -255,7 +255,7 @@ Swagger UI доступен для каждого API в режиме Developmen
 - список `Pending` бронирований читается в отдельном DI-scope;
 - каждая бронь обрабатывается в отдельном DI-scope (отдельный `DbContext` на задачу);
 - если событие найдено — бронь подтверждается (`Confirmed`);
-- если событие не найдено — бронь отклоняется (`Rejected`) и сохраняется;
+- если событие не найдено — бронь отклоняется (`Rejected`), сохраняется и выполняется освобождение места;
 - при ошибках обработки бронь отклоняется и выполняется компенсация через освобождение места;
 - после обработки `ProcessedAt` заполняется текущим UTC-временем.
 
@@ -273,7 +273,7 @@ Swagger UI доступен для каждого API в режиме Developmen
 - **Bookings** — создание и фоновая обработка бронирований (отдельные сборки Domain / Application / Infrastructure / Presentation).
 
 Граница между сервисами:
-- **HTTP** — `IEventsClient` для проверки события, резервирования мест;
+- **HTTP** — в Bookings.Application используется порт `IEventsGateway`; в Bookings.Infrastructure он реализован через NSwag-клиент `IEventsClient`;
 - **Данные** — отдельные БД `events` и `bookings`; `Booking` не обращается к `EventsDbContext` и таблице `events`.
 
 ### Events API
@@ -286,8 +286,8 @@ Swagger UI доступен для каждого API в режиме Developmen
 ### Bookings API
 
 - **Domain** — `Booking`, `BookingStatus`, `BookingNotFoundException`, `NoAvailableSeatsException`.
-- **Application** — `BookingService`, `BookingProcessingService`, DTO; порт `IBookingRepository`; вызовы Events через `IEventsClient` (пакет `Events.Api`).
-- **Infrastructure** — `BookingsDbContext`, `BookingRepository`, миграции, `BookingBackgroundService`, `AddInfrastructureServices`, `UseBookingsDatabaseInitialization`.
+- **Application** — `BookingService`, `BookingProcessingService`, DTO; порты `IBookingRepository` и `IEventsGateway`.
+- **Infrastructure** — `BookingsDbContext`, `BookingRepository`, адаптер `EventsGateway` (реализация `IEventsGateway` через `IEventsClient`), миграции, `BookingBackgroundService`, `AddInfrastructureServices`, `UseBookingsDatabaseInitialization`.
 - **Presentation** (`EventManagement.Bookings`) — `BookingsController`, Swagger, middleware; composition root в `Program.cs`.
 
 Для локального наполнения Events используется `EventsDataSeeder` + `EventsFactory` (Infrastructure).
@@ -301,5 +301,5 @@ Swagger UI доступен для каждого API в режиме Developmen
 
 - В `EventManagement.Event` и `EventManagement.Booking` используется собственная `ExceptionHandlingMiddleware`.
 - Middleware формирует ответы в формате `application/problem+json` (`ProblemDetails`).
-- В `Booking` ошибки `BookingNotFoundException` и `ApiException` маппятся в соответствующие HTTP-статусы.
+- В `Booking` ошибки `BookingNotFoundException`, `NoAvailableSeatsException` и `EventsGatewayException` маппятся в соответствующие HTTP-статусы.
 - В режиме Development в ответ дополнительно добавляются `traceId` и `stackTrace`.

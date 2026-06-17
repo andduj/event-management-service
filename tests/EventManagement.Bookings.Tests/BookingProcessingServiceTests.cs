@@ -103,9 +103,9 @@ namespace EventManagement.Bookings.Tests
                     .ReturnsAsync(booking);
             }
             _bookingRepository
-                .Setup(repository => repository.UpdateBookingAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
-                .Callback<Booking, CancellationToken>((booking, _) => updatedBookings.Add(booking))
-                .Returns(Task.CompletedTask);
+                .Setup(repository => repository.TryUpdateBookingAsync(It.IsAny<Booking>(), BookingStatus.Pending, It.IsAny<CancellationToken>()))
+                .Callback<Booking, BookingStatus, CancellationToken>((booking, _, _) => updatedBookings.Add(booking))
+                .ReturnsAsync(true);
 
             _eventsGateway
                 .Setup(gateway => gateway.EventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -133,9 +133,9 @@ namespace EventManagement.Bookings.Tests
                 .Setup(repository => repository.GetBookingByIdAsync(pendingBooking.Id))
                 .ReturnsAsync(pendingBooking);
             _bookingRepository
-                .Setup(repository => repository.UpdateBookingAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
-                .Callback<Booking, CancellationToken>((booking, _) => updatedBookings.Add(booking))
-                .Returns(Task.CompletedTask);
+                .Setup(repository => repository.TryUpdateBookingAsync(It.IsAny<Booking>(), BookingStatus.Pending, It.IsAny<CancellationToken>()))
+                .Callback<Booking, BookingStatus, CancellationToken>((booking, _, _) => updatedBookings.Add(booking))
+                .ReturnsAsync(true);
 
             var releasedSeats = 0;
             _eventsGateway
@@ -168,9 +168,9 @@ namespace EventManagement.Bookings.Tests
                 .Setup(repository => repository.GetBookingByIdAsync(pendingBooking.Id))
                 .ReturnsAsync(pendingBooking);
             _bookingRepository
-                .Setup(repository => repository.UpdateBookingAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
-                .Callback<Booking, CancellationToken>((booking, _) => updatedBookings.Add(booking))
-                .Returns(Task.CompletedTask);
+                .Setup(repository => repository.TryUpdateBookingAsync(It.IsAny<Booking>(), BookingStatus.Pending, It.IsAny<CancellationToken>()))
+                .Callback<Booking, BookingStatus, CancellationToken>((booking, _, _) => updatedBookings.Add(booking))
+                .ReturnsAsync(true);
 
             var availableSeats = 0;
             _eventsGateway
@@ -191,6 +191,32 @@ namespace EventManagement.Bookings.Tests
         }
 
         [Fact]
+        public async Task ProcessBookingAsync_WhenAlreadyProcessedByAnotherWorker_ShouldNotReleaseSeatAgain()
+        {
+            var eventId = Guid.NewGuid();
+            var pendingBooking = Booking.Create(eventId);
+            var updateAttempts = 0;
+
+            _bookingRepository
+                .Setup(repository => repository.GetBookingByIdAsync(pendingBooking.Id))
+                .ReturnsAsync(pendingBooking);
+            _bookingRepository
+                .Setup(repository => repository.TryUpdateBookingAsync(It.IsAny<Booking>(), BookingStatus.Pending, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() => Interlocked.Increment(ref updateAttempts) == 1);
+            _eventsGateway
+                .Setup(gateway => gateway.EventExistsAsync(eventId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+
+            var tasks = Enumerable.Range(0, 2)
+                .Select(_ => _bookingProcessingService.ProcessBookingAsync(pendingBooking.Id, CancellationToken.None));
+            await Task.WhenAll(tasks);
+
+            _eventsGateway.Verify(
+                gateway => gateway.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
         public async Task ProcessPendingBookingsAsync_AfterSeatReleased_ShouldAllowNewBookingCreation()
         {
             var eventId = Guid.NewGuid();
@@ -206,8 +232,8 @@ namespace EventManagement.Bookings.Tests
                 .Setup(repository => repository.GetBookingByIdAsync(pendingBookings[0].Id))
                 .ReturnsAsync(pendingBookings[0]);
             _bookingRepository
-                .Setup(repository => repository.UpdateBookingAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
+                .Setup(repository => repository.TryUpdateBookingAsync(It.IsAny<Booking>(), BookingStatus.Pending, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
             _bookingRepository
                 .Setup(repository => repository.CreateBookingAsync(It.IsAny<Booking>()))
                 .ReturnsAsync((Booking booking) => booking);

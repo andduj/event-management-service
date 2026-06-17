@@ -64,5 +64,24 @@ namespace EventManagement.Bookings.Infrastructure.Data.Repositories
             _context.Bookings.Update(booking);
             await _context.SaveChangesAsync(cancellationToken);
         }
+
+        /// <inheritdoc />
+        public async Task<bool> TryUpdateBookingAsync(
+            Booking booking,
+            BookingStatus expectedStatus,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            int rowsAffected = await _context.Bookings
+                .Where(storedBooking => storedBooking.Id == booking.Id && storedBooking.Status == expectedStatus)
+                .ExecuteUpdateAsync(
+                    setters => setters
+                        .SetProperty(storedBooking => storedBooking.Status, booking.Status)
+                        .SetProperty(storedBooking => storedBooking.ProcessedAt, booking.ProcessedAt),
+                    cancellationToken);
+
+            return rowsAffected > 0;
+        }
     }
 }
