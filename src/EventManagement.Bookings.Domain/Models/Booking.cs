@@ -22,6 +22,11 @@ namespace EventManagement.Bookings.Domain.Models
         public Guid EventId { get; private set; }
 
         /// <summary>
+        /// Идентификатор пользователя, создавшего бронь.
+        /// </summary>
+        public Guid UserId { get; private set; }
+
+        /// <summary>
         /// Текущий статус брони.
         /// </summary>
         public BookingStatus Status { get; private set; }
@@ -35,6 +40,11 @@ namespace EventManagement.Bookings.Domain.Models
         /// Дата и время обработки брони.
         /// </summary>
         public DateTime? ProcessedAt { get; private set; }
+
+        /// <summary>
+        /// Признак активной брони (ожидает обработки или подтверждена).
+        /// </summary>
+        public bool IsActive => Status is BookingStatus.Pending or BookingStatus.Confirmed;
 
         /// <summary>
         /// Подтверждает бронь и фиксирует время обработки.
@@ -75,16 +85,42 @@ namespace EventManagement.Bookings.Domain.Models
         }
 
         /// <summary>
+        /// Отменяет бронь и фиксирует время обработки.
+        /// </summary>
+        public void Cancel()
+        {
+            if (Status == BookingStatus.Cancelled)
+            {
+                return;
+            }
+
+            if (Status != BookingStatus.Pending && Status != BookingStatus.Confirmed)
+            {
+                throw new InvalidOperationException($"Нельзя отменить бронь в статусе {Status}.");
+            }
+
+            Status = BookingStatus.Cancelled;
+            ProcessedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
         /// Создает новую бронь в статусе ожидания обработки.
         /// </summary>
         /// <param name="eventId">Идентификатор события.</param>
+        /// <param name="userId">Идентификатор пользователя.</param>
         /// <returns>Новая бронь.</returns>
-        public static Booking Create(Guid eventId)
+        public static Booking Create(Guid eventId, Guid userId)
         {
+            if (userId == Guid.Empty)
+            {
+                throw new ArgumentException("Идентификатор пользователя не может быть пустым.", nameof(userId));
+            }
+
             return new Booking
             {
                 Id = Guid.NewGuid(),
                 EventId = eventId,
+                UserId = userId,
                 Status = BookingStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 ProcessedAt = null,

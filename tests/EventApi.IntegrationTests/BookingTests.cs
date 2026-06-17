@@ -25,7 +25,8 @@ public sealed class BookingTests
         var repo = new BookingRepository(ctx);
         var eventId = Guid.NewGuid();
 
-        var booking = Booking.Create(eventId);
+        var userId = Guid.NewGuid();
+        var booking = Booking.Create(eventId, userId);
         var saved = await repo.CreateBookingAsync(booking);
 
         Assert.Equal(booking.Id, saved.Id);
@@ -43,7 +44,7 @@ public sealed class BookingTests
         await _fixture.ResetAsync();
         await using var ctx = new BookingsDbContext(_fixture.CreateBookingsOptions());
         var repo = new BookingRepository(ctx);
-        var booking = Booking.Create(Guid.NewGuid());
+        var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid());
         await repo.CreateBookingAsync(booking);
 
         await using var actCtx = new BookingsDbContext(_fixture.CreateBookingsOptions());
@@ -69,17 +70,18 @@ public sealed class BookingTests
         await _fixture.ResetAsync();
         await using var ctx = new BookingsDbContext(_fixture.CreateBookingsOptions());
         var repo = new BookingRepository(ctx);
-        var bookingId = Guid.NewGuid();
+        var eventId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
 
-        var pending = Booking.Create(bookingId);
+        var pending = Booking.Create(eventId, userId);
         await repo.CreateBookingAsync(pending);
 
-        var confirmed = Booking.Create(bookingId);
+        var confirmed = Booking.Create(eventId, userId);
         await repo.CreateBookingAsync(confirmed);
         confirmed.Confirm();
         await repo.UpdateBookingAsync(confirmed);
 
-        var rejected = Booking.Create(bookingId);
+        var rejected = Booking.Create(eventId, userId);
         await repo.CreateBookingAsync(rejected);
         rejected.Reject();
         await repo.UpdateBookingAsync(rejected);
@@ -106,7 +108,7 @@ public sealed class BookingTests
         await _fixture.ResetAsync();
         await using var ctx = new BookingsDbContext(_fixture.CreateBookingsOptions());
         var repo = new BookingRepository(ctx);
-        var booking = Booking.Create(Guid.NewGuid());
+        var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid());
         await repo.CreateBookingAsync(booking);
 
         booking.Confirm();

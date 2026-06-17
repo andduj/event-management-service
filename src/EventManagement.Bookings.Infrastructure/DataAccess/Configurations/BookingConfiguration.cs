@@ -17,6 +17,9 @@ namespace EventManagement.Bookings.Infrastructure.DataAccess.Configurations
             builder.Property(b => b.EventId)
                 .IsRequired();
 
+            builder.Property(b => b.UserId)
+                .IsRequired();
+
             builder.Property(b => b.Status)
                 .HasConversion<string>()
                 .IsRequired();

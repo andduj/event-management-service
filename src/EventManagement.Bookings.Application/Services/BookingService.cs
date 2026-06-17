@@ -52,7 +52,7 @@ namespace EventManagement.Bookings.Application.Services
                 }
 
                 seatReserved = true;
-                var booking = Booking.Create(eventId);
+                var booking = Booking.Create(eventId, Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"));
                 addedBooking = await _bookingRepository.CreateBookingAsync(booking);
                 seatReserved = false;
             }
