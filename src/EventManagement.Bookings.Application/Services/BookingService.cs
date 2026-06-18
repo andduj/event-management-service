@@ -35,9 +35,14 @@ namespace EventManagement.Bookings.Application.Services
         }
 
         /// <inheritdoc/>
-        public async Task<BookingInfo> CreateBookingAsync(Guid eventId)
+        public Task<BookingInfo> CreateBookingAsync(Guid eventId) =>
+            throw new NotImplementedException(
+                "Вызов без userId устарел. Контроллер будет обновлён на этапе JWT.");
+
+        /// <inheritdoc/>
+        public async Task<BookingInfo> CreateBookingAsync(Guid eventId, Guid userId)
         {
-            _logger.Info("Создание новой брони. EventId={0}", eventId);
+            _logger.Info("Создание новой брони. EventId={0}, UserId={1}", eventId, userId);
             await _eventsGateway.EnsureEventExistsAsync(eventId);
 
             Booking addedBooking;
@@ -52,7 +57,7 @@ namespace EventManagement.Bookings.Application.Services
                 }
 
                 seatReserved = true;
-                var booking = Booking.Create(eventId, Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"));
+                var booking = Booking.Create(eventId, userId);
                 addedBooking = await _bookingRepository.CreateBookingAsync(booking);
                 seatReserved = false;
             }

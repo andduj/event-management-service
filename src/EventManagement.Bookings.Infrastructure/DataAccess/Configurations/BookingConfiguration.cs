@@ -26,6 +26,11 @@ namespace EventManagement.Bookings.Infrastructure.DataAccess.Configurations
 
             builder.Property(b => b.CreatedAt)
                 .IsRequired();
+
+            builder.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

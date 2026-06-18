@@ -263,7 +263,7 @@ namespace EventManagement.Bookings.Tests
 
             await ProcessAllPendingBookingsAsync();
 
-            var action = () => _bookingService.CreateBookingAsync(eventId);
+            var action = () => _bookingService.CreateBookingAsync(eventId, Guid.NewGuid());
 
             await action.Should().NotThrowAsync();
         }
