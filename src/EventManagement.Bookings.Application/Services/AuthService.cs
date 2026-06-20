@@ -2,6 +2,7 @@ using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Domain.Exceptions;
 using EventManagement.Bookings.Domain.Models;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,6 +34,16 @@ namespace EventManagement.Bookings.Application.Services
             UserRole role = UserRole.User,
             CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrWhiteSpace(login))
+            {
+                throw new ArgumentException("Логин не может быть пустым.", nameof(login));
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentException("Пароль не может быть пустым.", nameof(password));
+            }
+
             login = login.Trim();
 
             if (await _userRepository.ExistsByLoginAsync(login, cancellationToken))

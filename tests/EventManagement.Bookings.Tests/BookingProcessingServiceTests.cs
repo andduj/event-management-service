@@ -4,6 +4,7 @@ using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Domain.Models;
 using FluentAssertions;
 using Moq;
+using System;
 
 namespace EventManagement.Bookings.Tests
 {
@@ -27,6 +28,13 @@ namespace EventManagement.Bookings.Tests
 
             _bookingRepository.Reset();
             _eventsGateway.Reset();
+
+            _eventsGateway
+                .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            _eventsGateway
+                .Setup(gateway => gateway.GetEventStartAtUtcAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(DateTime.UtcNow.AddDays(1));
         }
 
         [Fact]

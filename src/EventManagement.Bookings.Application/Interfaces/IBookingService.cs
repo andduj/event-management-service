@@ -1,6 +1,7 @@
 using EventManagement.Bookings.Application.DTOs;
-using System.Threading.Tasks;
+using EventManagement.Bookings.Domain.Models;
 using System;
+using System.Threading.Tasks;
 
 namespace EventManagement.Bookings.Application.Interfaces
 {
@@ -9,13 +10,6 @@ namespace EventManagement.Bookings.Application.Interfaces
     /// </summary>
     public interface IBookingService
     {
-        /// <summary>
-        /// Создает бронь для указанного мероприятия.
-        /// </summary>
-        /// <param name="eventId">Идентификатор мероприятия.</param>
-        /// <returns>Информация о созданной брони.</returns>
-        Task<BookingInfo> CreateBookingAsync(Guid eventId);
-
         /// <summary>
         /// Создает бронь для указанного мероприятия от имени пользователя.
         /// </summary>
@@ -30,5 +24,13 @@ namespace EventManagement.Bookings.Application.Interfaces
         /// <param name="bookingId">Идентификатор брони.</param>
         /// <returns>Найденная бронь в виде DTO.</returns>
         Task<BookingDto> GetBookingByIdAsync(Guid bookingId);
+
+        /// <summary>
+        /// Отменяет бронь с проверкой прав доступа.
+        /// </summary>
+        /// <param name="bookingId">Идентификатор брони.</param>
+        /// <param name="userId">Идентификатор текущего пользователя.</param>
+        /// <param name="role">Роль текущего пользователя.</param>
+        Task CancelBookingAsync(Guid bookingId, Guid userId, UserRole role);
     }
 }

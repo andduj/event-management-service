@@ -74,5 +74,19 @@ namespace EventManagement.Bookings.Infrastructure
                 throw new EventsGatewayException(exception.Message, exception.StatusCode, exception);
             }
         }
+
+        /// <inheritdoc/>
+        public async Task<DateTime> GetEventStartAtUtcAsync(Guid eventId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var eventDto = await _eventsClient.EventsGetAsync(eventId, cancellationToken);
+                return eventDto.StartAt.UtcDateTime;
+            }
+            catch (ApiException exception)
+            {
+                throw new EventsGatewayException(exception.Message, exception.StatusCode, exception);
+            }
+        }
     }
 }

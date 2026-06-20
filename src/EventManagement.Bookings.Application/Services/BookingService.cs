@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Domain.Exceptions;
@@ -35,15 +36,22 @@ namespace EventManagement.Bookings.Application.Services
         }
 
         /// <inheritdoc/>
-        public Task<BookingInfo> CreateBookingAsync(Guid eventId) =>
-            throw new NotImplementedException(
-                "Вызов без userId устарел. Контроллер будет обновлён на этапе JWT.");
-
-        /// <inheritdoc/>
         public async Task<BookingInfo> CreateBookingAsync(Guid eventId, Guid userId)
         {
             _logger.Info("Создание новой брони. EventId={0}, UserId={1}", eventId, userId);
             await _eventsGateway.EnsureEventExistsAsync(eventId);
+
+            DateTime eventStartAt = await _eventsGateway.GetEventStartAtUtcAsync(eventId);
+            if (eventStartAt <= DateTime.UtcNow)
+            {
+                throw new EventAlreadyStartedException();
+            }
+
+            int activeBookings = await _bookingRepository.CountActiveBookingsAsync(userId);
+            if (activeBookings >= BookingLimits.MaxActiveBookings)
+            {
+                throw new ActiveBookingsLimitExceededException(BookingLimits.MaxActiveBookings);
+            }
 
             Booking addedBooking;
             bool seatReserved = false;
@@ -79,6 +87,35 @@ namespace EventManagement.Bookings.Application.Services
             return _mapper.Map<BookingInfo>(addedBooking);
         }
 
+        /// <inheritdoc/>
+        public async Task<BookingDto> GetBookingByIdAsync(Guid bookingId)
+        {
+            _logger.Debug("Получение брони по Id={0}", bookingId);
+            var booking = await _bookingRepository.GetBookingByIdAsync(bookingId);
+            return _mapper.Map<BookingDto>(booking);
+        }
+
+        /// <inheritdoc/>
+        public async Task CancelBookingAsync(Guid bookingId, Guid userId, UserRole role)
+        {
+            _logger.Info("Отмена брони. BookingId={0}, UserId={1}, Role={2}", bookingId, userId, role);
+
+            var booking = await _bookingRepository.GetBookingByIdAsync(bookingId);
+            if (booking.UserId != userId && role != UserRole.Admin)
+            {
+                throw new AccessDeniedException();
+            }
+
+            bool shouldReleaseSeat = booking.IsActive;
+            booking.Cancel();
+            await _bookingRepository.UpdateBookingAsync(booking);
+
+            if (shouldReleaseSeat)
+            {
+                await TryReleaseSeatAsync(booking.EventId);
+            }
+        }
+
         private async Task TryReleaseSeatAsync(Guid eventId)
         {
             try
@@ -89,14 +126,6 @@ namespace EventManagement.Bookings.Application.Services
             {
                 _logger.Error(exception, "Не удалось освободить место для EventId={0} после ошибки создания брони", eventId);
             }
-        }
-
-        /// <inheritdoc/>
-        public async Task<BookingDto> GetBookingByIdAsync(Guid bookingId)
-        {
-            _logger.Debug("Получение брони по Id={0}", bookingId);
-            var booking = await _bookingRepository.GetBookingByIdAsync(bookingId);
-            return _mapper.Map<BookingDto>(booking);
         }
     }
 }

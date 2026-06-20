@@ -5,6 +5,7 @@ using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Domain.Exceptions;
 using EventManagement.Bookings.Domain.Models;
+using EventManagement.Bookings.Infrastructure.DataAccess;
 using EventManagement.Logging;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +38,17 @@ namespace EventManagement.Bookings.Tests
             _eventsGateway
                 .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
+
+            _eventsGateway
+                .Setup(gateway => gateway.GetEventStartAtUtcAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(DateTime.UtcNow.AddDays(1));
+
+            using (var cleanupScope = fixture.ServiceProvider.CreateScope())
+            {
+                var context = cleanupScope.ServiceProvider.GetRequiredService<BookingsDbContext>();
+                context.Bookings.RemoveRange(context.Bookings);
+                context.SaveChanges();
+            }
         }
 
         [Fact]
@@ -239,6 +251,12 @@ namespace EventManagement.Bookings.Tests
             eventsGateway
                 .Setup(gateway => gateway.EnsureEventExistsAsync(eventId, It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
+            eventsGateway
+                .Setup(gateway => gateway.GetEventStartAtUtcAsync(eventId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(DateTime.UtcNow.AddDays(1));
+            bookingRepository
+                .Setup(repository => repository.CountActiveBookingsAsync(_testUserId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(0);
             eventsGateway
                 .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);

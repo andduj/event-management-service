@@ -41,5 +41,13 @@ namespace EventManagement.Bookings.Application.Interfaces
         /// <param name="count">Количество мест.</param>
         /// <param name="cancellationToken">Токен отмены операции.</param>
         Task ReleaseSeatsAsync(Guid eventId, int count, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Возвращает дату и время начала мероприятия.
+        /// </summary>
+        /// <param name="eventId">Идентификатор мероприятия.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        /// <returns>Дата и время начала мероприятия в UTC.</returns>
+        Task<DateTime> GetEventStartAtUtcAsync(Guid eventId, CancellationToken cancellationToken = default);
     }
 }

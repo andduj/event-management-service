@@ -89,6 +89,8 @@ namespace EventManagement.Bookings.Middleware
                     return "Bad Request";
                 case StatusCodes.Status401Unauthorized:
                     return "Unauthorized";
+                case StatusCodes.Status403Forbidden:
+                    return "Forbidden";
                 case StatusCodes.Status404NotFound:
                     return "Not Found";
                 case StatusCodes.Status409Conflict:
@@ -105,9 +107,16 @@ namespace EventManagement.Bookings.Middleware
             switch (exception)
             {
                 case BookingNotFoundException:
+                case InvalidCredentialsException:
                     return StatusCodes.Status404NotFound;
                 case NoAvailableSeatsException:
+                case ActiveBookingsLimitExceededException:
                     return StatusCodes.Status409Conflict;
+                case EventAlreadyStartedException:
+                case LoginAlreadyExistsException:
+                    return StatusCodes.Status400BadRequest;
+                case AccessDeniedException:
+                    return StatusCodes.Status403Forbidden;
                 case EventsGatewayException eventsGatewayException:
                     return eventsGatewayException.StatusCode;
                 case ArgumentException:
