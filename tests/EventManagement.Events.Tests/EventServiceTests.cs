@@ -111,7 +111,7 @@ namespace EventManagement.Events.Tests
 
             await _eventService.DeleteEventAsync(added.Id);
 
-            Func<Task> action = ()=> _eventService.GetEventByIdAsync(added.Id);
+            Func<Task> action = () => _eventService.GetEventByIdAsync(added.Id);
             await action.Should().ThrowAsync<EventNotFoundException>();
         }
 

@@ -63,5 +63,13 @@ namespace EventManagement.Bookings.Tests
 
             BookingService = Scope.ServiceProvider.GetRequiredService<IBookingService>();
         }
+
+        public async Task<User> CreateUserAsync(string login, UserRole role = UserRole.User)
+        {
+            using var scope = ServiceProvider.CreateScope();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            var user = User.Create(login, "HASH", role);
+            return await userRepository.CreateAsync(user);
+        }
     }
 }
