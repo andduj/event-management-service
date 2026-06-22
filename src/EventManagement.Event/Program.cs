@@ -13,7 +13,7 @@ builder.Host.UseNLog();
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplicationServices();
-builder.Services.AddPresentationServices();
+builder.Services.AddPresentationServices(builder.Configuration);
 
 if (builder.Environment.IsDevelopment())
 {
@@ -35,6 +35,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandling();
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

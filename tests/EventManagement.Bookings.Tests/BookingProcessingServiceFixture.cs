@@ -42,7 +42,7 @@ namespace EventManagement.Bookings.Tests
 
             Fixture = new Fixture();
             Fixture.Customize<Booking>(composer => composer
-                .FromFactory(() => Booking.Create(Guid.NewGuid()))
+                .FromFactory(() => Booking.Create(Guid.NewGuid(), Guid.NewGuid()))
                 .OmitAutoProperties());
         }
     }

@@ -38,7 +38,7 @@ public sealed class PostgresDbFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await _postgres.DisposeAsync();
-    } 
+    }
 
     public async Task ResetAsync(CancellationToken cancellationToken = default)
     {

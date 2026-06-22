@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EventManagement.Events.Extensions
@@ -11,13 +12,14 @@ namespace EventManagement.Events.Extensions
         /// Добавляет сервисы уровня представления в указанный <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="services">Коллекция сервисов (контейнер DI).</param>
+        /// <param name="configuration">Конфигурация приложения.</param>
         /// <returns>Модифицированная коллекция сервисов для дальнейшей настройки.</returns>
-        public static IServiceCollection AddPresentationServices(this IServiceCollection services)
+        public static IServiceCollection AddPresentationServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddControllers();
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
             services.AddSwaggerDocumentation();
+            services.AddJwtAuthentication(configuration);
 
             return services;
         }

@@ -2,6 +2,7 @@ using EventManagement.Events.Application.DTOs;
 using EventManagement.Events.Application.Filters;
 using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Application.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -36,6 +37,7 @@ namespace EventManagement.Events.Controllers
         /// <response code="201">Мероприятие успешно создано.</response>
         /// <response code="400">Некорректные данные запроса.</response>
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(EventDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> CreateEventAsync([FromBody] AddEventRequest addEventRequest)
@@ -52,6 +54,7 @@ namespace EventManagement.Events.Controllers
         /// <response code="204">Мероприятие успешно удалено.</response>
         /// <response code="404">Мероприятие с указанным id не найдено.</response>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DeleteEventAsync(Guid id)
@@ -126,6 +129,7 @@ namespace EventManagement.Events.Controllers
         /// <response code="400">Некорректные данные запроса.</response>
         /// <response code="404">Мероприятие с указанным id не найдено.</response>
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

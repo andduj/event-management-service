@@ -83,5 +83,15 @@ namespace EventManagement.Bookings.Infrastructure.Data.Repositories
 
             return rowsAffected > 0;
         }
+
+        /// <inheritdoc />
+        public async Task<int> CountActiveBookingsAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Bookings
+                .CountAsync(
+                    booking => booking.UserId == userId
+                        && (booking.Status == BookingStatus.Pending || booking.Status == BookingStatus.Confirmed),
+                    cancellationToken);
+        }
     }
 }

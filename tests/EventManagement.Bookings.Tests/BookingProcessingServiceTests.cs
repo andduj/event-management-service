@@ -4,6 +4,7 @@ using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Domain.Models;
 using FluentAssertions;
 using Moq;
+using System;
 
 namespace EventManagement.Bookings.Tests
 {
@@ -27,6 +28,13 @@ namespace EventManagement.Bookings.Tests
 
             _bookingRepository.Reset();
             _eventsGateway.Reset();
+
+            _eventsGateway
+                .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            _eventsGateway
+                .Setup(gateway => gateway.GetEventStartAtUtcAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(DateTime.UtcNow.AddDays(1));
         }
 
         [Fact]
@@ -54,7 +62,7 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public void Confirm_WhenBookingAlreadyConfirmed_ShouldBeIdempotent()
         {
-            var booking = Booking.Create(Guid.NewGuid());
+            var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid());
             booking.Confirm();
             var processedAt = booking.ProcessedAt;
 
@@ -67,7 +75,7 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public void Reject_WhenBookingAlreadyRejected_ShouldBeIdempotent()
         {
-            var booking = Booking.Create(Guid.NewGuid());
+            var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid());
             booking.Reject();
             var processedAt = booking.ProcessedAt;
 
@@ -80,7 +88,7 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public void Confirm_WhenBookingAlreadyRejected_ShouldThrowInvalidOperationException()
         {
-            var booking = Booking.Create(Guid.NewGuid());
+            var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid());
             booking.Reject();
 
             var action = () => booking.Confirm();
@@ -123,7 +131,7 @@ namespace EventManagement.Bookings.Tests
         public async Task ProcessPendingBookingsAsync_WhenEventDoesNotExist_ShouldRejectBookingAndReleaseSeat()
         {
             var eventId = Guid.NewGuid();
-            var pendingBooking = Booking.Create(eventId);
+            var pendingBooking = Booking.Create(eventId, Guid.NewGuid());
             var bookings = new List<Booking> { pendingBooking };
             var updatedBookings = new List<Booking>();
             _bookingRepository
@@ -158,7 +166,7 @@ namespace EventManagement.Bookings.Tests
         public async Task ProcessPendingBookingsAsync_WhenProcessingFails_ShouldRejectBookingAndReleaseSeat()
         {
             var eventId = Guid.NewGuid();
-            var pendingBooking = Booking.Create(eventId);
+            var pendingBooking = Booking.Create(eventId, Guid.NewGuid());
             var bookings = new List<Booking> { pendingBooking };
             var updatedBookings = new List<Booking>();
             _bookingRepository
@@ -194,7 +202,7 @@ namespace EventManagement.Bookings.Tests
         public async Task ProcessBookingAsync_WhenAlreadyProcessedByAnotherWorker_ShouldNotReleaseSeatAgain()
         {
             var eventId = Guid.NewGuid();
-            var pendingBooking = Booking.Create(eventId);
+            var pendingBooking = Booking.Create(eventId, Guid.NewGuid());
             var updateAttempts = 0;
 
             _bookingRepository
@@ -223,7 +231,7 @@ namespace EventManagement.Bookings.Tests
             var availableSeats = 1;
             var pendingBookings = new List<Booking>
             {
-                Booking.Create(eventId)
+                Booking.Create(eventId, Guid.NewGuid())
             };
             _bookingRepository
                 .Setup(repository => repository.GetBookingsAsync(BookingStatus.Pending))
@@ -263,7 +271,7 @@ namespace EventManagement.Bookings.Tests
 
             await ProcessAllPendingBookingsAsync();
 
-            var action = () => _bookingService.CreateBookingAsync(eventId);
+            var action = () => _bookingService.CreateBookingAsync(eventId, Guid.NewGuid());
 
             await action.Should().NotThrowAsync();
         }

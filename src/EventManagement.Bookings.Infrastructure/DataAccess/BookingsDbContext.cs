@@ -7,6 +7,8 @@ namespace EventManagement.Bookings.Infrastructure.DataAccess
     {
         public DbSet<Booking> Bookings => Set<Booking>();
 
+        public DbSet<User> Users => Set<User>();
+
         public BookingsDbContext(DbContextOptions<BookingsDbContext> options)
             : base(options)
         {

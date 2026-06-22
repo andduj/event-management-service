@@ -5,6 +5,7 @@ using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Domain.Exceptions;
 using EventManagement.Bookings.Domain.Models;
+using EventManagement.Bookings.Infrastructure.DataAccess;
 using EventManagement.Logging;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,9 +21,12 @@ namespace EventManagement.Bookings.Tests
         public readonly IBookingRepository _bookingRepository;
         public readonly BookingServiceFixture _fixture;
 
+        private readonly Guid _testUserId;
+
         public BookingServiceTests(BookingServiceFixture fixture)
         {
             _fixture = fixture;
+            _testUserId = fixture.TestUserId;
             _bookingService = fixture.BookingService;
             _eventsGateway = fixture.EventsGateway;
             _bookingRepository = fixture.BookingRepository;
@@ -34,12 +38,23 @@ namespace EventManagement.Bookings.Tests
             _eventsGateway
                 .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
+
+            _eventsGateway
+                .Setup(gateway => gateway.GetEventStartAtUtcAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(DateTime.UtcNow.AddDays(1));
+
+            using (var cleanupScope = fixture.ServiceProvider.CreateScope())
+            {
+                var context = cleanupScope.ServiceProvider.GetRequiredService<BookingsDbContext>();
+                context.Bookings.RemoveRange(context.Bookings);
+                context.SaveChanges();
+            }
         }
 
         [Fact]
         public async Task CreateBookingAsync_ExistedEvent_Success()
         {
-            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid());
+            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid(), _testUserId);
 
             bookingInfo.Status.Should().Be(BookingStatus.Pending);
         }
@@ -52,7 +67,7 @@ namespace EventManagement.Bookings.Tests
 
             for (int i = 0; i < 10; i++)
             {
-                var bookingInfo = await _bookingService.CreateBookingAsync(eventId);
+                var bookingInfo = await _bookingService.CreateBookingAsync(eventId, _testUserId);
                 bookingInfoIds.Add(bookingInfo.Id);
             }
 
@@ -78,7 +93,7 @@ namespace EventManagement.Bookings.Tests
                     return true;
                 });
 
-            await _bookingService.CreateBookingAsync(eventId);
+            await _bookingService.CreateBookingAsync(eventId, _testUserId);
 
             availableSeats.Should().Be(2);
             _eventsGateway.Verify(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()), Times.Once);
@@ -107,7 +122,7 @@ namespace EventManagement.Bookings.Tests
 
             for (int i = 0; i < limit; i++)
             {
-                var bookingInfo = await _bookingService.CreateBookingAsync(eventId);
+                var bookingInfo = await _bookingService.CreateBookingAsync(eventId, _testUserId);
                 createdBookingIds.Add(bookingInfo.Id);
             }
 
@@ -138,10 +153,10 @@ namespace EventManagement.Bookings.Tests
 
             for (int i = 0; i < limit; i++)
             {
-                await _bookingService.CreateBookingAsync(eventId);
+                await _bookingService.CreateBookingAsync(eventId, _testUserId);
             }
 
-            var action = () => _bookingService.CreateBookingAsync(eventId);
+            var action = () => _bookingService.CreateBookingAsync(eventId, _testUserId);
 
             await action.Should().ThrowAsync<NoAvailableSeatsException>();
         }
@@ -149,7 +164,7 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public async Task GetBookingByIdAsync_ExistedBooking_Success()
         {
-            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid());
+            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid(), _testUserId);
 
             bookingInfo.Status.Should().Be(BookingStatus.Pending);
 
@@ -162,7 +177,7 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public async Task GetBookingByIdAsync_UpdatedBookingStatus_ShouldReturnActualStatus()
         {
-            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid());
+            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid(), _testUserId);
             var booking = await _bookingRepository.GetBookingByIdAsync(bookingInfo.Id);
             booking.Confirm();
             await _bookingRepository.UpdateBookingAsync(booking);
@@ -188,7 +203,7 @@ namespace EventManagement.Bookings.Tests
                 .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new EventsGatewayException("Мероприятие не найдено", 404));
 
-            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
+            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid(), _testUserId);
 
             var exception = await action.Should().ThrowAsync<EventsGatewayException>();
             exception.Which.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
@@ -201,7 +216,7 @@ namespace EventManagement.Bookings.Tests
                 .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new EventsGatewayException("Мероприятие было удалено", 410));
 
-            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
+            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid(), _testUserId);
 
             var exception = await action.Should().ThrowAsync<EventsGatewayException>();
             exception.Which.StatusCode.Should().Be((int)HttpStatusCode.Gone);
@@ -214,7 +229,7 @@ namespace EventManagement.Bookings.Tests
                 .Setup(gateway => gateway.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
-            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid());
+            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid(), _testUserId);
 
             await action.Should().ThrowAsync<NoAvailableSeatsException>();
         }
@@ -237,6 +252,12 @@ namespace EventManagement.Bookings.Tests
                 .Setup(gateway => gateway.EnsureEventExistsAsync(eventId, It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
             eventsGateway
+                .Setup(gateway => gateway.GetEventStartAtUtcAsync(eventId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(DateTime.UtcNow.AddDays(1));
+            bookingRepository
+                .Setup(repository => repository.CountActiveBookingsAsync(_testUserId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(0);
+            eventsGateway
                 .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
             eventsGateway
@@ -247,7 +268,7 @@ namespace EventManagement.Bookings.Tests
                 .Setup(repository => repository.CreateBookingAsync(It.IsAny<Booking>()))
                 .ThrowsAsync(new Exception("Database failure"));
 
-            var action = () => bookingService.CreateBookingAsync(eventId);
+            var action = () => bookingService.CreateBookingAsync(eventId, _testUserId);
 
             await action.Should().ThrowAsync<Exception>().WithMessage("Database failure");
             releasedSeats.Should().Be(1);
@@ -333,7 +354,7 @@ namespace EventManagement.Bookings.Tests
                     await startSignal.Task;
                     using var scope = _fixture.ServiceProvider.CreateScope();
                     var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-                    return await bookingService.CreateBookingAsync(eventId);
+                    return await bookingService.CreateBookingAsync(eventId, _testUserId);
                 }));
 
             startSignal.SetResult();
@@ -351,7 +372,7 @@ namespace EventManagement.Bookings.Tests
             {
                 using var scope = _fixture.ServiceProvider.CreateScope();
                 var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-                var bookingInfo = await bookingService.CreateBookingAsync(eventId);
+                var bookingInfo = await bookingService.CreateBookingAsync(eventId, _testUserId);
                 return (true, bookingInfo, null);
             }
             catch (Exception exception)

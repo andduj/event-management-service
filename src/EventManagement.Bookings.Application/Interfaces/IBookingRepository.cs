@@ -47,5 +47,13 @@ namespace EventManagement.Bookings.Application.Interfaces
         /// <param name="cancellationToken">Токен отмены операции.</param>
         /// <returns><c>true</c>, если обновление выполнено; иначе <c>false</c>.</returns>
         Task<bool> TryUpdateBookingAsync(Booking booking, BookingStatus expectedStatus, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Возвращает количество активных бронирований пользователя.
+        /// </summary>
+        /// <param name="userId">Идентификатор пользователя.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        /// <returns>Количество активных бронирований.</returns>
+        Task<int> CountActiveBookingsAsync(Guid userId, CancellationToken cancellationToken = default);
     }
 }
