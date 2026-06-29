@@ -1,9 +1,9 @@
 using System;
 
-namespace EventManagement.Bookings.Domain.Models
+namespace EventManagement.Auth.Domain.Models
 {
     /// <summary>
-    /// Пользователь системы бронирований.
+    /// Пользователь системы.
     /// </summary>
     public class User
     {
@@ -36,10 +36,6 @@ namespace EventManagement.Bookings.Domain.Models
         /// <summary>
         /// Создает нового пользователя.
         /// </summary>
-        /// <param name="login">Логин пользователя.</param>
-        /// <param name="passwordHash">Хеш пароля.</param>
-        /// <param name="role">Роль пользователя.</param>
-        /// <returns>Новый пользователь.</returns>
         public static User Create(string login, string passwordHash, UserRole role = UserRole.User)
         {
             if (string.IsNullOrWhiteSpace(login))
