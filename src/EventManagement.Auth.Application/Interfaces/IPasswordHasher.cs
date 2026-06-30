@@ -1,4 +1,4 @@
-namespace EventManagement.Bookings.Application.Interfaces
+namespace EventManagement.Auth.Application.Interfaces
 {
     /// <summary>
     /// Компонент хеширования и проверки паролей.

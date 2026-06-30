@@ -1,4 +1,4 @@
-namespace EventManagement.Bookings.Application.DTOs
+namespace EventManagement.Auth.Application.DTOs
 {
     /// <summary>
     /// Ответ с JWT-токеном после успешного входа.

@@ -1,12 +1,12 @@
-using EventManagement.Bookings.Application.DTOs;
-using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Domain.Exceptions;
-using EventManagement.Bookings.Domain.Models;
+using EventManagement.Auth.Application.DTOs;
+using EventManagement.Auth.Application.Interfaces;
+using EventManagement.Auth.Domain.Exceptions;
+using EventManagement.Auth.Domain.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventManagement.Bookings.Application.Services
+namespace EventManagement.Auth.Application.Services
 {
     /// <summary>
     /// Сервис регистрации и аутентификации пользователей.

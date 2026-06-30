@@ -1,8 +1,8 @@
-using EventManagement.Bookings.Domain.Models;
+using EventManagement.Auth.Domain.Models;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventManagement.Bookings.Application.Interfaces
+namespace EventManagement.Auth.Application.Interfaces
 {
     /// <summary>
     /// Репозиторий пользователей.

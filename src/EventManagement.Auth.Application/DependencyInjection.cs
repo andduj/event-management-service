@@ -1,8 +1,8 @@
-using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Application.Services;
+using EventManagement.Auth.Application.Interfaces;
+using EventManagement.Auth.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EventManagement.Bookings.Application
+namespace EventManagement.Auth.Application
 {
     /// <summary>
     /// Класс для регистрации зависимостей уровня приложения в DI контейнере.
@@ -16,9 +16,7 @@ namespace EventManagement.Bookings.Application
         /// <returns>Модифицированная коллекция сервисов для дальнейшей настройки.</returns>
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            services.AddScoped<IBookingService, BookingService>();
-            services.AddScoped<IBookingProcessingService, BookingProcessingService>();
-            services.AddAutoMapper(typeof(MappingProfile));
+            services.AddScoped<IAuthService, AuthService>();
             return services;
         }
     }

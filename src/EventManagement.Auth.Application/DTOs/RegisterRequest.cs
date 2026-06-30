@@ -1,6 +1,6 @@
-using EventManagement.Bookings.Domain.Models;
+using EventManagement.Auth.Domain.Models;
 
-namespace EventManagement.Bookings.Application.DTOs
+namespace EventManagement.Auth.Application.DTOs
 {
     /// <summary>
     /// Запрос на регистрацию пользователя.
