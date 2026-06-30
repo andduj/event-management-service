@@ -1,8 +1,8 @@
-using EventManagement.Bookings.Domain.Models;
+using EventManagement.Auth.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace EventManagement.Bookings.Infrastructure.DataAccess.Configurations
+namespace EventManagement.Auth.Infrastructure.DataAccess.Configurations
 {
     internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
     {

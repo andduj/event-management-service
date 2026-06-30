@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Auth.Domain
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Auth.Application", "src\EventManagement.Auth.Application\EventManagement.Auth.Application.csproj", "{B660B1FD-7B89-469D-A1C2-072E857086A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Auth.Infrastructure", "src\EventManagement.Auth.Infrastructure\EventManagement.Auth.Infrastructure.csproj", "{DA93B1D9-45EC-4A20-B271-886421ADED2D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -241,6 +243,18 @@ Global
 		{B660B1FD-7B89-469D-A1C2-072E857086A3}.Release|x64.Build.0 = Release|Any CPU
 		{B660B1FD-7B89-469D-A1C2-072E857086A3}.Release|x86.ActiveCfg = Release|Any CPU
 		{B660B1FD-7B89-469D-A1C2-072E857086A3}.Release|x86.Build.0 = Release|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Debug|x64.Build.0 = Debug|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Debug|x86.Build.0 = Debug|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Release|x64.ActiveCfg = Release|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Release|x64.Build.0 = Release|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Release|x86.ActiveCfg = Release|Any CPU
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -266,6 +280,7 @@ Global
 		{9D2C752A-7C5E-D75D-1298-AC552DADB00C} = {8C600859-CE93-4345-BD0D-5AB66EB911CA}
 		{2DC3C3E0-6A11-44B2-B316-4B0B08D93FB0} = {9D2C752A-7C5E-D75D-1298-AC552DADB00C}
 		{B660B1FD-7B89-469D-A1C2-072E857086A3} = {9D2C752A-7C5E-D75D-1298-AC552DADB00C}
+		{DA93B1D9-45EC-4A20-B271-886421ADED2D} = {9D2C752A-7C5E-D75D-1298-AC552DADB00C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0ED56681-167E-4BAD-B67A-15CA8E077A06}

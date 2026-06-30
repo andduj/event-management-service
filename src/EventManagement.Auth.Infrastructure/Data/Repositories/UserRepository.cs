@@ -1,20 +1,20 @@
-using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Domain.Models;
-using EventManagement.Bookings.Infrastructure.DataAccess;
+using EventManagement.Auth.Application.Interfaces;
+using EventManagement.Auth.Domain.Models;
+using EventManagement.Auth.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventManagement.Bookings.Infrastructure.Data.Repositories
+namespace EventManagement.Auth.Infrastructure.Data.Repositories
 {
     /// <summary>
     /// Репозиторий пользователей на базе EF Core.
     /// </summary>
     public sealed class UserRepository : IUserRepository
     {
-        private readonly BookingsDbContext _context;
+        private readonly AuthDbContext _context;
 
-        public UserRepository(BookingsDbContext context)
+        public UserRepository(AuthDbContext context)
         {
             _context = context;
         }

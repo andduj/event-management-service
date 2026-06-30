@@ -2,7 +2,6 @@ using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Application.Options;
 using EventManagement.Bookings.Infrastructure.Data.Repositories;
 using EventManagement.Bookings.Infrastructure.DataAccess;
-using EventManagement.Bookings.Infrastructure.Security;
 using EventManagement.Events.Api;
 using EventManagement.Logging;
 using Microsoft.EntityFrameworkCore;
@@ -27,10 +26,6 @@ namespace EventManagement.Bookings.Infrastructure.Extensions
                 ?? throw new InvalidOperationException("Строка подключения 'DefaultConnection' не настроена.");
             services.AddDbContext<BookingsDbContext>(options => options.UseNpgsql(connectionString));
             services.AddScoped<IBookingRepository, BookingRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddSingleton<IPasswordHasher, PasswordHasher>();
-            services.AddSingleton<IJwtTokenService, JwtTokenService>();
-            services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
             services.Configure<BookingProcessingOptions>(configuration.GetSection(BookingProcessingOptions.SectionName));
             services.AddHostedService<BookingBackgroundService>();

@@ -1,6 +1,6 @@
-using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Application.Options;
-using EventManagement.Bookings.Domain.Models;
+using EventManagement.Auth.Application.Interfaces;
+using EventManagement.Auth.Application.Options;
+using EventManagement.Auth.Domain.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -8,7 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace EventManagement.Bookings.Infrastructure.Security
+namespace EventManagement.Auth.Infrastructure.Security
 {
     /// <summary>
     /// Генерация подписанных JWT-токенов.

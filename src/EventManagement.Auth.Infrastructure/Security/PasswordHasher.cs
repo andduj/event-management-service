@@ -1,9 +1,9 @@
-using EventManagement.Bookings.Application.Interfaces;
+using EventManagement.Auth.Application.Interfaces;
 using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace EventManagement.Bookings.Infrastructure.Security
+namespace EventManagement.Auth.Infrastructure.Security
 {
     /// <summary>
     /// Хеширование паролей по алгоритму SHA-256.
