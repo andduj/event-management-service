@@ -1,4 +1,4 @@
-﻿using System.Data.Common;
+﻿using EventManagement.Auth.Infrastructure.DataAccess;
 using EventManagement.Bookings.Infrastructure.DataAccess;
 using EventManagement.Events.Infrastructure.DataAccess;
 using EventApi.IntegrationTests.Infrastructure;
@@ -34,6 +34,15 @@ public sealed class DbSchemaTests
         Assert.True(await TableExistsAsync(db, "bookings"));
     }
 
+    [Fact]
+    public async Task Migrations_Create_Users_Table_In_Auth_Database()
+    {
+        await _fixture.ResetAsync();
+
+        await using var db = new AuthDbContext(_fixture.CreateAuthOptions());
+        Assert.True(await TableExistsAsync(db, "users"));
+    }
+
     private static async Task<bool> TableExistsAsync(DbContext db, string tableName, string schema = "public")
     {
         await db.Database.OpenConnectionAsync();
@@ -59,7 +68,7 @@ public sealed class DbSchemaTests
             await db.Database.CloseConnectionAsync();
         }
 
-        static void AddParameter(DbCommand command, string name, string value)
+        static void AddParameter(System.Data.Common.DbCommand command, string name, string value)
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = name;

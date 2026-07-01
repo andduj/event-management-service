@@ -76,14 +76,14 @@ namespace EventManagement.Bookings.Tests
         public async Task CreateBookingAsync_ActiveBookingsLimit_ShouldNotAffectOtherUsers()
         {
             var eventId = Guid.NewGuid();
-            var otherUser = await _fixture.CreateUserAsync($"other-user-{Guid.NewGuid():N}");
+            var otherUserId = Guid.NewGuid();
 
             for (int i = 0; i < BookingLimits.MaxActiveBookings; i++)
             {
                 await _bookingService.CreateBookingAsync(eventId, _testUserId);
             }
 
-            var action = () => _bookingService.CreateBookingAsync(eventId, otherUser.Id);
+            var action = () => _bookingService.CreateBookingAsync(eventId, otherUserId);
 
             await action.Should().NotThrowAsync();
         }
@@ -102,8 +102,8 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public async Task CancelBookingAsync_OtherUsersBookingAsUser_ShouldThrowAccessDeniedException()
         {
-            var owner = await _fixture.CreateUserAsync($"owner-{Guid.NewGuid():N}");
-            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid(), owner.Id);
+            var ownerId = Guid.NewGuid();
+            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid(), ownerId);
 
             var action = () => _bookingService.CancelBookingAsync(bookingInfo.Id, _testUserId, UserRole.User);
 
@@ -113,8 +113,8 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public async Task CancelBookingAsync_OtherUsersBookingAsAdmin_ShouldSucceed()
         {
-            var owner = await _fixture.CreateUserAsync($"owner-{Guid.NewGuid():N}");
-            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid(), owner.Id);
+            var ownerId = Guid.NewGuid();
+            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid(), ownerId);
 
             await _bookingService.CancelBookingAsync(bookingInfo.Id, _testUserId, UserRole.Admin);
 

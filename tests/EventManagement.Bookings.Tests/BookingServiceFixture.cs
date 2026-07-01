@@ -38,20 +38,11 @@ namespace EventManagement.Bookings.Tests
             services.AddSingleton(new Mock<ILogger<BookingService>>().Object);
             services.AddDbContext<BookingsDbContext>(options => options.UseInMemoryDatabase(dbName));
             services.AddScoped<IBookingRepository, BookingRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IBookingService, BookingService>();
             services.AddAutoMapper(typeof(MappingProfile));
 
             ServiceProvider = services.BuildServiceProvider();
-
-            using (var seedScope = ServiceProvider.CreateScope())
-            {
-                var context = seedScope.ServiceProvider.GetRequiredService<BookingsDbContext>();
-                var userRepository = seedScope.ServiceProvider.GetRequiredService<IUserRepository>();
-                var user = User.Create("booking-service-test-user", "HASH", UserRole.User);
-                userRepository.CreateAsync(user).GetAwaiter().GetResult();
-                TestUserId = user.Id;
-            }
+            TestUserId = Guid.NewGuid();
 
             Scope = ServiceProvider.CreateScope();
             BookingRepository = Scope.ServiceProvider.GetRequiredService<IBookingRepository>();
@@ -62,14 +53,6 @@ namespace EventManagement.Bookings.Tests
                 .OmitAutoProperties());
 
             BookingService = Scope.ServiceProvider.GetRequiredService<IBookingService>();
-        }
-
-        public async Task<User> CreateUserAsync(string login, UserRole role = UserRole.User)
-        {
-            using var scope = ServiceProvider.CreateScope();
-            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-            var user = User.Create(login, "HASH", role);
-            return await userRepository.CreateAsync(user);
         }
     }
 }

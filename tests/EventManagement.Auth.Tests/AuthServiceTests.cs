@@ -1,16 +1,16 @@
-using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Application.Services;
-using EventManagement.Bookings.Domain.Exceptions;
-using EventManagement.Bookings.Domain.Models;
-using EventManagement.Bookings.Infrastructure.Data.Repositories;
-using EventManagement.Bookings.Infrastructure.DataAccess;
-using EventManagement.Bookings.Infrastructure.Security;
+using EventManagement.Auth.Application.Interfaces;
+using EventManagement.Auth.Application.Services;
+using EventManagement.Auth.Domain.Exceptions;
+using EventManagement.Auth.Domain.Models;
+using EventManagement.Auth.Infrastructure.Data.Repositories;
+using EventManagement.Auth.Infrastructure.DataAccess;
+using EventManagement.Auth.Infrastructure.Security;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
-namespace EventManagement.Bookings.Tests
+namespace EventManagement.Auth.Tests
 {
     public class AuthServiceTests
     {
@@ -18,7 +18,7 @@ namespace EventManagement.Bookings.Tests
         {
             var dbName = Guid.NewGuid().ToString();
             var services = new ServiceCollection();
-            services.AddDbContext<BookingsDbContext>(options => options.UseInMemoryDatabase(dbName));
+            services.AddDbContext<AuthDbContext>(options => options.UseInMemoryDatabase(dbName));
             services.AddScoped<IUserRepository, UserRepository>();
 
             var serviceProvider = services.BuildServiceProvider();
