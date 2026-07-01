@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EventManagement.Bookings.Application\EventManagement.Bookings.Application.csproj" />
     <ProjectReference Include="..\EventManagement.Bookings.Domain\EventManagement.Bookings.Domain.csproj" />
+    <ProjectReference Include="..\EventManagement.Contracts\EventManagement.Contracts.csproj" />
     <ProjectReference Include="..\EventManagement.Events.Api\EventManagement.Events.Api.csproj" />
     <ProjectReference Include="..\EventManagement.Logging\EventManagement.Logging.csproj" />
   </ItemGroup>
