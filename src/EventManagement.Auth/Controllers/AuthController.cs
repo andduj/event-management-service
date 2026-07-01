@@ -1,13 +1,13 @@
-using EventManagement.Bookings.Application.DTOs;
-using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Domain.Models;
+using EventManagement.Auth.Application.DTOs;
+using EventManagement.Auth.Application.Interfaces;
+using EventManagement.Auth.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventManagement.Bookings.Controllers
+namespace EventManagement.Auth.Controllers
 {
     /// <summary>
     /// Контроллер аутентификации.

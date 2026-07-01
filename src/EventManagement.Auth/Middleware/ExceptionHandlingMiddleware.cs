@@ -1,4 +1,4 @@
-﻿using EventManagement.Bookings.Domain.Exceptions;
+using EventManagement.Auth.Domain.Exceptions;
 using EventManagement.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading.Tasks;
 
-namespace EventManagement.Bookings.Middleware
+namespace EventManagement.Auth.Middleware
 {
     /// <summary>
     /// Класс для глобальной обработки исключений.
@@ -23,7 +23,10 @@ namespace EventManagement.Bookings.Middleware
         /// <param name="next">Следующий компонент в конвейере запросов.</param>
         /// <param name="webHostEnvironment">Среда выполнения приложения.</param>
         /// <param name="logger">Логгер приложения.</param>
-        public ExceptionHandlingMiddleware(RequestDelegate next, IWebHostEnvironment webHostEnvironment, ILogger<ExceptionHandlingMiddleware> logger)
+        public ExceptionHandlingMiddleware(
+            RequestDelegate next,
+            IWebHostEnvironment webHostEnvironment,
+            ILogger<ExceptionHandlingMiddleware> logger)
         {
             _next = next;
             _webHostEnvironment = webHostEnvironment;
@@ -69,7 +72,7 @@ namespace EventManagement.Bookings.Middleware
                 Status = statusCode,
                 Title = GetTitleForStatusCode(statusCode),
                 Detail = exception.Message,
-                Instance = context.Request.Path
+                Instance = context.Request.Path,
             };
 
             if (_webHostEnvironment.IsDevelopment())
@@ -83,47 +86,24 @@ namespace EventManagement.Bookings.Middleware
 
         private static string GetTitleForStatusCode(int statusCode)
         {
-            switch (statusCode)
+            return statusCode switch
             {
-                case StatusCodes.Status400BadRequest:
-                    return "Bad Request";
-                case StatusCodes.Status401Unauthorized:
-                    return "Unauthorized";
-                case StatusCodes.Status403Forbidden:
-                    return "Forbidden";
-                case StatusCodes.Status404NotFound:
-                    return "Not Found";
-                case StatusCodes.Status409Conflict:
-                    return "Conflict";
-                case StatusCodes.Status500InternalServerError:
-                    return "Internal Server Error";
-                default:
-                    return "An error occurred";
-            }
+                StatusCodes.Status400BadRequest => "Bad Request",
+                StatusCodes.Status404NotFound => "Not Found",
+                StatusCodes.Status500InternalServerError => "Internal Server Error",
+                _ => "An error occurred",
+            };
         }
 
         private static int MapStatusCode(Exception exception)
         {
-            switch (exception)
+            return exception switch
             {
-                case BookingNotFoundException:
-                    return StatusCodes.Status404NotFound;
-                case NoAvailableSeatsException:
-                case ActiveBookingsLimitExceededException:
-                    return StatusCodes.Status409Conflict;
-                case EventAlreadyStartedException:
-                    return StatusCodes.Status400BadRequest;
-                case AccessDeniedException:
-                    return StatusCodes.Status403Forbidden;
-                case EventsGatewayException eventsGatewayException:
-                    return eventsGatewayException.StatusCode;
-                case ArgumentException:
-                    return StatusCodes.Status400BadRequest;
-                case UnauthorizedAccessException:
-                    return StatusCodes.Status401Unauthorized;
-                default:
-                    return StatusCodes.Status500InternalServerError;
-            }
+                InvalidCredentialsException => StatusCodes.Status404NotFound,
+                LoginAlreadyExistsException => StatusCodes.Status400BadRequest,
+                ArgumentException => StatusCodes.Status400BadRequest,
+                _ => StatusCodes.Status500InternalServerError,
+            };
         }
     }
 }
