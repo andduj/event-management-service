@@ -37,8 +37,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Events.Appl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Events.Infrastructure", "src\EventManagement.Events.Infrastructure\EventManagement.Events.Infrastructure.csproj", "{BBE5A990-AAA7-48E8-BC14-4063B95B0E59}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Bookings.Domain", "src\EventManagement.Bookings.Domain\EventManagement.Bookings.Domain.csproj", "{A9E2EC7C-54F2-4044-91F6-5D3FB002EC5A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventManagement.Bookings.Application", "src\EventManagement.Bookings.Application\EventManagement.Bookings.Application.csproj", "{CFF56345-91CC-4027-B268-17F1437541E2}"
