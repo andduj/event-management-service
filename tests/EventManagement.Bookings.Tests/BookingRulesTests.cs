@@ -5,7 +5,6 @@ using EventManagement.Bookings.Domain.Models;
 using EventManagement.Bookings.Infrastructure.DataAccess;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 
 namespace EventManagement.Bookings.Tests
 {
@@ -13,47 +12,18 @@ namespace EventManagement.Bookings.Tests
     {
         private readonly BookingServiceFixture _fixture;
         private readonly IBookingService _bookingService;
-        private readonly Mock<IEventsGateway> _eventsGateway;
         private readonly Guid _testUserId;
 
         public BookingRulesTests(BookingServiceFixture fixture)
         {
             _fixture = fixture;
             _bookingService = fixture.BookingService;
-            _eventsGateway = fixture.EventsGateway;
             _testUserId = fixture.TestUserId;
-
-            _eventsGateway.Reset();
-            _eventsGateway
-                .Setup(gateway => gateway.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
-            _eventsGateway
-                .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-            _eventsGateway
-                .Setup(gateway => gateway.GetEventStartAtUtcAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTime.UtcNow.AddDays(1));
 
             using var cleanupScope = fixture.ServiceProvider.CreateScope();
             var context = cleanupScope.ServiceProvider.GetRequiredService<BookingsDbContext>();
             context.Bookings.RemoveRange(context.Bookings);
             context.SaveChanges();
-        }
-
-        [Fact]
-        public async Task CreateBookingAsync_WhenEventAlreadyStarted_ShouldThrowEventAlreadyStartedException()
-        {
-            var eventId = Guid.NewGuid();
-            _eventsGateway
-                .Setup(gateway => gateway.GetEventStartAtUtcAsync(eventId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTime.UtcNow.AddHours(-1));
-
-            var action = () => _bookingService.CreateBookingAsync(eventId, _testUserId);
-
-            await action.Should().ThrowAsync<EventAlreadyStartedException>();
-            _eventsGateway.Verify(
-                gateway => gateway.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
-                Times.Never);
         }
 
         [Fact]
@@ -120,19 +90,6 @@ namespace EventManagement.Bookings.Tests
 
             var booking = await _bookingService.GetBookingByIdAsync(bookingInfo.Id);
             booking.Status.Should().Be(BookingStatus.Cancelled);
-        }
-
-        [Fact]
-        public async Task CancelBookingAsync_ActiveBooking_ShouldReleaseSeat()
-        {
-            var eventId = Guid.NewGuid();
-            var bookingInfo = await _bookingService.CreateBookingAsync(eventId, _testUserId);
-
-            await _bookingService.CancelBookingAsync(bookingInfo.Id, _testUserId, UserRole.User);
-
-            _eventsGateway.Verify(
-                gateway => gateway.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()),
-                Times.Once);
         }
     }
 }

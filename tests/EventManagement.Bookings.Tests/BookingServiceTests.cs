@@ -1,26 +1,17 @@
-﻿using AutoMapper;
-using EventManagement.Bookings.Application;
-using EventManagement.Bookings.Application.DTOs;
-using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Application.Services;
+﻿using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Domain.Exceptions;
 using EventManagement.Bookings.Domain.Models;
 using EventManagement.Bookings.Infrastructure.DataAccess;
-using EventManagement.Logging;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using System.Net;
 
 namespace EventManagement.Bookings.Tests
 {
     public class BookingServiceTests : IClassFixture<BookingServiceFixture>
     {
-        public readonly IBookingService _bookingService;
-        public readonly Mock<IEventsGateway> _eventsGateway;
-        public readonly IBookingRepository _bookingRepository;
-        public readonly BookingServiceFixture _fixture;
-
+        private readonly IBookingService _bookingService;
+        private readonly IBookingRepository _bookingRepository;
+        private readonly BookingServiceFixture _fixture;
         private readonly Guid _testUserId;
 
         public BookingServiceTests(BookingServiceFixture fixture)
@@ -28,27 +19,12 @@ namespace EventManagement.Bookings.Tests
             _fixture = fixture;
             _testUserId = fixture.TestUserId;
             _bookingService = fixture.BookingService;
-            _eventsGateway = fixture.EventsGateway;
             _bookingRepository = fixture.BookingRepository;
 
-            _eventsGateway
-                .Setup(gateway => gateway.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
-
-            _eventsGateway
-                .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-
-            _eventsGateway
-                .Setup(gateway => gateway.GetEventStartAtUtcAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTime.UtcNow.AddDays(1));
-
-            using (var cleanupScope = fixture.ServiceProvider.CreateScope())
-            {
-                var context = cleanupScope.ServiceProvider.GetRequiredService<BookingsDbContext>();
-                context.Bookings.RemoveRange(context.Bookings);
-                context.SaveChanges();
-            }
+            using var cleanupScope = fixture.ServiceProvider.CreateScope();
+            var context = cleanupScope.ServiceProvider.GetRequiredService<BookingsDbContext>();
+            context.Bookings.RemoveRange(context.Bookings);
+            context.SaveChanges();
         }
 
         [Fact]
@@ -72,93 +48,6 @@ namespace EventManagement.Bookings.Tests
             }
 
             bookingInfoIds.Should().OnlyHaveUniqueItems();
-        }
-
-        [Fact]
-        public async Task CreateBookingAsync_CreateBooking_ShouldDecreaseAvailableSeatsByOne()
-        {
-            var eventId = Guid.NewGuid();
-            int availableSeats = 3;
-
-            _eventsGateway
-                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() =>
-                {
-                    if (availableSeats <= 0)
-                    {
-                        return false;
-                    }
-
-                    availableSeats--;
-                    return true;
-                });
-
-            await _bookingService.CreateBookingAsync(eventId, _testUserId);
-
-            availableSeats.Should().Be(2);
-            _eventsGateway.Verify(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [Fact]
-        public async Task CreateBookingAsync_MultipleBookingsUntilLimit_AllShouldBeSuccessfulAndUnique()
-        {
-            const int limit = 3;
-            var eventId = Guid.NewGuid();
-            int availableSeats = limit;
-            var createdBookingIds = new List<Guid>();
-
-            _eventsGateway
-                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() =>
-                {
-                    if (availableSeats <= 0)
-                    {
-                        return false;
-                    }
-
-                    availableSeats--;
-                    return true;
-                });
-
-            for (int i = 0; i < limit; i++)
-            {
-                var bookingInfo = await _bookingService.CreateBookingAsync(eventId, _testUserId);
-                createdBookingIds.Add(bookingInfo.Id);
-            }
-
-            createdBookingIds.Should().HaveCount(limit);
-            createdBookingIds.Should().OnlyHaveUniqueItems();
-            availableSeats.Should().Be(0);
-        }
-
-        [Fact]
-        public async Task CreateBookingAsync_WhenSeatsAreExhausted_ShouldThrowNoAvailableSeatsException()
-        {
-            const int limit = 2;
-            var eventId = Guid.NewGuid();
-            int availableSeats = limit;
-
-            _eventsGateway
-                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() =>
-                {
-                    if (availableSeats <= 0)
-                    {
-                        return false;
-                    }
-
-                    availableSeats--;
-                    return true;
-                });
-
-            for (int i = 0; i < limit; i++)
-            {
-                await _bookingService.CreateBookingAsync(eventId, _testUserId);
-            }
-
-            var action = () => _bookingService.CreateBookingAsync(eventId, _testUserId);
-
-            await action.Should().ThrowAsync<NoAvailableSeatsException>();
         }
 
         [Fact]
@@ -193,162 +82,16 @@ namespace EventManagement.Bookings.Tests
             var action = () => _bookingService.GetBookingByIdAsync(Guid.NewGuid());
 
             await action.Should().ThrowAsync<BookingNotFoundException>();
-
-        }
-
-        [Fact]
-        public async Task CreateBookingAsync_NotExistedEvent_ShouldEventsGatewayExceptionWithNotFoundStatus()
-        {
-            _eventsGateway
-                .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ThrowsAsync(new EventsGatewayException("Мероприятие не найдено", 404));
-
-            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid(), _testUserId);
-
-            var exception = await action.Should().ThrowAsync<EventsGatewayException>();
-            exception.Which.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
-        }
-
-        [Fact]
-        public async Task CreateBookingAsync_DeletedEvent_ShouldEventsGatewayException()
-        {
-            _eventsGateway
-                .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ThrowsAsync(new EventsGatewayException("Мероприятие было удалено", 410));
-
-            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid(), _testUserId);
-
-            var exception = await action.Should().ThrowAsync<EventsGatewayException>();
-            exception.Which.StatusCode.Should().Be((int)HttpStatusCode.Gone);
-        }
-
-        [Fact]
-        public async Task CreateBookingAsync_WhenNoAvailableSeats_ShouldThrowNoAvailableSeatsException()
-        {
-            _eventsGateway
-                .Setup(gateway => gateway.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(false);
-
-            var action = () => _bookingService.CreateBookingAsync(Guid.NewGuid(), _testUserId);
-
-            await action.Should().ThrowAsync<NoAvailableSeatsException>();
-        }
-
-        [Fact]
-        public async Task CreateBookingAsync_WhenDatabaseSaveFails_ShouldReleaseReservedSeat()
-        {
-            var eventId = Guid.NewGuid();
-            var releasedSeats = 0;
-            var eventsGateway = new Mock<IEventsGateway>();
-            var bookingRepository = new Mock<IBookingRepository>();
-            var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
-            var bookingService = new BookingService(
-                bookingRepository.Object,
-                eventsGateway.Object,
-                mapper,
-                new Mock<ILogger<BookingService>>().Object);
-
-            eventsGateway
-                .Setup(gateway => gateway.EnsureEventExistsAsync(eventId, It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-            eventsGateway
-                .Setup(gateway => gateway.GetEventStartAtUtcAsync(eventId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTime.UtcNow.AddDays(1));
-            bookingRepository
-                .Setup(repository => repository.CountActiveBookingsAsync(_testUserId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(0);
-            eventsGateway
-                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
-            eventsGateway
-                .Setup(gateway => gateway.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
-                .Callback(() => releasedSeats++)
-                .Returns(Task.CompletedTask);
-            bookingRepository
-                .Setup(repository => repository.CreateBookingAsync(It.IsAny<Booking>()))
-                .ThrowsAsync(new Exception("Database failure"));
-
-            var action = () => bookingService.CreateBookingAsync(eventId, _testUserId);
-
-            await action.Should().ThrowAsync<Exception>().WithMessage("Database failure");
-            releasedSeats.Should().Be(1);
-            eventsGateway.Verify(gateway => gateway.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [Fact]
-        public async Task CreateBookingAsync_ConcurrentRequests_ShouldPreventOverbooking()
-        {
-            const int totalSeats = 5;
-            const int concurrentRequests = 20;
-            var eventId = Guid.NewGuid();
-            int availableSeats = totalSeats;
-            var seatsLock = new object();
-            var startSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            _eventsGateway
-                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() =>
-                {
-                    lock (seatsLock)
-                    {
-                        if (availableSeats <= 0)
-                        {
-                            return false;
-                        }
-
-                        availableSeats--;
-                        return true;
-                    }
-                });
-
-            var tasks = Enumerable.Range(0, concurrentRequests)
-                .Select(_ => Task.Run(async () =>
-                {
-                    await startSignal.Task;
-                    return await CreateBookingWithResultAsyncInScope(eventId);
-                }));
-
-            startSignal.SetResult();
-
-            var results = await Task.WhenAll(tasks);
-            var successfulBookingIds = results
-                .Where(result => result.Success)
-                .Select(result => result.BookingInfo!.Id)
-                .ToList();
-
-            results.Count(result => result.Success).Should().Be(totalSeats);
-            results.Count(result => result.Exception is NoAvailableSeatsException).Should().Be(concurrentRequests - totalSeats);
-            results.Count(result => !result.Success && result.Exception is not NoAvailableSeatsException).Should().Be(0);
-            successfulBookingIds.Should().OnlyHaveUniqueItems();
-            availableSeats.Should().Be(0);
         }
 
         [Fact]
         public async Task CreateBookingAsync_ConcurrentRequests_ShouldReturnUniqueBookingIds()
         {
-            const int totalSeats = 10;
+            const int concurrentRequests = 10;
             var eventId = Guid.NewGuid();
-            int availableSeats = totalSeats;
-            var seatsLock = new object();
             var startSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            _eventsGateway
-                .Setup(gateway => gateway.ReserveSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(() =>
-                {
-                    lock (seatsLock)
-                    {
-                        if (availableSeats <= 0)
-                        {
-                            return false;
-                        }
-
-                        availableSeats--;
-                        return true;
-                    }
-                });
-
-            var tasks = Enumerable.Range(0, totalSeats)
+            var tasks = Enumerable.Range(0, concurrentRequests)
                 .Select(_ => Task.Run(async () =>
                 {
                     await startSignal.Task;
@@ -361,24 +104,8 @@ namespace EventManagement.Bookings.Tests
 
             var bookings = await Task.WhenAll(tasks);
 
-            bookings.Should().HaveCount(totalSeats);
+            bookings.Should().HaveCount(concurrentRequests);
             bookings.Select(booking => booking.Id).Should().OnlyHaveUniqueItems();
-            availableSeats.Should().Be(0);
-        }
-
-        private async Task<(bool Success, BookingInfo? BookingInfo, Exception? Exception)> CreateBookingWithResultAsyncInScope(Guid eventId)
-        {
-            try
-            {
-                using var scope = _fixture.ServiceProvider.CreateScope();
-                var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-                var bookingInfo = await bookingService.CreateBookingAsync(eventId, _testUserId);
-                return (true, bookingInfo, null);
-            }
-            catch (Exception exception)
-            {
-                return (false, null, exception);
-            }
         }
     }
 }

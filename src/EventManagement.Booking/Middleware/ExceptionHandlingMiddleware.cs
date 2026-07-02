@@ -115,8 +115,6 @@ namespace EventManagement.Bookings.Middleware
                     return StatusCodes.Status400BadRequest;
                 case AccessDeniedException:
                     return StatusCodes.Status403Forbidden;
-                case EventsGatewayException eventsGatewayException:
-                    return eventsGatewayException.StatusCode;
                 case ArgumentException:
                     return StatusCodes.Status400BadRequest;
                 case UnauthorizedAccessException:

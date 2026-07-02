@@ -18,8 +18,6 @@ namespace EventManagement.Bookings.Tests
 
         public IServiceScope Scope { get; }
 
-        public Mock<IEventsGateway> EventsGateway { get; }
-
         public IBookingRepository BookingRepository { get; }
 
         public IBookingService BookingService { get; }
@@ -33,8 +31,6 @@ namespace EventManagement.Bookings.Tests
             var dbName = Guid.NewGuid().ToString();
             var services = new ServiceCollection();
 
-            EventsGateway = new Mock<IEventsGateway>();
-            services.AddSingleton(EventsGateway.Object);
             services.AddSingleton(new Mock<ILogger<BookingService>>().Object);
             services.AddDbContext<BookingsDbContext>(options => options.UseInMemoryDatabase(dbName));
             services.AddScoped<IBookingRepository, BookingRepository>();
