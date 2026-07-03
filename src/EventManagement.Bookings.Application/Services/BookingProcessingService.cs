@@ -15,16 +15,22 @@ namespace EventManagement.Bookings.Application.Services
     public class BookingProcessingService : IBookingProcessingService
     {
         private readonly IBookingRepository _bookingRepository;
+        private readonly IBookableEventRepository _bookableEventRepository;
         private readonly ILogger<BookingProcessingService> _logger;
 
         /// <summary>
         /// Инициализирует новый экземпляр сервиса фоновой обработки бронирований.
         /// </summary>
         /// <param name="bookingRepository">Репозиторий бронирований.</param>
+        /// <param name="bookableEventRepository">Репозиторий локальных проекций мероприятий.</param>
         /// <param name="logger">Логгер приложения.</param>
-        public BookingProcessingService(IBookingRepository bookingRepository, ILogger<BookingProcessingService> logger)
+        public BookingProcessingService(
+            IBookingRepository bookingRepository,
+            IBookableEventRepository bookableEventRepository,
+            ILogger<BookingProcessingService> logger)
         {
             _bookingRepository = bookingRepository;
+            _bookableEventRepository = bookableEventRepository;
             _logger = logger;
         }
 
@@ -58,8 +64,20 @@ namespace EventManagement.Bookings.Application.Services
             _logger.Debug("Начало обработки бронирования. BookingId={0}, EventId={1}", booking.Id, booking.EventId);
             try
             {
-                booking.Confirm();
-                await TryPersistStatusChangeAsync(booking, cancellationToken);
+                bool exists = await _bookableEventRepository.ExistsAsync(booking.EventId, cancellationToken);
+                if (exists)
+                {
+                    booking.Confirm();
+                    if (!await TryPersistStatusChangeAsync(booking, cancellationToken))
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    _logger.Warn("Мероприятия с id={0} не существует", booking.EventId);
+                    await RejectAndReleaseSeatsAsync(booking, cancellationToken);
+                }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -67,6 +85,7 @@ namespace EventManagement.Bookings.Application.Services
             }
             catch (Exception exception)
             {
+                await RejectAndReleaseSeatsAsync(booking, cancellationToken);
                 _logger.Error(exception, "Ошибка при обработке бронирования {0}", booking.Id);
             }
             finally
@@ -84,6 +103,28 @@ namespace EventManagement.Bookings.Application.Services
             }
 
             return wasUpdated;
+        }
+
+        private async Task RejectAndReleaseSeatsAsync(Booking booking, CancellationToken cancellationToken)
+        {
+            try
+            {
+                booking.Reject();
+                if (!await TryPersistStatusChangeAsync(booking, cancellationToken))
+                {
+                    return;
+                }
+
+                await _bookableEventRepository.ReleaseSeatsAsync(booking.EventId, 1, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(exception, "Не удалось освободить место для EventId={0}", booking.EventId);
+            }
         }
     }
 }

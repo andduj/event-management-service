@@ -13,6 +13,8 @@ namespace EventManagement.Bookings.Tests
     {
         public Mock<IBookingRepository> BookingRepository { get; }
 
+        public Mock<IBookableEventRepository> BookableEventRepository { get; }
+
         public BookingProcessingService BookingProcessingService { get; }
 
         public BookingService BookingService { get; }
@@ -25,13 +27,16 @@ namespace EventManagement.Bookings.Tests
                 .CreateMapper();
 
             BookingRepository = new Mock<IBookingRepository>();
+            BookableEventRepository = new Mock<IBookableEventRepository>();
 
             BookingProcessingService = new BookingProcessingService(
                 BookingRepository.Object,
+                BookableEventRepository.Object,
                 new Mock<ILogger<BookingProcessingService>>().Object);
 
             BookingService = new BookingService(
                 BookingRepository.Object,
+                BookableEventRepository.Object,
                 mapper,
                 new Mock<ILogger<BookingService>>().Object);
 

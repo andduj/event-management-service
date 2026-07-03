@@ -38,6 +38,7 @@ namespace EventManagement.Events.Tests
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IValidator<AddEventRequest>, AddEventRequestValidator>();
             services.AddScoped<IValidator<UpdateEventRequest>, UpdateEventRequestValidator>();
+            services.AddSingleton(new Mock<IEventLifecyclePublisher>().Object);
             services.AddAutoMapper(typeof(MappingProfile));
             services.AddSingleton(new Mock<ILogger<EventService>>().Object);
             ServiceProvider = services.BuildServiceProvider();

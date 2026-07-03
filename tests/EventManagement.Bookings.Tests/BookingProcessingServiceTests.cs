@@ -10,6 +10,7 @@ namespace EventManagement.Bookings.Tests
     public class BookingProcessingServiceTests : IClassFixture<BookingProcessingServiceFixture>
     {
         private readonly Mock<IBookingRepository> _bookingRepository;
+        private readonly Mock<IBookableEventRepository> _bookableEventRepository;
         private readonly BookingProcessingService _bookingProcessingService;
         private readonly IFixture _fixtureData;
         private readonly BookingProcessingServiceFixture _fixture;
@@ -18,10 +19,12 @@ namespace EventManagement.Bookings.Tests
         {
             _fixture = fixture;
             _bookingRepository = fixture.BookingRepository;
+            _bookableEventRepository = fixture.BookableEventRepository;
             _bookingProcessingService = fixture.BookingProcessingService;
             _fixtureData = fixture.Fixture;
 
             _bookingRepository.Reset();
+            _bookableEventRepository.Reset();
         }
 
         [Fact]
@@ -102,12 +105,50 @@ namespace EventManagement.Bookings.Tests
                 .Callback<Booking, BookingStatus, CancellationToken>((booking, _, _) => updatedBookings.Add(booking))
                 .ReturnsAsync(true);
 
+            _bookableEventRepository
+                .Setup(repository => repository.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
             await ProcessAllPendingBookingsAsync();
 
             updatedBookings.Should().HaveCount(2);
             updatedBookings.Should().OnlyContain(booking =>
                 booking.Status == BookingStatus.Confirmed);
             updatedBookings.Should().OnlyContain(booking => booking.ProcessedAt.HasValue);
+        }
+
+        [Fact]
+        public async Task ProcessPendingBookingsAsync_WhenEventDoesNotExist_ShouldRejectBookingAndReleaseSeat()
+        {
+            var eventId = Guid.NewGuid();
+            var pendingBooking = Booking.Create(eventId, Guid.NewGuid());
+            var bookings = new List<Booking> { pendingBooking };
+            var updatedBookings = new List<Booking>();
+            _bookingRepository
+                .Setup(repository => repository.GetBookingsAsync(BookingStatus.Pending))
+                .ReturnsAsync(bookings);
+            _bookingRepository
+                .Setup(repository => repository.GetBookingByIdAsync(pendingBooking.Id))
+                .ReturnsAsync(pendingBooking);
+            _bookingRepository
+                .Setup(repository => repository.TryUpdateBookingAsync(It.IsAny<Booking>(), BookingStatus.Pending, It.IsAny<CancellationToken>()))
+                .Callback<Booking, BookingStatus, CancellationToken>((booking, _, _) => updatedBookings.Add(booking))
+                .ReturnsAsync(true);
+
+            _bookableEventRepository
+                .Setup(repository => repository.ExistsAsync(eventId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+            _bookableEventRepository
+                .Setup(repository => repository.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            await ProcessAllPendingBookingsAsync();
+
+            updatedBookings.Should().ContainSingle();
+            updatedBookings.Single().Status.Should().Be(BookingStatus.Rejected);
+            _bookableEventRepository.Verify(
+                repository => repository.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         [Fact]
@@ -123,6 +164,9 @@ namespace EventManagement.Bookings.Tests
             _bookingRepository
                 .Setup(repository => repository.TryUpdateBookingAsync(It.IsAny<Booking>(), BookingStatus.Pending, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() => Interlocked.Increment(ref successfulUpdates) == 1);
+            _bookableEventRepository
+                .Setup(repository => repository.ExistsAsync(eventId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
 
             var tasks = Enumerable.Range(0, 2)
                 .Select(_ => _bookingProcessingService.ProcessBookingAsync(pendingBooking.Id, CancellationToken.None));

@@ -107,6 +107,7 @@ namespace EventManagement.Bookings.Middleware
             switch (exception)
             {
                 case BookingNotFoundException:
+                case EventNotFoundException:
                     return StatusCodes.Status404NotFound;
                 case NoAvailableSeatsException:
                 case ActiveBookingsLimitExceededException:

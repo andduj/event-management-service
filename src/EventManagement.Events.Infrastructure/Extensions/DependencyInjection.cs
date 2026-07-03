@@ -1,6 +1,8 @@
 using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Infrastructure.Data.Repositories;
 using EventManagement.Events.Infrastructure.DataAccess;
+using EventManagement.Events.Infrastructure.Kafka;
+using EventManagement.Events.Infrastructure.Messaging;
 using EventManagement.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +29,8 @@ namespace EventManagement.Events.Infrastructure.Extensions
             services.AddDbContext<EventsDbContext>(options => options.UseNpgsql(connectionString));
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+            services.Configure<KafkaOptions>(configuration.GetSection(KafkaOptions.SectionName));
+            services.AddSingleton<IEventLifecyclePublisher, KafkaEventLifecyclePublisher>();
 
             return services;
         }

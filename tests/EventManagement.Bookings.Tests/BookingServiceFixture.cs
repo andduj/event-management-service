@@ -9,6 +9,8 @@ using EventManagement.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using System;
+using System.Threading.Tasks;
 
 namespace EventManagement.Bookings.Tests
 {
@@ -19,6 +21,8 @@ namespace EventManagement.Bookings.Tests
         public IServiceScope Scope { get; }
 
         public IBookingRepository BookingRepository { get; }
+
+        public IBookableEventRepository BookableEventRepository { get; }
 
         public IBookingService BookingService { get; }
 
@@ -34,6 +38,7 @@ namespace EventManagement.Bookings.Tests
             services.AddSingleton(new Mock<ILogger<BookingService>>().Object);
             services.AddDbContext<BookingsDbContext>(options => options.UseInMemoryDatabase(dbName));
             services.AddScoped<IBookingRepository, BookingRepository>();
+            services.AddScoped<IBookableEventRepository, BookableEventRepository>();
             services.AddScoped<IBookingService, BookingService>();
             services.AddAutoMapper(typeof(MappingProfile));
 
@@ -42,13 +47,42 @@ namespace EventManagement.Bookings.Tests
 
             Scope = ServiceProvider.CreateScope();
             BookingRepository = Scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+            BookableEventRepository = Scope.ServiceProvider.GetRequiredService<IBookableEventRepository>();
 
             Fixture = new Fixture();
             Fixture.Customize<Booking>(composer => composer
                 .FromFactory(() => Booking.Create(Guid.NewGuid(), Guid.NewGuid()))
                 .OmitAutoProperties());
+            Fixture.Customize<BookableEvent>(composer => composer
+                .FromFactory(() => BookableEvent.Create(
+                    Guid.NewGuid(),
+                    "Test event",
+                    "Description",
+                    DateTime.UtcNow.AddDays(1),
+                    DateTime.UtcNow.AddDays(1).AddHours(2),
+                    10,
+                    10))
+                .OmitAutoProperties());
 
             BookingService = Scope.ServiceProvider.GetRequiredService<IBookingService>();
+        }
+
+        public async Task<BookableEvent> SeedBookableEventAsync(
+            Guid? eventId = null,
+            int availableSeats = 10,
+            DateTime? startAt = null)
+        {
+            var bookableEvent = BookableEvent.Create(
+                eventId ?? Guid.NewGuid(),
+                "Test event",
+                "Description",
+                startAt ?? DateTime.UtcNow.AddDays(1),
+                (startAt ?? DateTime.UtcNow.AddDays(1)).AddHours(2),
+                availableSeats,
+                availableSeats);
+
+            await BookableEventRepository.UpsertAsync(bookableEvent);
+            return bookableEvent;
         }
     }
 }
