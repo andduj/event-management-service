@@ -1,5 +1,4 @@
 using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Application.Options;
 using EventManagement.Bookings.Infrastructure.Data.Repositories;
 using EventManagement.Bookings.Infrastructure.DataAccess;
 using EventManagement.Bookings.Infrastructure.Kafka;
@@ -30,6 +29,7 @@ namespace EventManagement.Bookings.Infrastructure.Extensions
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
             services.Configure<BookingProcessingOptions>(configuration.GetSection(BookingProcessingOptions.SectionName));
             services.Configure<KafkaOptions>(configuration.GetSection(KafkaOptions.SectionName));
+            services.AddSingleton<IBookingConfirmedPublisher, KafkaBookingConfirmedPublisher>();
             services.AddHostedService<BookingBackgroundService>();
             services.AddHostedService<EventLifecycleConsumer>();
 

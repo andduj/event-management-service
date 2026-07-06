@@ -16,6 +16,7 @@ namespace EventManagement.Bookings.Application.Services
     {
         private readonly IBookingRepository _bookingRepository;
         private readonly IBookableEventRepository _bookableEventRepository;
+        private readonly IBookingConfirmedPublisher _bookingConfirmedPublisher;
         private readonly ILogger<BookingProcessingService> _logger;
 
         /// <summary>
@@ -23,14 +24,17 @@ namespace EventManagement.Bookings.Application.Services
         /// </summary>
         /// <param name="bookingRepository">Репозиторий бронирований.</param>
         /// <param name="bookableEventRepository">Репозиторий локальных проекций мероприятий.</param>
+        /// <param name="bookingConfirmedPublisher">Издатель подтверждённых броней в Kafka.</param>
         /// <param name="logger">Логгер приложения.</param>
         public BookingProcessingService(
             IBookingRepository bookingRepository,
             IBookableEventRepository bookableEventRepository,
+            IBookingConfirmedPublisher bookingConfirmedPublisher,
             ILogger<BookingProcessingService> logger)
         {
             _bookingRepository = bookingRepository;
             _bookableEventRepository = bookableEventRepository;
+            _bookingConfirmedPublisher = bookingConfirmedPublisher;
             _logger = logger;
         }
 
@@ -72,6 +76,8 @@ namespace EventManagement.Bookings.Application.Services
                     {
                         return;
                     }
+
+                    await TryPublishBookingConfirmedAsync(booking, cancellationToken);
                 }
                 else
                 {
@@ -103,6 +109,25 @@ namespace EventManagement.Bookings.Application.Services
             }
 
             return wasUpdated;
+        }
+
+        private async Task TryPublishBookingConfirmedAsync(Booking booking, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _bookingConfirmedPublisher.PublishAsync(booking, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(
+                    exception,
+                    "Не удалось опубликовать booking-confirmed. BookingId={0}",
+                    booking.Id);
+            }
         }
 
         private async Task RejectAndReleaseSeatsAsync(Booking booking, CancellationToken cancellationToken)

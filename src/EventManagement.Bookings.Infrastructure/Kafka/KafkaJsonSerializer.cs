@@ -19,5 +19,13 @@ namespace EventManagement.Bookings.Infrastructure.Kafka
         {
             return JsonSerializer.Deserialize<T>(json, SerializerOptions);
         }
+
+        /// <summary>
+        /// Сериализует объект в JSON.
+        /// </summary>
+        public static string Serialize<T>(T value)
+        {
+            return JsonSerializer.Serialize(value, SerializerOptions);
+        }
     }
 }

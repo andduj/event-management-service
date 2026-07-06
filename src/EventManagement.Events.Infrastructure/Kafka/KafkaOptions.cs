@@ -14,5 +14,10 @@ namespace EventManagement.Events.Infrastructure.Kafka
         /// Адреса брокеров Kafka.
         /// </summary>
         public string BootstrapServers { get; set; } = "localhost:9092";
+
+        /// <summary>
+        /// Идентификатор consumer group.
+        /// </summary>
+        public string GroupId { get; set; } = "events-service";
     }
 }

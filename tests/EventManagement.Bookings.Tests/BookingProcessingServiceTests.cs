@@ -11,6 +11,7 @@ namespace EventManagement.Bookings.Tests
     {
         private readonly Mock<IBookingRepository> _bookingRepository;
         private readonly Mock<IBookableEventRepository> _bookableEventRepository;
+        private readonly Mock<IBookingConfirmedPublisher> _bookingConfirmedPublisher;
         private readonly BookingProcessingService _bookingProcessingService;
         private readonly IFixture _fixtureData;
         private readonly BookingProcessingServiceFixture _fixture;
@@ -20,11 +21,13 @@ namespace EventManagement.Bookings.Tests
             _fixture = fixture;
             _bookingRepository = fixture.BookingRepository;
             _bookableEventRepository = fixture.BookableEventRepository;
+            _bookingConfirmedPublisher = fixture.BookingConfirmedPublisher;
             _bookingProcessingService = fixture.BookingProcessingService;
             _fixtureData = fixture.Fixture;
 
             _bookingRepository.Reset();
             _bookableEventRepository.Reset();
+            _bookingConfirmedPublisher.Reset();
         }
 
         [Fact]
@@ -115,6 +118,9 @@ namespace EventManagement.Bookings.Tests
             updatedBookings.Should().OnlyContain(booking =>
                 booking.Status == BookingStatus.Confirmed);
             updatedBookings.Should().OnlyContain(booking => booking.ProcessedAt.HasValue);
+            _bookingConfirmedPublisher.Verify(
+                publisher => publisher.PublishAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()),
+                Times.Exactly(2));
         }
 
         [Fact]
@@ -149,6 +155,9 @@ namespace EventManagement.Bookings.Tests
             _bookableEventRepository.Verify(
                 repository => repository.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()),
                 Times.Once);
+            _bookingConfirmedPublisher.Verify(
+                publisher => publisher.PublishAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()),
+                Times.Never);
         }
 
         [Fact]
@@ -174,6 +183,9 @@ namespace EventManagement.Bookings.Tests
 
             successfulUpdates.Should().Be(1);
             pendingBooking.Status.Should().Be(BookingStatus.Confirmed);
+            _bookingConfirmedPublisher.Verify(
+                publisher => publisher.PublishAsync(pendingBooking, It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         private async Task ProcessAllPendingBookingsAsync(CancellationToken cancellationToken = default)

@@ -19,5 +19,13 @@ namespace EventManagement.Events.Infrastructure.Kafka
         {
             return JsonSerializer.Serialize(value, SerializerOptions);
         }
+
+        /// <summary>
+        /// Десериализует JSON в объект указанного типа.
+        /// </summary>
+        public static T? Deserialize<T>(string json)
+        {
+            return JsonSerializer.Deserialize<T>(json, SerializerOptions);
+        }
     }
 }
