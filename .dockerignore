@@ -1,0 +1,10 @@
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/TestResults
+**/*.user
+.git
+.gitignore
+**/*.md
+docker/
