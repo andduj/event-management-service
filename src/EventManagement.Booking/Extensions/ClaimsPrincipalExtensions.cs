@@ -1,5 +1,6 @@
 using EventManagement.Bookings.Domain.Models;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace EventManagement.Bookings.Extensions
@@ -14,7 +15,9 @@ namespace EventManagement.Bookings.Extensions
         /// </summary>
         public static Guid GetId(this ClaimsPrincipal user)
         {
-            string? subject = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? subject = user.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                ?? user.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (subject is null || !Guid.TryParse(subject, out Guid userId))
             {
                 throw new UnauthorizedAccessException();
