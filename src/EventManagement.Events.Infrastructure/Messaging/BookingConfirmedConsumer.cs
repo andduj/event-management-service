@@ -38,6 +38,8 @@ namespace EventManagement.Events.Infrastructure.Messaging
         /// <inheritdoc />
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await Task.Yield();
+
             var consumerConfig = new ConsumerConfig
             {
                 BootstrapServers = _options.BootstrapServers,

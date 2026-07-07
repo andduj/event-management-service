@@ -43,6 +43,15 @@ public sealed class DbSchemaTests
         Assert.True(await TableExistsAsync(db, "users"));
     }
 
+    [Fact]
+    public async Task Migrations_Create_BookableEvents_Table_In_Bookings_Database()
+    {
+        await _fixture.ResetAsync();
+
+        await using var db = new BookingsDbContext(_fixture.CreateBookingsOptions());
+        Assert.True(await TableExistsAsync(db, "bookable_events"));
+    }
+
     private static async Task<bool> TableExistsAsync(DbContext db, string tableName, string schema = "public")
     {
         await db.Database.OpenConnectionAsync();
