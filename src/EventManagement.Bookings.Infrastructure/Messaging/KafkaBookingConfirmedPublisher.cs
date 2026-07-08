@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace EventManagement.Bookings.Infrastructure.Messaging
 {
     /// <summary>
-    /// Публикация подтверждённых броней в Kafka.
+    /// Публикация событий о подтверждении и отмене брони в Kafka.
     /// </summary>
     public sealed class KafkaBookingConfirmedPublisher : IBookingConfirmedPublisher, IDisposable
     {
@@ -23,7 +23,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
         private readonly ILogger<KafkaBookingConfirmedPublisher> _logger;
 
         /// <summary>
-        /// Инициализирует издателя сообщений о подтверждённых бронях.
+        /// Инициализирует издателя Kafka-сообщений по бронированиям.
         /// </summary>
         public KafkaBookingConfirmedPublisher(
             IOptions<KafkaOptions> options,
@@ -38,7 +38,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
         }
 
         /// <inheritdoc />
-        public async Task PublishAsync(Booking booking, CancellationToken cancellationToken = default)
+        public async Task PublishConfirmedAsync(Booking booking, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -53,7 +53,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
             string payload = KafkaJsonSerializer.Serialize(message);
             var kafkaMessage = new Message<string, string>
             {
-                Key = booking.Id.ToString(),
+                Key = booking.EventId.ToString(),
                 Value = payload
             };
 
@@ -72,6 +72,45 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
             catch (ProduceException<string, string> exception)
             {
                 _logger.Error(exception, "Не удалось опубликовать booking-confirmed. BookingId={0}", booking.Id);
+                throw;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task PublishCancelledAsync(Booking booking, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var message = new BookingCancelledMessage
+            {
+                BookingId = booking.Id,
+                EventId = booking.EventId,
+                UserId = booking.UserId,
+                SeatsCount = DefaultSeatsPerBooking
+            };
+
+            string payload = KafkaJsonSerializer.Serialize(message);
+            var kafkaMessage = new Message<string, string>
+            {
+                Key = booking.EventId.ToString(),
+                Value = payload
+            };
+
+            try
+            {
+                var deliveryResult = await _producer.ProduceAsync(
+                    KafkaTopics.BookingCancelled,
+                    kafkaMessage,
+                    cancellationToken);
+                _logger.Debug(
+                    "Сообщение booking-cancelled опубликовано. BookingId={0}, Partition={1}, Offset={2}",
+                    booking.Id,
+                    deliveryResult.Partition.Value,
+                    deliveryResult.Offset.Value);
+            }
+            catch (ProduceException<string, string> exception)
+            {
+                _logger.Error(exception, "Не удалось опубликовать booking-cancelled. BookingId={0}", booking.Id);
                 throw;
             }
         }

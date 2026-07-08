@@ -77,7 +77,7 @@ namespace EventManagement.Bookings.Application.Services
                         return;
                     }
 
-                    await TryPublishBookingConfirmedAsync(booking, cancellationToken);
+                    await PublishBookingConfirmedOrCompensateAsync(booking, cancellationToken);
                 }
                 else
                 {
@@ -111,11 +111,11 @@ namespace EventManagement.Bookings.Application.Services
             return wasUpdated;
         }
 
-        private async Task TryPublishBookingConfirmedAsync(Booking booking, CancellationToken cancellationToken)
+        private async Task PublishBookingConfirmedOrCompensateAsync(Booking booking, CancellationToken cancellationToken)
         {
             try
             {
-                await _bookingConfirmedPublisher.PublishAsync(booking, cancellationToken);
+                await _bookingConfirmedPublisher.PublishConfirmedAsync(booking, cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -127,15 +127,37 @@ namespace EventManagement.Bookings.Application.Services
                     exception,
                     "Не удалось опубликовать booking-confirmed. BookingId={0}",
                     booking.Id);
+
+                await RejectAndReleaseSeatsAsync(
+                    booking,
+                    BookingStatus.Confirmed,
+                    cancellationToken);
             }
         }
 
         private async Task RejectAndReleaseSeatsAsync(Booking booking, CancellationToken cancellationToken)
         {
+            await RejectAndReleaseSeatsAsync(booking, BookingStatus.Pending, cancellationToken);
+        }
+
+        private async Task RejectAndReleaseSeatsAsync(
+            Booking booking,
+            BookingStatus expectedStatus,
+            CancellationToken cancellationToken)
+        {
             try
             {
-                booking.Reject();
-                if (!await TryPersistStatusChangeAsync(booking, cancellationToken))
+                if (expectedStatus == BookingStatus.Confirmed)
+                {
+                    booking.Cancel();
+                }
+                else
+                {
+                    booking.Reject();
+                }
+
+                bool wasUpdated = await _bookingRepository.TryUpdateBookingAsync(booking, expectedStatus, cancellationToken);
+                if (!wasUpdated)
                 {
                     return;
                 }

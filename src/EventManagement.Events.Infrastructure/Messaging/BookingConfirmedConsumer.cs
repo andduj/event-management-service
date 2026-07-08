@@ -49,7 +49,7 @@ namespace EventManagement.Events.Infrastructure.Messaging
             };
 
             using var consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
-            consumer.Subscribe(KafkaTopics.BookingConfirmed);
+            consumer.Subscribe(new[] { KafkaTopics.BookingConfirmed, KafkaTopics.BookingCancelled });
 
             _logger.Info(
                 "Kafka consumer booking-confirmed запущен. GroupId={0}",
@@ -62,7 +62,7 @@ namespace EventManagement.Events.Infrastructure.Messaging
                     try
                     {
                         var consumeResult = consumer.Consume(stoppingToken);
-                        await HandleMessageAsync(consumeResult.Message.Value, stoppingToken);
+                        await HandleMessageAsync(consumeResult.Topic, consumeResult.Message.Value, stoppingToken);
                         consumer.Commit(consumeResult);
                     }
                     catch (ConsumeException exception)
@@ -81,33 +81,68 @@ namespace EventManagement.Events.Infrastructure.Messaging
             }
         }
 
-        private async Task HandleMessageAsync(string payload, CancellationToken cancellationToken)
+        private async Task HandleMessageAsync(string topic, string payload, CancellationToken cancellationToken)
         {
-            var message = KafkaJsonSerializer.Deserialize<BookingConfirmedMessage>(payload);
-            if (message == null)
-            {
-                _logger.Warn("Не удалось десериализовать BookingConfirmedMessage");
-                return;
-            }
-
             using var scope = _scopeFactory.CreateScope();
             var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
 
-            bool wasReserved = await eventService.TryReserveSeats(message.EventId, message.SeatsCount);
-            if (!wasReserved)
+            if (topic == KafkaTopics.BookingConfirmed)
             {
-                _logger.Warn(
-                    "Не удалось зарезервировать места в Events. BookingId={0}, EventId={1}, SeatsCount={2}",
-                    message.BookingId,
-                    message.EventId,
-                    message.SeatsCount);
+                var confirmedMessage = KafkaJsonSerializer.Deserialize<BookingConfirmedMessage>(payload);
+                if (confirmedMessage == null)
+                {
+                    _logger.Warn("Не удалось десериализовать BookingConfirmedMessage");
+                    return;
+                }
+
+                bool wasReserved = await eventService.TryReserveSeats(confirmedMessage.EventId, confirmedMessage.SeatsCount);
+                if (!wasReserved)
+                {
+                    _logger.Warn(
+                        "Не удалось зарезервировать места в Events. BookingId={0}, EventId={1}, SeatsCount={2}",
+                        confirmedMessage.BookingId,
+                        confirmedMessage.EventId,
+                        confirmedMessage.SeatsCount);
+                    return;
+                }
+
+                _logger.Debug(
+                    "Места зарезервированы в Events по booking-confirmed. BookingId={0}, EventId={1}",
+                    confirmedMessage.BookingId,
+                    confirmedMessage.EventId);
                 return;
             }
 
-            _logger.Debug(
-                "Места зарезервированы в Events по booking-confirmed. BookingId={0}, EventId={1}",
-                message.BookingId,
-                message.EventId);
+            if (topic == KafkaTopics.BookingCancelled)
+            {
+                var cancelledMessage = KafkaJsonSerializer.Deserialize<BookingCancelledMessage>(payload);
+                if (cancelledMessage == null)
+                {
+                    _logger.Warn("Не удалось десериализовать BookingCancelledMessage");
+                    return;
+                }
+
+                try
+                {
+                    await eventService.ReleaseSeats(cancelledMessage.EventId, cancelledMessage.SeatsCount);
+                    _logger.Debug(
+                        "Места освобождены в Events по booking-cancelled. BookingId={0}, EventId={1}",
+                        cancelledMessage.BookingId,
+                        cancelledMessage.EventId);
+                }
+                catch (Exception exception)
+                {
+                    _logger.Warn(
+                        "Не удалось освободить места в Events. BookingId={0}, EventId={1}, SeatsCount={2}. Error={3}",
+                        cancelledMessage.BookingId,
+                        cancelledMessage.EventId,
+                        cancelledMessage.SeatsCount,
+                        exception.Message);
+                }
+                return;
+            }
+
+            _logger.Warn("Получено сообщение из неподдерживаемого топика {0}", topic);
         }
     }
 }

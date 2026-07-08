@@ -31,6 +31,7 @@ namespace EventManagement.Events.Infrastructure.Extensions
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
             services.Configure<KafkaOptions>(configuration.GetSection(KafkaOptions.SectionName));
             services.AddSingleton<IEventLifecyclePublisher, KafkaEventLifecyclePublisher>();
+            services.AddHostedService<KafkaTopicInitializer>();
             services.AddHostedService<BookingConfirmedConsumer>();
 
             return services;

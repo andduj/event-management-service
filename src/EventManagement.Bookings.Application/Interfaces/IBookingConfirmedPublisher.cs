@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace EventManagement.Bookings.Application.Interfaces
 {
     /// <summary>
-    /// Публикация подтверждённой брони в Kafka.
+    /// Публикация событий по изменению статуса брони в Kafka.
     /// </summary>
     public interface IBookingConfirmedPublisher
     {
@@ -14,6 +14,13 @@ namespace EventManagement.Bookings.Application.Interfaces
         /// </summary>
         /// <param name="booking">Подтверждённая бронь.</param>
         /// <param name="cancellationToken">Токен отмены операции.</param>
-        Task PublishAsync(Booking booking, CancellationToken cancellationToken = default);
+        Task PublishConfirmedAsync(Booking booking, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Публикует сообщение об отменённой брони.
+        /// </summary>
+        /// <param name="booking">Отменённая бронь.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        Task PublishCancelledAsync(Booking booking, CancellationToken cancellationToken = default);
     }
 }

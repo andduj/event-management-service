@@ -41,6 +41,7 @@ namespace EventManagement.Bookings.Tests
             BookingService = new BookingService(
                 BookingRepository.Object,
                 BookableEventRepository.Object,
+                BookingConfirmedPublisher.Object,
                 mapper,
                 new Mock<ILogger<BookingService>>().Object);
 

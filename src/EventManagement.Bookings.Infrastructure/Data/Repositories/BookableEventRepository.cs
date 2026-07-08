@@ -50,13 +50,15 @@ namespace EventManagement.Bookings.Infrastructure.Data.Repositories
             }
             else
             {
+                int mergedAvailableSeats = Math.Min(existing.AvailableSeats, bookableEvent.AvailableSeats);
+                mergedAvailableSeats = Math.Min(mergedAvailableSeats, bookableEvent.TotalSeats);
                 existing.Sync(
                     bookableEvent.Title,
                     bookableEvent.Description,
                     bookableEvent.StartAt,
                     bookableEvent.EndAt,
                     bookableEvent.TotalSeats,
-                    bookableEvent.AvailableSeats);
+                    mergedAvailableSeats);
             }
 
             await _context.SaveChangesAsync(cancellationToken);

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Domain.Exceptions;
@@ -18,6 +17,7 @@ namespace EventManagement.Bookings.Application.Services
     {
         private readonly IBookingRepository _bookingRepository;
         private readonly IBookableEventRepository _bookableEventRepository;
+        private readonly IBookingConfirmedPublisher _bookingConfirmedPublisher;
         private readonly IMapper _mapper;
         private readonly ILogger<BookingService> _logger;
         private readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
@@ -25,11 +25,13 @@ namespace EventManagement.Bookings.Application.Services
         public BookingService(
             IBookingRepository bookingRepository,
             IBookableEventRepository bookableEventRepository,
+            IBookingConfirmedPublisher bookingConfirmedPublisher,
             IMapper mapper,
             ILogger<BookingService> logger)
         {
             _bookingRepository = bookingRepository;
             _bookableEventRepository = bookableEventRepository;
+            _bookingConfirmedPublisher = bookingConfirmedPublisher;
             _mapper = mapper;
             _logger = logger;
         }
@@ -106,6 +108,7 @@ namespace EventManagement.Bookings.Application.Services
                 throw new AccessDeniedException();
             }
 
+            bool wasConfirmed = booking.Status == BookingStatus.Confirmed;
             bool shouldReleaseSeat = booking.IsActive;
             booking.Cancel();
             await _bookingRepository.UpdateBookingAsync(booking);
@@ -113,6 +116,11 @@ namespace EventManagement.Bookings.Application.Services
             if (shouldReleaseSeat)
             {
                 await TryReleaseSeatAsync(booking.EventId);
+            }
+
+            if (wasConfirmed)
+            {
+                await _bookingConfirmedPublisher.PublishCancelledAsync(booking);
             }
         }
 

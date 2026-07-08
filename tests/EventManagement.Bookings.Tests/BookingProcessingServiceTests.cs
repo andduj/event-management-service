@@ -119,7 +119,7 @@ namespace EventManagement.Bookings.Tests
                 booking.Status == BookingStatus.Confirmed);
             updatedBookings.Should().OnlyContain(booking => booking.ProcessedAt.HasValue);
             _bookingConfirmedPublisher.Verify(
-                publisher => publisher.PublishAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()),
+                publisher => publisher.PublishConfirmedAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()),
                 Times.Exactly(2));
         }
 
@@ -156,7 +156,7 @@ namespace EventManagement.Bookings.Tests
                 repository => repository.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()),
                 Times.Once);
             _bookingConfirmedPublisher.Verify(
-                publisher => publisher.PublishAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()),
+                publisher => publisher.PublishConfirmedAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
 
@@ -184,7 +184,7 @@ namespace EventManagement.Bookings.Tests
             successfulUpdates.Should().Be(1);
             pendingBooking.Status.Should().Be(BookingStatus.Confirmed);
             _bookingConfirmedPublisher.Verify(
-                publisher => publisher.PublishAsync(pendingBooking, It.IsAny<CancellationToken>()),
+                publisher => publisher.PublishConfirmedAsync(pendingBooking, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 

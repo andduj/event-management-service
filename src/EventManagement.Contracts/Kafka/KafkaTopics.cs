@@ -24,5 +24,10 @@ namespace EventManagement.Contracts.Kafka
         /// Бронь подтверждена в Bookings (Bookings → Events).
         /// </summary>
         public const string BookingConfirmed = "booking-confirmed";
+
+        /// <summary>
+        /// Бронь отменена в Bookings (Bookings → Events).
+        /// </summary>
+        public const string BookingCancelled = "booking-cancelled";
     }
 }

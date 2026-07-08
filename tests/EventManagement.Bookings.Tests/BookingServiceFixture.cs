@@ -9,8 +9,6 @@ using EventManagement.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using System;
-using System.Threading.Tasks;
 
 namespace EventManagement.Bookings.Tests
 {
@@ -36,6 +34,7 @@ namespace EventManagement.Bookings.Tests
             var services = new ServiceCollection();
 
             services.AddSingleton(new Mock<ILogger<BookingService>>().Object);
+            services.AddSingleton(new Mock<IBookingConfirmedPublisher>().Object);
             services.AddDbContext<BookingsDbContext>(options => options.UseInMemoryDatabase(dbName));
             services.AddScoped<IBookingRepository, BookingRepository>();
             services.AddScoped<IBookableEventRepository, BookableEventRepository>();

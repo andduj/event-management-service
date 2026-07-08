@@ -123,7 +123,6 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Host=postgres-events;Port=5432;Database=events;Username=postgres;Password=postgres
-      DatabaseInitialization__SeedOnStartup: "true"
       Kafka__BootstrapServers: kafka:29092
       Kafka__GroupId: events-service
       <<: *jwt-env
