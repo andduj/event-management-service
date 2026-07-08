@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Domain.Exceptions;
@@ -17,20 +16,22 @@ namespace EventManagement.Bookings.Application.Services
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepository;
-        private readonly IEventsGateway _eventsGateway;
+        private readonly IBookableEventRepository _bookableEventRepository;
+        private readonly IBookingConfirmedPublisher _bookingConfirmedPublisher;
         private readonly IMapper _mapper;
         private readonly ILogger<BookingService> _logger;
-
         private readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
 
         public BookingService(
             IBookingRepository bookingRepository,
-            IEventsGateway eventsGateway,
+            IBookableEventRepository bookableEventRepository,
+            IBookingConfirmedPublisher bookingConfirmedPublisher,
             IMapper mapper,
             ILogger<BookingService> logger)
         {
             _bookingRepository = bookingRepository;
-            _eventsGateway = eventsGateway;
+            _bookableEventRepository = bookableEventRepository;
+            _bookingConfirmedPublisher = bookingConfirmedPublisher;
             _mapper = mapper;
             _logger = logger;
         }
@@ -39,10 +40,11 @@ namespace EventManagement.Bookings.Application.Services
         public async Task<BookingInfo> CreateBookingAsync(Guid eventId, Guid userId)
         {
             _logger.Info("Создание новой брони. EventId={0}, UserId={1}", eventId, userId);
-            await _eventsGateway.EnsureEventExistsAsync(eventId);
 
-            DateTime eventStartAt = await _eventsGateway.GetEventStartAtUtcAsync(eventId);
-            if (eventStartAt <= DateTime.UtcNow)
+            var bookableEvent = await _bookableEventRepository.TryGetByIdAsync(eventId)
+                ?? throw new EventNotFoundException($"Мероприятие с id={eventId} не найдено.");
+
+            if (bookableEvent.HasStarted(DateTime.UtcNow))
             {
                 throw new EventAlreadyStartedException();
             }
@@ -58,7 +60,7 @@ namespace EventManagement.Bookings.Application.Services
             await _semaphoreSlim.WaitAsync();
             try
             {
-                bool wasReserved = await _eventsGateway.ReserveSeatsAsync(eventId, 1);
+                bool wasReserved = await _bookableEventRepository.TryReserveSeatsAsync(eventId, 1);
                 if (!wasReserved)
                 {
                     throw new NoAvailableSeatsException();
@@ -106,6 +108,7 @@ namespace EventManagement.Bookings.Application.Services
                 throw new AccessDeniedException();
             }
 
+            bool wasConfirmed = booking.Status == BookingStatus.Confirmed;
             bool shouldReleaseSeat = booking.IsActive;
             booking.Cancel();
             await _bookingRepository.UpdateBookingAsync(booking);
@@ -114,17 +117,22 @@ namespace EventManagement.Bookings.Application.Services
             {
                 await TryReleaseSeatAsync(booking.EventId);
             }
+
+            if (wasConfirmed)
+            {
+                await _bookingConfirmedPublisher.PublishCancelledAsync(booking);
+            }
         }
 
         private async Task TryReleaseSeatAsync(Guid eventId)
         {
             try
             {
-                await _eventsGateway.ReleaseSeatsAsync(eventId, 1);
+                await _bookableEventRepository.ReleaseSeatsAsync(eventId, 1);
             }
             catch (Exception exception)
             {
-                _logger.Error(exception, "Не удалось освободить место для EventId={0} после ошибки создания брони", eventId);
+                _logger.Error(exception, "Не удалось освободить место для EventId={0}", eventId);
             }
         }
     }

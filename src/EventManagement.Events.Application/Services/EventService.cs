@@ -19,6 +19,7 @@ namespace EventManagement.Events.Application.Services
     public class EventService : IEventService
     {
         private readonly IEventRepository _eventRepository;
+        private readonly IEventLifecyclePublisher _eventLifecyclePublisher;
         private readonly IMapper _mapper;
         private readonly IValidator<AddEventRequest> _addEventRequestValidator;
         private readonly IValidator<UpdateEventRequest> _updateEventRequestValidator;
@@ -26,12 +27,14 @@ namespace EventManagement.Events.Application.Services
 
         public EventService(
             IEventRepository eventRepository,
+            IEventLifecyclePublisher eventLifecyclePublisher,
             IMapper mapper,
             IValidator<AddEventRequest> addEventRequestValidator,
             IValidator<UpdateEventRequest> updateEventRequestValidator,
             ILogger<EventService> logger)
         {
             _eventRepository = eventRepository;
+            _eventLifecyclePublisher = eventLifecyclePublisher;
             _mapper = mapper;
             _addEventRequestValidator = addEventRequestValidator;
             _updateEventRequestValidator = updateEventRequestValidator;
@@ -50,6 +53,7 @@ namespace EventManagement.Events.Application.Services
                 addEventRequest.TotalSeats!.Value,
                 addEventRequest.Description);
             var addedEvent = await _eventRepository.CreateEventAsync(newEvent);
+            await _eventLifecyclePublisher.PublishCreatedAsync(addedEvent);
             _logger.Info("Мероприятие успешно создано. Id={0}", addedEvent.Id);
             return _mapper.Map<EventDto>(addedEvent);
         }
@@ -59,6 +63,7 @@ namespace EventManagement.Events.Application.Services
         {
             _logger.Info("Удаление мероприятия. Id={0}", id);
             await _eventRepository.DeleteEventAsync(id);
+            await _eventLifecyclePublisher.PublishDeletedAsync(id);
         }
 
         /// <inheritdoc/>
@@ -123,6 +128,7 @@ namespace EventManagement.Events.Application.Services
             eventItem.EndAt = updateEventRequest.EndAt;
             eventItem.SetAvailableSeats(updateEventRequest.AvailableSeats);
             await _eventRepository.UpdateEventAsync(eventItem);
+            await _eventLifecyclePublisher.PublishUpdatedAsync(eventItem);
         }
     }
 }

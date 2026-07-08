@@ -1,8 +1,11 @@
+using EventManagement.Events.Application.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace EventManagement.Events.Extensions
@@ -12,35 +15,32 @@ namespace EventManagement.Events.Extensions
     /// </summary>
     public static class JwtAuthenticationExtensions
     {
-        private const string JwtSectionName = "Jwt";
-
         /// <summary>
         /// Добавляет JWT-аутентификацию и авторизацию.
         /// </summary>
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            string secret = configuration[$"{JwtSectionName}:Secret"]
-                ?? throw new InvalidOperationException("Jwt:Secret не настроен.");
-            string issuer = configuration[$"{JwtSectionName}:Issuer"]
-                ?? throw new InvalidOperationException("Jwt:Issuer не настроен.");
-            string audience = configuration[$"{JwtSectionName}:Audience"]
-                ?? throw new InvalidOperationException("Jwt:Audience не настроен.");
+            services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+            var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
+                ?? throw new InvalidOperationException("Секция Jwt не настроена.");
 
-            byte[] key = Encoding.UTF8.GetBytes(secret);
+            byte[] key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
+                    options.MapInboundClaims = false;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-                        ValidIssuer = issuer,
-                        ValidAudience = audience,
+                        ValidIssuer = jwtSettings.Issuer,
+                        ValidAudience = jwtSettings.Audience,
                         IssuerSigningKey = new SymmetricSecurityKey(key),
-                        RoleClaimType = System.Security.Claims.ClaimTypes.Role,
+                        NameClaimType = JwtRegisteredClaimNames.Sub,
+                        RoleClaimType = ClaimTypes.Role,
                     };
                 });
 

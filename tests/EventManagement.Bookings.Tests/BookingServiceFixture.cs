@@ -18,9 +18,9 @@ namespace EventManagement.Bookings.Tests
 
         public IServiceScope Scope { get; }
 
-        public Mock<IEventsGateway> EventsGateway { get; }
-
         public IBookingRepository BookingRepository { get; }
+
+        public IBookableEventRepository BookableEventRepository { get; }
 
         public IBookingService BookingService { get; }
 
@@ -33,43 +33,55 @@ namespace EventManagement.Bookings.Tests
             var dbName = Guid.NewGuid().ToString();
             var services = new ServiceCollection();
 
-            EventsGateway = new Mock<IEventsGateway>();
-            services.AddSingleton(EventsGateway.Object);
             services.AddSingleton(new Mock<ILogger<BookingService>>().Object);
+            services.AddSingleton(new Mock<IBookingConfirmedPublisher>().Object);
             services.AddDbContext<BookingsDbContext>(options => options.UseInMemoryDatabase(dbName));
             services.AddScoped<IBookingRepository, BookingRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IBookableEventRepository, BookableEventRepository>();
             services.AddScoped<IBookingService, BookingService>();
             services.AddAutoMapper(typeof(MappingProfile));
 
             ServiceProvider = services.BuildServiceProvider();
-
-            using (var seedScope = ServiceProvider.CreateScope())
-            {
-                var context = seedScope.ServiceProvider.GetRequiredService<BookingsDbContext>();
-                var userRepository = seedScope.ServiceProvider.GetRequiredService<IUserRepository>();
-                var user = User.Create("booking-service-test-user", "HASH", UserRole.User);
-                userRepository.CreateAsync(user).GetAwaiter().GetResult();
-                TestUserId = user.Id;
-            }
+            TestUserId = Guid.NewGuid();
 
             Scope = ServiceProvider.CreateScope();
             BookingRepository = Scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+            BookableEventRepository = Scope.ServiceProvider.GetRequiredService<IBookableEventRepository>();
 
             Fixture = new Fixture();
             Fixture.Customize<Booking>(composer => composer
                 .FromFactory(() => Booking.Create(Guid.NewGuid(), Guid.NewGuid()))
                 .OmitAutoProperties());
+            Fixture.Customize<BookableEvent>(composer => composer
+                .FromFactory(() => BookableEvent.Create(
+                    Guid.NewGuid(),
+                    "Test event",
+                    "Description",
+                    DateTime.UtcNow.AddDays(1),
+                    DateTime.UtcNow.AddDays(1).AddHours(2),
+                    10,
+                    10))
+                .OmitAutoProperties());
 
             BookingService = Scope.ServiceProvider.GetRequiredService<IBookingService>();
         }
 
-        public async Task<User> CreateUserAsync(string login, UserRole role = UserRole.User)
+        public async Task<BookableEvent> SeedBookableEventAsync(
+            Guid? eventId = null,
+            int availableSeats = 10,
+            DateTime? startAt = null)
         {
-            using var scope = ServiceProvider.CreateScope();
-            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-            var user = User.Create(login, "HASH", role);
-            return await userRepository.CreateAsync(user);
+            var bookableEvent = BookableEvent.Create(
+                eventId ?? Guid.NewGuid(),
+                "Test event",
+                "Description",
+                startAt ?? DateTime.UtcNow.AddDays(1),
+                (startAt ?? DateTime.UtcNow.AddDays(1)).AddHours(2),
+                availableSeats,
+                availableSeats);
+
+            await BookableEventRepository.UpsertAsync(bookableEvent);
+            return bookableEvent;
         }
     }
 }

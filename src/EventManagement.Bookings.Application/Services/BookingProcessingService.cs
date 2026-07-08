@@ -15,19 +15,26 @@ namespace EventManagement.Bookings.Application.Services
     public class BookingProcessingService : IBookingProcessingService
     {
         private readonly IBookingRepository _bookingRepository;
-        private readonly IEventsGateway _eventsGateway;
+        private readonly IBookableEventRepository _bookableEventRepository;
+        private readonly IBookingConfirmedPublisher _bookingConfirmedPublisher;
         private readonly ILogger<BookingProcessingService> _logger;
 
         /// <summary>
         /// Инициализирует новый экземпляр сервиса фоновой обработки бронирований.
         /// </summary>
         /// <param name="bookingRepository">Репозиторий бронирований.</param>
-        /// <param name="eventsGateway">Порт для взаимодействия с Events API.</param>
+        /// <param name="bookableEventRepository">Репозиторий локальных проекций мероприятий.</param>
+        /// <param name="bookingConfirmedPublisher">Издатель подтверждённых броней в Kafka.</param>
         /// <param name="logger">Логгер приложения.</param>
-        public BookingProcessingService(IBookingRepository bookingRepository, IEventsGateway eventsGateway, ILogger<BookingProcessingService> logger)
+        public BookingProcessingService(
+            IBookingRepository bookingRepository,
+            IBookableEventRepository bookableEventRepository,
+            IBookingConfirmedPublisher bookingConfirmedPublisher,
+            ILogger<BookingProcessingService> logger)
         {
             _bookingRepository = bookingRepository;
-            _eventsGateway = eventsGateway;
+            _bookableEventRepository = bookableEventRepository;
+            _bookingConfirmedPublisher = bookingConfirmedPublisher;
             _logger = logger;
         }
 
@@ -57,10 +64,11 @@ namespace EventManagement.Bookings.Application.Services
             {
                 return;
             }
+
             _logger.Debug("Начало обработки бронирования. BookingId={0}, EventId={1}", booking.Id, booking.EventId);
             try
             {
-                bool exists = await _eventsGateway.EventExistsAsync(booking.EventId, cancellationToken);
+                bool exists = await _bookableEventRepository.ExistsAsync(booking.EventId, cancellationToken);
                 if (exists)
                 {
                     booking.Confirm();
@@ -68,6 +76,8 @@ namespace EventManagement.Bookings.Application.Services
                     {
                         return;
                     }
+
+                    await PublishBookingConfirmedOrCompensateAsync(booking, cancellationToken);
                 }
                 else
                 {
@@ -82,7 +92,6 @@ namespace EventManagement.Bookings.Application.Services
             catch (Exception exception)
             {
                 await RejectAndReleaseSeatsAsync(booking, cancellationToken);
-
                 _logger.Error(exception, "Ошибка при обработке бронирования {0}", booking.Id);
             }
             finally
@@ -102,17 +111,58 @@ namespace EventManagement.Bookings.Application.Services
             return wasUpdated;
         }
 
-        private async Task RejectAndReleaseSeatsAsync(Booking booking, CancellationToken cancellationToken)
+        private async Task PublishBookingConfirmedOrCompensateAsync(Booking booking, CancellationToken cancellationToken)
         {
             try
             {
-                booking.Reject();
-                if (!await TryPersistStatusChangeAsync(booking, cancellationToken))
+                await _bookingConfirmedPublisher.PublishConfirmedAsync(booking, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                _logger.Error(
+                    exception,
+                    "Не удалось опубликовать booking-confirmed. BookingId={0}",
+                    booking.Id);
+
+                await RejectAndReleaseSeatsAsync(
+                    booking,
+                    BookingStatus.Confirmed,
+                    cancellationToken);
+            }
+        }
+
+        private async Task RejectAndReleaseSeatsAsync(Booking booking, CancellationToken cancellationToken)
+        {
+            await RejectAndReleaseSeatsAsync(booking, BookingStatus.Pending, cancellationToken);
+        }
+
+        private async Task RejectAndReleaseSeatsAsync(
+            Booking booking,
+            BookingStatus expectedStatus,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (expectedStatus == BookingStatus.Confirmed)
+                {
+                    booking.Cancel();
+                }
+                else
+                {
+                    booking.Reject();
+                }
+
+                bool wasUpdated = await _bookingRepository.TryUpdateBookingAsync(booking, expectedStatus, cancellationToken);
+                if (!wasUpdated)
                 {
                     return;
                 }
 
-                await _eventsGateway.ReleaseSeatsAsync(booking.EventId, 1, cancellationToken);
+                await _bookableEventRepository.ReleaseSeatsAsync(booking.EventId, 1, cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {

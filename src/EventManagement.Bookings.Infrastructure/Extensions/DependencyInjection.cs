@@ -1,15 +1,13 @@
 using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Bookings.Application.Options;
 using EventManagement.Bookings.Infrastructure.Data.Repositories;
 using EventManagement.Bookings.Infrastructure.DataAccess;
-using EventManagement.Bookings.Infrastructure.Security;
-using EventManagement.Events.Api;
+using EventManagement.Bookings.Infrastructure.Kafka;
+using EventManagement.Bookings.Infrastructure.Messaging;
 using EventManagement.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Net.Http;
 
 namespace EventManagement.Bookings.Infrastructure.Extensions
 {
@@ -27,32 +25,13 @@ namespace EventManagement.Bookings.Infrastructure.Extensions
                 ?? throw new InvalidOperationException("Строка подключения 'DefaultConnection' не настроена.");
             services.AddDbContext<BookingsDbContext>(options => options.UseNpgsql(connectionString));
             services.AddScoped<IBookingRepository, BookingRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddSingleton<IPasswordHasher, PasswordHasher>();
-            services.AddSingleton<IJwtTokenService, JwtTokenService>();
-            services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+            services.AddScoped<IBookableEventRepository, BookableEventRepository>();
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
             services.Configure<BookingProcessingOptions>(configuration.GetSection(BookingProcessingOptions.SectionName));
+            services.Configure<KafkaOptions>(configuration.GetSection(KafkaOptions.SectionName));
+            services.AddSingleton<IBookingConfirmedPublisher, KafkaBookingConfirmedPublisher>();
             services.AddHostedService<BookingBackgroundService>();
-
-            string eventsBaseUrl = configuration["ExternalServices:EventsBaseUrl"] ?? "https://localhost:7216";
-            services.AddHttpClient("EventsApi", client =>
-            {
-                client.BaseAddress = new Uri(eventsBaseUrl);
-            });
-            services.AddScoped<IEventsClient>(serviceProvider =>
-            {
-                var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-                var httpClient = httpClientFactory.CreateClient("EventsApi");
-                if (httpClient.BaseAddress is null)
-                {
-                    throw new InvalidOperationException("HttpClient 'EventsApi' не имеет BaseAddress.");
-                }
-
-                string baseUrl = httpClient.BaseAddress.ToString().TrimEnd('/');
-                return new EventsClient(baseUrl, httpClient);
-            });
-            services.AddScoped<IEventsGateway, EventsGateway>();
+            services.AddHostedService<EventLifecycleConsumer>();
 
             return services;
         }

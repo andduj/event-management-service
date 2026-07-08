@@ -40,6 +40,8 @@ namespace EventManagement.Events.Controllers
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(EventDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> CreateEventAsync([FromBody] AddEventRequest addEventRequest)
         {
             var addedEvent = await _eventService.CreateEventAsync(addEventRequest);
@@ -56,6 +58,8 @@ namespace EventManagement.Events.Controllers
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DeleteEventAsync(Guid id)
         {
@@ -132,6 +136,8 @@ namespace EventManagement.Events.Controllers
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdateEventAsync(Guid id, [FromBody] UpdateEventRequest updateEventRequest)
         {
@@ -150,7 +156,10 @@ namespace EventManagement.Events.Controllers
         /// <response code="200">Результат попытки резервирования.</response>
         /// <response code="404">Мероприятие с указанным id не найдено.</response>
         [HttpPost("{id}/reserve-seats")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<bool>> TryReserveSeats([FromRoute] Guid id, [FromQuery] int count = 1)
         {
@@ -167,7 +176,10 @@ namespace EventManagement.Events.Controllers
         /// <response code="204">Места успешно освобождены.</response>
         /// <response code="404">Мероприятие с указанным id не найдено.</response>
         [HttpPost("{id}/release-seats")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> ReleaseSeats([FromRoute] Guid id, [FromQuery] int count = 1)
         {

@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\src\EventManagement.Events.Infrastructure\EventManagement.Events.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\EventManagement.Bookings.Application\EventManagement.Bookings.Application.csproj" />
     <ProjectReference Include="..\..\src\EventManagement.Bookings.Infrastructure\EventManagement.Bookings.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\EventManagement.Auth.Infrastructure\EventManagement.Auth.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

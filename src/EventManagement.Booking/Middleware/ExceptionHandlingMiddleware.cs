@@ -107,18 +107,15 @@ namespace EventManagement.Bookings.Middleware
             switch (exception)
             {
                 case BookingNotFoundException:
-                case InvalidCredentialsException:
+                case EventNotFoundException:
                     return StatusCodes.Status404NotFound;
                 case NoAvailableSeatsException:
                 case ActiveBookingsLimitExceededException:
                     return StatusCodes.Status409Conflict;
                 case EventAlreadyStartedException:
-                case LoginAlreadyExistsException:
                     return StatusCodes.Status400BadRequest;
                 case AccessDeniedException:
                     return StatusCodes.Status403Forbidden;
-                case EventsGatewayException eventsGatewayException:
-                    return eventsGatewayException.StatusCode;
                 case ArgumentException:
                     return StatusCodes.Status400BadRequest;
                 case UnauthorizedAccessException:

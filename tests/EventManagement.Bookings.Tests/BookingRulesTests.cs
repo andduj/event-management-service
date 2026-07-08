@@ -5,7 +5,6 @@ using EventManagement.Bookings.Domain.Models;
 using EventManagement.Bookings.Infrastructure.DataAccess;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 
 namespace EventManagement.Bookings.Tests
 {
@@ -13,60 +12,42 @@ namespace EventManagement.Bookings.Tests
     {
         private readonly BookingServiceFixture _fixture;
         private readonly IBookingService _bookingService;
-        private readonly Mock<IEventsGateway> _eventsGateway;
         private readonly Guid _testUserId;
 
         public BookingRulesTests(BookingServiceFixture fixture)
         {
             _fixture = fixture;
             _bookingService = fixture.BookingService;
-            _eventsGateway = fixture.EventsGateway;
             _testUserId = fixture.TestUserId;
-
-            _eventsGateway.Reset();
-            _eventsGateway
-                .Setup(gateway => gateway.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(true);
-            _eventsGateway
-                .Setup(gateway => gateway.EnsureEventExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-            _eventsGateway
-                .Setup(gateway => gateway.GetEventStartAtUtcAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTime.UtcNow.AddDays(1));
 
             using var cleanupScope = fixture.ServiceProvider.CreateScope();
             var context = cleanupScope.ServiceProvider.GetRequiredService<BookingsDbContext>();
             context.Bookings.RemoveRange(context.Bookings);
+            context.BookableEvents.RemoveRange(context.BookableEvents);
             context.SaveChanges();
         }
 
         [Fact]
         public async Task CreateBookingAsync_WhenEventAlreadyStarted_ShouldThrowEventAlreadyStartedException()
         {
-            var eventId = Guid.NewGuid();
-            _eventsGateway
-                .Setup(gateway => gateway.GetEventStartAtUtcAsync(eventId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(DateTime.UtcNow.AddHours(-1));
+            var bookableEvent = await _fixture.SeedBookableEventAsync(startAt: DateTime.UtcNow.AddHours(-1));
 
-            var action = () => _bookingService.CreateBookingAsync(eventId, _testUserId);
+            var action = () => _bookingService.CreateBookingAsync(bookableEvent.Id, _testUserId);
 
             await action.Should().ThrowAsync<EventAlreadyStartedException>();
-            _eventsGateway.Verify(
-                gateway => gateway.ReserveSeatsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
-                Times.Never);
         }
 
         [Fact]
         public async Task CreateBookingAsync_WhenActiveBookingsLimitReached_ShouldThrowActiveBookingsLimitExceededException()
         {
-            var eventId = Guid.NewGuid();
+            var bookableEvent = await _fixture.SeedBookableEventAsync(availableSeats: BookingLimits.MaxActiveBookings + 1);
 
             for (int i = 0; i < BookingLimits.MaxActiveBookings; i++)
             {
-                await _bookingService.CreateBookingAsync(eventId, _testUserId);
+                await _bookingService.CreateBookingAsync(bookableEvent.Id, _testUserId);
             }
 
-            var action = () => _bookingService.CreateBookingAsync(eventId, _testUserId);
+            var action = () => _bookingService.CreateBookingAsync(bookableEvent.Id, _testUserId);
 
             var exception = await action.Should().ThrowAsync<ActiveBookingsLimitExceededException>();
             exception.Which.Limit.Should().Be(BookingLimits.MaxActiveBookings);
@@ -75,15 +56,15 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public async Task CreateBookingAsync_ActiveBookingsLimit_ShouldNotAffectOtherUsers()
         {
-            var eventId = Guid.NewGuid();
-            var otherUser = await _fixture.CreateUserAsync($"other-user-{Guid.NewGuid():N}");
+            var bookableEvent = await _fixture.SeedBookableEventAsync(availableSeats: BookingLimits.MaxActiveBookings + 1);
+            var otherUserId = Guid.NewGuid();
 
             for (int i = 0; i < BookingLimits.MaxActiveBookings; i++)
             {
-                await _bookingService.CreateBookingAsync(eventId, _testUserId);
+                await _bookingService.CreateBookingAsync(bookableEvent.Id, _testUserId);
             }
 
-            var action = () => _bookingService.CreateBookingAsync(eventId, otherUser.Id);
+            var action = () => _bookingService.CreateBookingAsync(bookableEvent.Id, otherUserId);
 
             await action.Should().NotThrowAsync();
         }
@@ -91,7 +72,8 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public async Task CancelBookingAsync_OwnBooking_ShouldSetCancelledStatus()
         {
-            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid(), _testUserId);
+            var bookableEvent = await _fixture.SeedBookableEventAsync();
+            var bookingInfo = await _bookingService.CreateBookingAsync(bookableEvent.Id, _testUserId);
 
             await _bookingService.CancelBookingAsync(bookingInfo.Id, _testUserId, UserRole.User);
 
@@ -102,8 +84,9 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public async Task CancelBookingAsync_OtherUsersBookingAsUser_ShouldThrowAccessDeniedException()
         {
-            var owner = await _fixture.CreateUserAsync($"owner-{Guid.NewGuid():N}");
-            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid(), owner.Id);
+            var bookableEvent = await _fixture.SeedBookableEventAsync();
+            var ownerId = Guid.NewGuid();
+            var bookingInfo = await _bookingService.CreateBookingAsync(bookableEvent.Id, ownerId);
 
             var action = () => _bookingService.CancelBookingAsync(bookingInfo.Id, _testUserId, UserRole.User);
 
@@ -113,8 +96,9 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public async Task CancelBookingAsync_OtherUsersBookingAsAdmin_ShouldSucceed()
         {
-            var owner = await _fixture.CreateUserAsync($"owner-{Guid.NewGuid():N}");
-            var bookingInfo = await _bookingService.CreateBookingAsync(Guid.NewGuid(), owner.Id);
+            var bookableEvent = await _fixture.SeedBookableEventAsync(availableSeats: 2);
+            var ownerId = Guid.NewGuid();
+            var bookingInfo = await _bookingService.CreateBookingAsync(bookableEvent.Id, ownerId);
 
             await _bookingService.CancelBookingAsync(bookingInfo.Id, _testUserId, UserRole.Admin);
 
@@ -125,14 +109,13 @@ namespace EventManagement.Bookings.Tests
         [Fact]
         public async Task CancelBookingAsync_ActiveBooking_ShouldReleaseSeat()
         {
-            var eventId = Guid.NewGuid();
-            var bookingInfo = await _bookingService.CreateBookingAsync(eventId, _testUserId);
+            var bookableEvent = await _fixture.SeedBookableEventAsync(availableSeats: 1);
+            var bookingInfo = await _bookingService.CreateBookingAsync(bookableEvent.Id, _testUserId);
 
             await _bookingService.CancelBookingAsync(bookingInfo.Id, _testUserId, UserRole.User);
 
-            _eventsGateway.Verify(
-                gateway => gateway.ReleaseSeatsAsync(eventId, 1, It.IsAny<CancellationToken>()),
-                Times.Once);
+            var updatedEvent = await _fixture.BookableEventRepository.TryGetByIdAsync(bookableEvent.Id);
+            updatedEvent!.AvailableSeats.Should().Be(1);
         }
     }
 }

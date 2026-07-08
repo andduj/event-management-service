@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace EventManagement.Bookings.Extensions
@@ -22,11 +24,12 @@ namespace EventManagement.Bookings.Extensions
             var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
                 ?? throw new InvalidOperationException("Секция Jwt не настроена.");
 
-            var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
+            byte[] key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
+                    options.MapInboundClaims = false;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
@@ -36,7 +39,8 @@ namespace EventManagement.Bookings.Extensions
                         ValidIssuer = jwtSettings.Issuer,
                         ValidAudience = jwtSettings.Audience,
                         IssuerSigningKey = new SymmetricSecurityKey(key),
-                        RoleClaimType = System.Security.Claims.ClaimTypes.Role,
+                        NameClaimType = JwtRegisteredClaimNames.Sub,
+                        RoleClaimType = ClaimTypes.Role,
                     };
                 });
 
