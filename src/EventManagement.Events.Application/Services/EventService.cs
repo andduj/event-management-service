@@ -9,6 +9,7 @@ using EventManagement.Logging;
 using FluentValidation;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,6 +119,31 @@ namespace EventManagement.Events.Application.Services
                 eventDto,
                 TimeSpan.FromSeconds(_redisOptions.EventTtlSeconds));
             return eventDto;
+        }
+
+        /// <inheritdoc/>
+        public async Task<IReadOnlyList<EventDto>> GetTopPopularEventsAsync(CancellationToken cancellationToken = default)
+        {
+            _logger.Debug("Получение топ-10 популярных мероприятий.");
+            var cachedTop = await _cacheService.GetAsync<List<EventDto>>(
+                CacheKeys.Top10Events,
+                cancellationToken);
+            if (cachedTop is not null)
+            {
+                _logger.Debug("Топ-10 мероприятий получен из кеша.");
+                return cachedTop;
+            }
+
+            var topEvents = await _eventRepository.GetTopPopularAsync(10, cancellationToken);
+            var topDtos = topEvents
+                .Select(_mapper.Map<EventDto>)
+                .ToList();
+            await _cacheService.SetAsync(
+                CacheKeys.Top10Events,
+                topDtos,
+                TimeSpan.FromSeconds(_redisOptions.Top10TtlSeconds),
+                cancellationToken);
+            return topDtos;
         }
 
         /// <inheritdoc/>

@@ -1,11 +1,12 @@
 ﻿using EventManagement.Events.Application.DTOs;
 using EventManagement.Events.Application.Filters;
 using EventManagement.Events.Application.Interfaces;
-using EventManagement.Events.Infrastructure.DataAccess;
 using EventManagement.Events.Domain.Exceptions;
 using EventManagement.Events.Domain.Models;
+using EventManagement.Events.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -98,6 +99,17 @@ namespace EventManagement.Events.Infrastructure.Data.Repositories
             }
 
             return eventItem;
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<Event>> GetTopPopularAsync(int count, CancellationToken cancellationToken = default)
+        {
+            return await _context.Events
+                .AsNoTracking()
+                .Where(e => e.TotalSeats > 0)
+                .OrderByDescending(e => (double)(e.TotalSeats - e.AvailableSeats) / e.TotalSeats)
+                .Take(count)
+                .ToListAsync(cancellationToken);
         }
 
         /// <inheritdoc />

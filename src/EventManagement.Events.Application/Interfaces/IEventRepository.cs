@@ -3,6 +3,7 @@ using EventManagement.Events.Application.Filters;
 using EventManagement.Events.Domain.Exceptions;
 using EventManagement.Events.Domain.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,6 +32,14 @@ namespace EventManagement.Events.Application.Interfaces
         /// Генерируется, если мероприятие с указанным идентификатором не найдено.
         /// </exception>
         Task<Event> GetEventByIdAsync(Guid id);
+
+        /// <summary>
+        /// Возвращает топ мероприятий с наибольшим процентом проданных мест.
+        /// </summary>
+        /// <param name="count">Максимальное число мероприятий в выборке.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        /// <returns>Список мероприятий, отсортированный по убыванию процента продаж.</returns>
+        Task<IReadOnlyList<Event>> GetTopPopularAsync(int count, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Добавляет новое мероприятие в репозиторий.

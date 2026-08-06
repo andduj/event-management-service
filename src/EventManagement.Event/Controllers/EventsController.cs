@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -105,6 +106,20 @@ namespace EventManagement.Events.Controllers
         {
             var events = await _eventService.FilterAsync(eventFilter, page!.Value, pageSize!.Value);
             return Ok(events);
+        }
+
+        /// <summary>
+        /// Получает топ-10 самых популярных мероприятий по проценту проданных мест.
+        /// </summary>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        /// <returns>Возвращает список мероприятий с кодом 200 (OK).</returns>
+        /// <response code="200">Топ мероприятий успешно получен.</response>
+        [HttpGet("top")]
+        [ProducesResponseType(typeof(IReadOnlyList<EventDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IReadOnlyList<EventDto>>> GetTopPopularEventsAsync(CancellationToken cancellationToken)
+        {
+            var topEvents = await _eventService.GetTopPopularEventsAsync(cancellationToken);
+            return Ok(topEvents);
         }
 
         /// <summary>
