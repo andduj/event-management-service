@@ -1,16 +1,18 @@
 ﻿using AutoFixture;
 using EventManagement.Events.Application;
+using EventManagement.Events.Application.Caching;
 using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Application.Requests;
 using EventManagement.Events.Application.Services;
 using EventManagement.Events.Application.Validators;
+using EventManagement.Events.Domain.Models;
 using EventManagement.Events.Infrastructure.Data.Repositories;
 using EventManagement.Events.Infrastructure.DataAccess;
-using EventManagement.Events.Domain.Models;
 using EventManagement.Logging;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -39,6 +41,8 @@ namespace EventManagement.Events.Tests
             services.AddScoped<IValidator<AddEventRequest>, AddEventRequestValidator>();
             services.AddScoped<IValidator<UpdateEventRequest>, UpdateEventRequestValidator>();
             services.AddSingleton(new Mock<IEventLifecyclePublisher>().Object);
+            services.AddSingleton(new Mock<ICacheService>().Object);
+            services.AddSingleton(Options.Create(new RedisOptions()));
             services.AddAutoMapper(typeof(MappingProfile));
             services.AddSingleton(new Mock<ILogger<EventService>>().Object);
             ServiceProvider = services.BuildServiceProvider();

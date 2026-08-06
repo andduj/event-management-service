@@ -1,4 +1,4 @@
-namespace EventManagement.Events.Infrastructure.Redis
+namespace EventManagement.Events.Application.Caching
 {
     /// <summary>
     /// Параметры подключения к Redis и TTL кеша.

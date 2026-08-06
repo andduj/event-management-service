@@ -1,3 +1,4 @@
+using EventManagement.Events.Application.Caching;
 using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Infrastructure.Redis;
 using Microsoft.Extensions.Configuration;
