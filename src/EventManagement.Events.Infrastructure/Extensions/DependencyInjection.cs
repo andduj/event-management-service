@@ -33,6 +33,7 @@ namespace EventManagement.Events.Infrastructure.Extensions
             services.AddSingleton<IEventLifecyclePublisher, KafkaEventLifecyclePublisher>();
             services.AddHostedService<KafkaTopicInitializer>();
             services.AddHostedService<BookingConfirmedConsumer>();
+            services.AddRedis(configuration);
 
             return services;
         }
