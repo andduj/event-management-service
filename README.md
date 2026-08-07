@@ -178,7 +178,7 @@ dotnet build EventManagement.sln
 
 ### Вариант 1: полный стек в Docker (рекомендуется)
 
-Поднимает Kafka (KRaft, без Zookeeper), три PostgreSQL, Redis и три API:
+Поднимает Kafka в режиме **KRaft** (без отдельного Zookeeper — в отличие от классического примера с Zookeeper в некоторых ТЗ), три PostgreSQL, Redis и три API. Для каждого API свой Dockerfile: `docker/Dockerfile.auth`, `docker/Dockerfile.events`, `docker/Dockerfile.bookings`.
 
 ```bash
 docker compose -f docker/docker-compose.yml up -d --build

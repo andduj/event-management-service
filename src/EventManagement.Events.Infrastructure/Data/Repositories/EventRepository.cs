@@ -90,9 +90,9 @@ namespace EventManagement.Events.Infrastructure.Data.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<Event> GetEventByIdAsync(Guid id)
+        public async Task<Event> GetEventByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var eventItem = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+            var eventItem = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
             if (eventItem == null)
             {
                 throw new EventNotFoundException($"Мероприятие с id={id} не найдено.");
@@ -126,24 +126,26 @@ namespace EventManagement.Events.Infrastructure.Data.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<bool> TryReserveSeats(Guid id, int count)
+        public async Task<bool> TryReserveSeats(Guid id, int count, CancellationToken cancellationToken = default)
         {
-            var eventItem = await GetEventByIdAsync(id);
+            cancellationToken.ThrowIfCancellationRequested();
+            var eventItem = await GetEventByIdAsync(id, cancellationToken);
             bool wasReserved = eventItem.TryReserveSeats(count);
             if (wasReserved)
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
 
             return wasReserved;
         }
 
         /// <inheritdoc />
-        public async Task ReleaseSeats(Guid id, int count)
+        public async Task ReleaseSeats(Guid id, int count, CancellationToken cancellationToken = default)
         {
-            var eventItem = await GetEventByIdAsync(id);
+            cancellationToken.ThrowIfCancellationRequested();
+            var eventItem = await GetEventByIdAsync(id, cancellationToken);
             eventItem.ReleaseSeats(count);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

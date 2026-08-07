@@ -70,7 +70,9 @@ namespace EventManagement.Events.Tests
             EventDto result = await _eventService.GetEventByIdAsync(eventId);
 
             result.Should().BeEquivalentTo(cachedEvent);
-            _eventRepositoryMock.Verify(repository => repository.GetEventByIdAsync(It.IsAny<Guid>()), Times.Never);
+            _eventRepositoryMock.Verify(
+                repository => repository.GetEventByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+                Times.Never);
             _cacheServiceMock.Verify(
                 cache => cache.SetAsync(
                     It.IsAny<string>(),
@@ -96,14 +98,16 @@ namespace EventManagement.Events.Tests
                 .Setup(cache => cache.GetAsync<EventDto>(cacheKey, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((EventDto?)null);
             _eventRepositoryMock
-                .Setup(repository => repository.GetEventByIdAsync(eventId))
+                .Setup(repository => repository.GetEventByIdAsync(eventId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(eventItem);
 
             EventDto result = await _eventService.GetEventByIdAsync(eventId);
 
             result.Id.Should().Be(eventId);
             result.Title.Should().Be("DB event");
-            _eventRepositoryMock.Verify(repository => repository.GetEventByIdAsync(eventId), Times.Once);
+            _eventRepositoryMock.Verify(
+                repository => repository.GetEventByIdAsync(eventId, It.IsAny<CancellationToken>()),
+                Times.Once);
             _cacheServiceMock.Verify(
                 cache => cache.SetAsync(
                     cacheKey,
@@ -194,7 +198,7 @@ namespace EventManagement.Events.Tests
             };
 
             _eventRepositoryMock
-                .Setup(repository => repository.GetEventByIdAsync(eventId))
+                .Setup(repository => repository.GetEventByIdAsync(eventId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(eventItem);
             _eventRepositoryMock
                 .Setup(repository => repository.UpdateEventAsync(eventItem))
@@ -229,7 +233,7 @@ namespace EventManagement.Events.Tests
         {
             Guid eventId = Guid.NewGuid();
             _eventRepositoryMock
-                .Setup(repository => repository.TryReserveSeats(eventId, 2))
+                .Setup(repository => repository.TryReserveSeats(eventId, 2, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             bool wasReserved = await _eventService.TryReserveSeats(eventId, 2);
@@ -245,7 +249,7 @@ namespace EventManagement.Events.Tests
         {
             Guid eventId = Guid.NewGuid();
             _eventRepositoryMock
-                .Setup(repository => repository.TryReserveSeats(eventId, 2))
+                .Setup(repository => repository.TryReserveSeats(eventId, 2, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             bool wasReserved = await _eventService.TryReserveSeats(eventId, 2);
@@ -261,7 +265,7 @@ namespace EventManagement.Events.Tests
         {
             Guid eventId = Guid.NewGuid();
             _eventRepositoryMock
-                .Setup(repository => repository.ReleaseSeats(eventId, 1))
+                .Setup(repository => repository.ReleaseSeats(eventId, 1, It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             await _eventService.ReleaseSeats(eventId, 1);

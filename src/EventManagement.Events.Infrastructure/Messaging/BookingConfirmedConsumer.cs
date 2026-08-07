@@ -81,6 +81,12 @@ namespace EventManagement.Events.Infrastructure.Messaging
             }
         }
 
+        /// <summary>
+        /// Обрабатывает сообщение Kafka о подтверждении или отмене брони.
+        /// </summary>
+        /// <param name="topic">Имя топика.</param>
+        /// <param name="payload">Тело сообщения.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
         private async Task HandleMessageAsync(string topic, string payload, CancellationToken cancellationToken)
         {
             using var scope = _scopeFactory.CreateScope();
@@ -95,7 +101,10 @@ namespace EventManagement.Events.Infrastructure.Messaging
                     return;
                 }
 
-                bool wasReserved = await eventService.TryReserveSeats(confirmedMessage.EventId, confirmedMessage.SeatsCount);
+                bool wasReserved = await eventService.TryReserveSeats(
+                    confirmedMessage.EventId,
+                    confirmedMessage.SeatsCount,
+                    cancellationToken);
                 if (!wasReserved)
                 {
                     _logger.Warn(
@@ -107,9 +116,10 @@ namespace EventManagement.Events.Infrastructure.Messaging
                 }
 
                 _logger.Debug(
-                    "Места зарезервированы в Events по booking-confirmed. BookingId={0}, EventId={1}",
+                    "Места зарезервированы в Events по booking-confirmed. BookingId={0}, EventId={1}, ConfirmedAt={2}",
                     confirmedMessage.BookingId,
-                    confirmedMessage.EventId);
+                    confirmedMessage.EventId,
+                    confirmedMessage.ConfirmedAt);
                 return;
             }
 
@@ -124,7 +134,10 @@ namespace EventManagement.Events.Infrastructure.Messaging
 
                 try
                 {
-                    await eventService.ReleaseSeats(cancelledMessage.EventId, cancelledMessage.SeatsCount);
+                    await eventService.ReleaseSeats(
+                        cancelledMessage.EventId,
+                        cancelledMessage.SeatsCount,
+                        cancellationToken);
                     _logger.Debug(
                         "Места освобождены в Events по booking-cancelled. BookingId={0}, EventId={1}",
                         cancelledMessage.BookingId,

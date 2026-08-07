@@ -27,11 +27,12 @@ namespace EventManagement.Events.Application.Interfaces
         /// Получает конкретное мероприятие по его уникальному идентификатору.
         /// </summary>
         /// <param name="id">Уникальный идентификатор мероприятия (GUID).</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
         /// <returns>Мероприятие, если найдено.</returns>
         /// <exception cref="EventNotFoundException">
         /// Генерируется, если мероприятие с указанным идентификатором не найдено.
         /// </exception>
-        Task<Event> GetEventByIdAsync(Guid id);
+        Task<Event> GetEventByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Возвращает топ мероприятий с наибольшим процентом проданных мест.
@@ -73,14 +74,16 @@ namespace EventManagement.Events.Application.Interfaces
         /// </summary>
         /// <param name="id">Идентификатор мероприятия.</param>
         /// <param name="count">Количество мест для резервирования.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
         /// <returns><c>true</c>, если резервирование выполнено; иначе <c>false</c>.</returns>
-        Task<bool> TryReserveSeats(Guid id, int count);
+        Task<bool> TryReserveSeats(Guid id, int count, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Освобождает указанное количество мест для мероприятия.
         /// </summary>
         /// <param name="id">Идентификатор мероприятия.</param>
         /// <param name="count">Количество мест для освобождения.</param>
-        Task ReleaseSeats(Guid id, int count);
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        Task ReleaseSeats(Guid id, int count, CancellationToken cancellationToken = default);
     }
 }

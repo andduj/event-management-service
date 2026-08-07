@@ -149,13 +149,13 @@ namespace EventManagement.Events.Application.Services
         }
 
         /// <inheritdoc/>
-        public async Task<bool> TryReserveSeats(Guid id, int count)
+        public async Task<bool> TryReserveSeats(Guid id, int count, CancellationToken cancellationToken = default)
         {
             _logger.Debug("Попытка резервирования {0} мест для мероприятия Id={1}", count, id);
-            bool wasReserved = await _eventRepository.TryReserveSeats(id, count);
+            bool wasReserved = await _eventRepository.TryReserveSeats(id, count, cancellationToken);
             if (wasReserved)
             {
-                await InvalidateEventCacheAsync(id);
+                await InvalidateEventCacheAsync(id, cancellationToken);
             }
 
             _logger.Debug("Результат резервирования для мероприятия Id={0}: {1}", id, wasReserved);
@@ -163,11 +163,11 @@ namespace EventManagement.Events.Application.Services
         }
 
         /// <inheritdoc/>
-        public async Task ReleaseSeats(Guid id, int count)
+        public async Task ReleaseSeats(Guid id, int count, CancellationToken cancellationToken = default)
         {
             _logger.Debug("Освобождение {0} мест для мероприятия Id={1}", count, id);
-            await _eventRepository.ReleaseSeats(id, count);
-            await InvalidateEventCacheAsync(id);
+            await _eventRepository.ReleaseSeats(id, count, cancellationToken);
+            await InvalidateEventCacheAsync(id, cancellationToken);
             _logger.Debug("Места успешно освобождены для мероприятия Id={0}", id);
         }
 
@@ -187,9 +187,14 @@ namespace EventManagement.Events.Application.Services
             await _eventLifecyclePublisher.PublishUpdatedAsync(eventItem);
         }
 
-        private Task InvalidateEventCacheAsync(Guid eventId)
+        /// <summary>
+        /// Удаляет кеш события по идентификатору.
+        /// </summary>
+        /// <param name="eventId">Идентификатор мероприятия.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        private Task InvalidateEventCacheAsync(Guid eventId, CancellationToken cancellationToken = default)
         {
-            return _cacheService.RemoveAsync(CacheKeys.EventById(eventId));
+            return _cacheService.RemoveAsync(CacheKeys.EventById(eventId), cancellationToken);
         }
     }
 }

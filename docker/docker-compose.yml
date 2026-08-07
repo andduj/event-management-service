@@ -105,10 +105,7 @@ services:
   auth-api:
     build:
       context: ..
-      dockerfile: docker/Dockerfile
-      args:
-        PROJECT_PATH: src/EventManagement.Auth/EventManagement.Auth.csproj
-        ENTRY_DLL: EventManagement.Auth.dll
+      dockerfile: docker/Dockerfile.auth
     container_name: auth-api
     restart: unless-stopped
     ports:
@@ -124,10 +121,7 @@ services:
   events-api:
     build:
       context: ..
-      dockerfile: docker/Dockerfile
-      args:
-        PROJECT_PATH: src/EventManagement.Event/EventManagement.Events.csproj
-        ENTRY_DLL: EventManagement.Events.dll
+      dockerfile: docker/Dockerfile.events
     container_name: events-api
     restart: unless-stopped
     ports:
@@ -150,10 +144,7 @@ services:
   bookings-api:
     build:
       context: ..
-      dockerfile: docker/Dockerfile
-      args:
-        PROJECT_PATH: src/EventManagement.Booking/EventManagement.Bookings.csproj
-        ENTRY_DLL: EventManagement.Bookings.dll
+      dockerfile: docker/Dockerfile.bookings
     container_name: bookings-api
     restart: unless-stopped
     ports:
