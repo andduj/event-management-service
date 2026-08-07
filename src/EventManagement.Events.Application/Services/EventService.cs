@@ -62,6 +62,7 @@ namespace EventManagement.Events.Application.Services
                 addEventRequest.TotalSeats!.Value,
                 addEventRequest.Description);
             var addedEvent = await _eventRepository.CreateEventAsync(newEvent);
+            await InvalidateEventCacheAsync(addedEvent.Id);
             await _eventLifecyclePublisher.PublishCreatedAsync(addedEvent);
             _logger.Info("Мероприятие успешно создано. Id={0}", addedEvent.Id);
             return _mapper.Map<EventDto>(addedEvent);
@@ -72,6 +73,7 @@ namespace EventManagement.Events.Application.Services
         {
             _logger.Info("Удаление мероприятия. Id={0}", id);
             await _eventRepository.DeleteEventAsync(id);
+            await InvalidateEventCacheAsync(id);
             await _eventLifecyclePublisher.PublishDeletedAsync(id);
         }
 
@@ -151,6 +153,11 @@ namespace EventManagement.Events.Application.Services
         {
             _logger.Debug("Попытка резервирования {0} мест для мероприятия Id={1}", count, id);
             bool wasReserved = await _eventRepository.TryReserveSeats(id, count);
+            if (wasReserved)
+            {
+                await InvalidateEventCacheAsync(id);
+            }
+
             _logger.Debug("Результат резервирования для мероприятия Id={0}: {1}", id, wasReserved);
             return wasReserved;
         }
@@ -160,6 +167,7 @@ namespace EventManagement.Events.Application.Services
         {
             _logger.Debug("Освобождение {0} мест для мероприятия Id={1}", count, id);
             await _eventRepository.ReleaseSeats(id, count);
+            await InvalidateEventCacheAsync(id);
             _logger.Debug("Места успешно освобождены для мероприятия Id={0}", id);
         }
 
@@ -175,7 +183,13 @@ namespace EventManagement.Events.Application.Services
             eventItem.EndAt = updateEventRequest.EndAt;
             eventItem.SetAvailableSeats(updateEventRequest.AvailableSeats);
             await _eventRepository.UpdateEventAsync(eventItem);
+            await InvalidateEventCacheAsync(id);
             await _eventLifecyclePublisher.PublishUpdatedAsync(eventItem);
+        }
+
+        private Task InvalidateEventCacheAsync(Guid eventId)
+        {
+            return _cacheService.RemoveAsync(CacheKeys.EventById(eventId));
         }
     }
 }
