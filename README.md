@@ -84,9 +84,9 @@
 
 | Сервис | База | Порт (HTTP) | Назначение |
 |--------|------|-------------|------------|
-| **Auth** | `auth` | `5238` | регистрация, вход, выдача JWT |
-| **Events** | `events` | `5167` | CRUD мероприятий, топ-10, источник правды по событиям |
-| **Bookings** | `bookings` | `5237` | бронирования, локальная проекция `BookableEvent` |
+| **Auth** | `auth` | `5238` (локально) / `15238` (Docker) | регистрация, вход, выдача JWT |
+| **Events** | `events` | `5167` (локально) / `15167` (Docker) | CRUD мероприятий, топ-10, источник правды по событиям |
+| **Bookings** | `bookings` | `5237` (локально) / `15237` (Docker) | бронирования, локальная проекция `BookableEvent` |
 
 Межсервисное взаимодействие — **только через Kafka** (без HTTP между Bookings и Events):
 
@@ -191,15 +191,17 @@ docker compose -f docker/docker-compose.yml up -d --build
 | PostgreSQL Events | `events-postgres` | `5436` |
 | PostgreSQL Bookings | `bookings-postgres` | `5435` |
 | PostgreSQL Auth | `auth-postgres` | `5437` |
-| Auth API | `auth-api` | `5238` |
-| Events API | `events-api` | `5167` |
-| Bookings API | `bookings-api` | `5237` |
+| Auth API | `auth-api` | `15238` |
+| Events API | `events-api` | `15167` |
+| Bookings API | `bookings-api` | `15237` |
 
-| Сервис | URL Swagger |
-|--------|-------------|
-| Auth | http://localhost:5238/swagger |
-| Events | http://localhost:5167/swagger |
-| Bookings | http://localhost:5237/swagger |
+Порты Docker сдвинуты (`15xxx`), чтобы не пересекаться с локальным `dotnet run` / IDE (`5238` / `5167` / `5237`).
+
+| Сервис | URL Swagger (Docker) | URL Swagger (локально) |
+|--------|----------------------|-------------------------|
+| Auth | http://localhost:15238/swagger | http://localhost:5238/swagger |
+| Events | http://localhost:15167/swagger | http://localhost:5167/swagger |
+| Bookings | http://localhost:15237/swagger | http://localhost:5237/swagger |
 
 Базы данных при старте **пустые** — применяются только миграции EF Core. События нужно создавать через Events API (или зарегистрировать пользователя и войти через Auth API).
 

@@ -14,6 +14,7 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 ARG ENTRY_DLL
+ENV ENTRY_DLL=$ENTRY_DLL
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
