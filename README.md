@@ -5,6 +5,8 @@
 
 Возможности:
 - CRUD и фильтрация событий;
+- топ-10 популярных событий с кешированием в Redis;
+- кеширование события по идентификатору (Cache-Aside);
 - регистрация и вход пользователей с выдачей **JWT** (отдельный Auth-сервис);
 - ролевая авторизация (`User`, `Admin`);
 - создание и отмена брони с быстрым ответом (`202 Accepted`);
@@ -26,6 +28,7 @@
 - **FluentValidation**
 - **Entity Framework Core** (миграции, репозитории)
 - **PostgreSQL** (`Npgsql`) — database per service
+- **Redis** (`StackExchange.Redis`) — кеш Events API
 - **Apache Kafka** (`Confluent.Kafka`) — асинхронный обмен между сервисами
 - **JWT** (`System.IdentityModel.Tokens.Jwt`, `Microsoft.AspNetCore.Authentication.JwtBearer`)
 - **Docker Compose** — локальный полный стек
@@ -48,8 +51,8 @@
 | Слой | Проект | Назначение |
 |------|--------|------------|
 | Domain | `src/EventManagement.Events.Domain` | `Event`, доменные исключения |
-| Application | `src/EventManagement.Events.Application` | use cases, DTO, порты (`IEventRepository`, `IEventLifecyclePublisher`) |
-| Infrastructure | `src/EventManagement.Events.Infrastructure` | EF Core, репозитории, миграции, Kafka publisher/consumer, `KafkaTopicInitializer` |
+| Application | `src/EventManagement.Events.Application` | use cases, DTO, порты (`IEventRepository`, `IEventLifecyclePublisher`, `ICacheService`) |
+| Infrastructure | `src/EventManagement.Events.Infrastructure` | EF Core, репозитории, миграции, Redis (`RedisCacheService`), Kafka publisher/consumer, `KafkaTopicInitializer` |
 | Presentation | `src/EventManagement.Event` (`EventManagement.Events`) | Web API, контроллеры, Swagger, JWT-валидация |
 
 ### Bookings API
@@ -71,7 +74,7 @@
 ### Тесты
 
 - `tests/EventManagement.Auth.Tests` — `AuthService`, `JwtTokenService`
-- `tests/EventManagement.Events.Tests` — модульные тесты Events (Application)
+- `tests/EventManagement.Events.Tests` — модульные тесты Events (Application), включая hit/miss/инвалидацию кеша
 - `tests/EventManagement.Bookings.Tests` — бизнес-правила, `BookingService`, `BookingProcessingService`, `BookableEvent`, JWT claims, отмена подтверждённых броней
 - `tests/EventApi.IntegrationTests` — репозитории и миграции на PostgreSQL через Testcontainers
 
@@ -82,7 +85,7 @@
 | Сервис | База | Порт (HTTP) | Назначение |
 |--------|------|-------------|------------|
 | **Auth** | `auth` | `5238` | регистрация, вход, выдача JWT |
-| **Events** | `events` | `5167` | CRUD мероприятий, источник правды по событиям |
+| **Events** | `events` | `5167` | CRUD мероприятий, топ-10, источник правды по событиям |
 | **Bookings** | `bookings` | `5237` | бронирования, локальная проекция `BookableEvent` |
 
 Межсервисное взаимодействие — **только через Kafka** (без HTTP между Bookings и Events):
@@ -114,11 +117,59 @@ Bookings ──booking-cancelled────────────► Events (
 5. При отмене `Confirmed` дополнительно публикуется `booking-cancelled` → Events освобождает место.
 6. Если публикация `booking-confirmed` не удалась, Bookings откатывает бронь в `Cancelled` и освобождает место локально.
 
+### Стратегия кеширования (Events API)
+
+В Events API используется **Redis** и паттерн **Cache-Aside**. Абстракция `ICacheService` находится в слое Application, реализация `RedisCacheService` — в Infrastructure. Ключи собраны в `CacheKeys`.
+
+#### Что кешируется и почему
+
+| Данные | Ключ | Эндпоинт | Зачем |
+|--------|------|----------|--------|
+| Событие по id | `event:{id}` | `GET /api/v1/events/{id}` | частый публичный запрос; без кеша каждый раз идёт в PostgreSQL |
+| Топ-10 популярных | `events:top10` | `GET /api/v1/events/top` | агрегат для главной; процент продаж = `(TotalSeats - AvailableSeats) / TotalSeats` |
+
+При **попадании** в кеш репозиторий (БД) не вызывается. При **промахе** данные читаются из БД и сохраняются в Redis с TTL.
+
+#### TTL (секция `Redis` в `appsettings`)
+
+| Параметр | По умолчанию | Обоснование |
+|----------|--------------|-------------|
+| `EventTtlSeconds` | `300` (5 мин) | событие меняется относительно редко; короткий TTL ограничивает устаревание, если инвалидация не сработала |
+| `Top10TtlSeconds` | `60` (1 мин) | рейтинг может меняться чаще из‑за броней; небольшое устаревание для виджета допустимо |
+
+В Docker строка подключения задаётся переменной `Redis__ConnectionString=redis:6379` (имя сервиса в сети compose).
+
+#### Обновление кеша при изменении данных
+
+Выбрана стратегия **инвалидации при записи** для отдельного события:
+
+1. Сначала изменение сохраняется в PostgreSQL.
+2. Затем удаляется ключ `event:{id}`.
+3. Следующий `GET` прогревает кеш заново из БД.
+
+Инвалидация выполняется после create / update / delete, а также после успешного `TryReserveSeats` и после `ReleaseSeats`.
+
+Кеш топ-10 **не** инвалидируется на каждое изменение мест: явная инвалидация при каждом бронировании избыточна, список обновляется по TTL.
+
+Если процесс оборвётся между записью в БД и удалением ключа, источником правды остаётся база — при следующем чтении после истечения TTL или повторной инвалидации кеш снова станет актуальным.
+
+#### Kafka
+
+`BookingConfirmedConsumer` меняет места через `IEventService` (`TryReserveSeats` / `ReleaseSeats`). Инвалидация `event:{id}` выполняется в сервисе, поэтому отдельная логика кеша в consumer не нужна. Топ-10 после бронирований подтянется по TTL.
+
+#### Недоступность Redis
+
+«Redis недоступен» — сервис не может выполнить операцию с кешем (Redis не запущен, сеть, timeout и т.п.):
+
+- соединение регистрируется с `AbortOnConnectFail = false`, API стартует без Redis;
+- ошибки Get / Set / Remove логируются и **не** пробрасываются клиенту;
+- запрос обрабатывается через PostgreSQL (деградация без 500).
+
 ## Запуск
 
 Требуется:
 - **.NET SDK 9.0+**
-- **Docker** (для PostgreSQL, Kafka и/или полного стека)
+- **Docker** (для PostgreSQL, Kafka, Redis и/или полного стека)
 
 ```bash
 dotnet restore
@@ -127,7 +178,7 @@ dotnet build EventManagement.sln
 
 ### Вариант 1: полный стек в Docker (рекомендуется)
 
-Поднимает Kafka (KRaft, без Zookeeper), три PostgreSQL и три API:
+Поднимает Kafka (KRaft, без Zookeeper), три PostgreSQL, Redis и три API:
 
 ```bash
 docker compose -f docker/docker-compose.yml up -d --build
@@ -136,6 +187,7 @@ docker compose -f docker/docker-compose.yml up -d --build
 | Компонент | Контейнер | Порт (host) |
 |-----------|-----------|-------------|
 | Kafka | `event-management-kafka` | `9092` |
+| Redis | `eventapi-redis` | `6379` |
 | PostgreSQL Events | `events-postgres` | `5436` |
 | PostgreSQL Bookings | `bookings-postgres` | `5435` |
 | PostgreSQL Auth | `auth-postgres` | `5437` |
@@ -159,12 +211,12 @@ docker compose -f docker/docker-compose.yml down -v
 
 ### Вариант 2: только инфраструктура + `dotnet run`
 
-Для локальной разработки можно поднять PostgreSQL и Kafka из compose и запускать API через `dotnet run`. Строки подключения и Kafka задаются в `appsettings.json` / User Secrets.
+Для локальной разработки можно поднять PostgreSQL, Kafka и Redis из compose и запускать API через `dotnet run`. Строки подключения, Kafka и Redis задаются в `appsettings.json` / User Secrets.
 
 Только инфраструктура:
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d kafka postgres-events postgres-bookings postgres-auth
+docker compose -f docker/docker-compose.yml up -d kafka postgres-events postgres-bookings postgres-auth redis
 ```
 
 PostgreSQL в compose:
@@ -192,6 +244,7 @@ dotnet run --project src/EventManagement.Booking/EventManagement.Bookings.csproj
 ```
 
 Для синхронизации событий и подтверждения/отмены броней нужен **Kafka** (`Kafka:BootstrapServers` — по умолчанию `localhost:9092`).
+Для кеша Events API нужен **Redis** (`Redis:ConnectionString` — по умолчанию `localhost:6379`).
 
 ### Схема базы и миграции EF Core
 
@@ -322,6 +375,7 @@ Swagger UI доступен в режиме Development для всех трёх
 
 - `GET /api/v1/events` — список с фильтрацией *(публичный)*
 - `POST /api/v1/events/filter` — фильтрация через тело *(публичный)*
+- `GET /api/v1/events/top` — топ-10 популярных по проценту продаж *(публичный)*
 - `GET /api/v1/events/{id}` — событие по id *(публичный)*
 - `GET /api/v1/events/{id}/exists` — проверка существования *(публичный)*
 - `POST /api/v1/events` — создать **(Admin)**
