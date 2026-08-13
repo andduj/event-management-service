@@ -26,5 +26,10 @@ namespace EventManagement.Contracts.Bookings
         /// Количество зарезервированных мест.
         /// </summary>
         public required int SeatsCount { get; init; }
+
+        /// <summary>
+        /// Момент подтверждения брони (UTC).
+        /// </summary>
+        public required DateTime ConfirmedAt { get; init; }
     }
 }

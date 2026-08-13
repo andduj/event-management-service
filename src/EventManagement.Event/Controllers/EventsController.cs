@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -108,6 +109,20 @@ namespace EventManagement.Events.Controllers
         }
 
         /// <summary>
+        /// Получает топ-10 самых популярных мероприятий по проценту проданных мест.
+        /// </summary>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        /// <returns>Возвращает список мероприятий с кодом 200 (OK).</returns>
+        /// <response code="200">Топ мероприятий успешно получен.</response>
+        [HttpGet("top")]
+        [ProducesResponseType(typeof(IReadOnlyList<EventDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IReadOnlyList<EventDto>>> GetTopPopularEventsAsync(CancellationToken cancellationToken)
+        {
+            var topEvents = await _eventService.GetTopPopularEventsAsync(cancellationToken);
+            return Ok(topEvents);
+        }
+
+        /// <summary>
         /// Получает мероприятие по идентификатору.
         /// </summary>
         /// <param name="id">Идентификатор мероприятия.</param>
@@ -150,6 +165,7 @@ namespace EventManagement.Events.Controllers
         /// </summary>
         /// <param name="id">Идентификатор мероприятия.</param>
         /// <param name="count">Количество мест для резервирования (по умолчанию 1).</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
         /// <returns>
         /// <c>true</c>, если места успешно зарезервированы; <c>false</c>, если мест недостаточно или передано некорректное число.
         /// </returns>
@@ -161,9 +177,12 @@ namespace EventManagement.Events.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<bool>> TryReserveSeats([FromRoute] Guid id, [FromQuery] int count = 1)
+        public async Task<ActionResult<bool>> TryReserveSeats(
+            [FromRoute] Guid id,
+            [FromQuery] int count = 1,
+            CancellationToken cancellationToken = default)
         {
-            var wasReserved = await _eventService.TryReserveSeats(id, count);
+            var wasReserved = await _eventService.TryReserveSeats(id, count, cancellationToken);
             return Ok(wasReserved);
         }
 
@@ -172,6 +191,7 @@ namespace EventManagement.Events.Controllers
         /// </summary>
         /// <param name="id">Идентификатор мероприятия.</param>
         /// <param name="count">Количество мест для освобождения (по умолчанию 1).</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
         /// <returns>Возвращает код 204 (No Content) при успешном освобождении мест.</returns>
         /// <response code="204">Места успешно освобождены.</response>
         /// <response code="404">Мероприятие с указанным id не найдено.</response>
@@ -181,9 +201,12 @@ namespace EventManagement.Events.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> ReleaseSeats([FromRoute] Guid id, [FromQuery] int count = 1)
+        public async Task<ActionResult> ReleaseSeats(
+            [FromRoute] Guid id,
+            [FromQuery] int count = 1,
+            CancellationToken cancellationToken = default)
         {
-            await _eventService.ReleaseSeats(id, count);
+            await _eventService.ReleaseSeats(id, count, cancellationToken);
             return NoContent();
         }
 

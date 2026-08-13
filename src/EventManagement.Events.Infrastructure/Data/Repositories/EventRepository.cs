@@ -1,11 +1,12 @@
 ﻿using EventManagement.Events.Application.DTOs;
 using EventManagement.Events.Application.Filters;
 using EventManagement.Events.Application.Interfaces;
-using EventManagement.Events.Infrastructure.DataAccess;
 using EventManagement.Events.Domain.Exceptions;
 using EventManagement.Events.Domain.Models;
+using EventManagement.Events.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -89,15 +90,26 @@ namespace EventManagement.Events.Infrastructure.Data.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<Event> GetEventByIdAsync(Guid id)
+        public async Task<Event> GetEventByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var eventItem = await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+            var eventItem = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
             if (eventItem == null)
             {
                 throw new EventNotFoundException($"Мероприятие с id={id} не найдено.");
             }
 
             return eventItem;
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<Event>> GetTopPopularAsync(int count, CancellationToken cancellationToken = default)
+        {
+            return await _context.Events
+                .AsNoTracking()
+                .Where(e => e.TotalSeats > 0)
+                .OrderByDescending(e => (double)(e.TotalSeats - e.AvailableSeats) / e.TotalSeats)
+                .Take(count)
+                .ToListAsync(cancellationToken);
         }
 
         /// <inheritdoc />
@@ -114,24 +126,26 @@ namespace EventManagement.Events.Infrastructure.Data.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<bool> TryReserveSeats(Guid id, int count)
+        public async Task<bool> TryReserveSeats(Guid id, int count, CancellationToken cancellationToken = default)
         {
-            var eventItem = await GetEventByIdAsync(id);
+            cancellationToken.ThrowIfCancellationRequested();
+            var eventItem = await GetEventByIdAsync(id, cancellationToken);
             bool wasReserved = eventItem.TryReserveSeats(count);
             if (wasReserved)
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
 
             return wasReserved;
         }
 
         /// <inheritdoc />
-        public async Task ReleaseSeats(Guid id, int count)
+        public async Task ReleaseSeats(Guid id, int count, CancellationToken cancellationToken = default)
         {
-            var eventItem = await GetEventByIdAsync(id);
+            cancellationToken.ThrowIfCancellationRequested();
+            var eventItem = await GetEventByIdAsync(id, cancellationToken);
             eventItem.ReleaseSeats(count);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

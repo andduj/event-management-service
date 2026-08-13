@@ -2,6 +2,7 @@ using EventManagement.Events.Application.DTOs;
 using EventManagement.Events.Application.Filters;
 using EventManagement.Events.Application.Requests;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,6 +30,13 @@ namespace EventManagement.Events.Application.Interfaces
         Task<EventDto> GetEventByIdAsync(Guid id);
 
         /// <summary>
+        /// Возвращает топ-10 самых популярных мероприятий по проценту проданных мест.
+        /// </summary>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        /// <returns>Список до 10 мероприятий, отсортированный по убыванию популярности.</returns>
+        Task<IReadOnlyList<EventDto>> GetTopPopularEventsAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Добавляет новое мероприятие в систему.
         /// </summary>
         /// <param name="addEventRequest">Запрос на добавление мероприятия с необходимыми данными.</param>
@@ -48,22 +56,22 @@ namespace EventManagement.Events.Application.Interfaces
         /// <param name="id">Уникальный идентификатор удаляемого мероприятия.</param>
         Task DeleteEventAsync(Guid id);
 
-
-
         /// <summary>
         /// Пытается зарезервировать указанное количество мест для мероприятия.
         /// </summary>
         /// <param name="id">Идентификатор мероприятия.</param>
         /// <param name="count">Количество мест для резервирования.</param>
+        /// <param name="cancellationToken">Токен отмены операции.</param>
         /// <returns><c>true</c>, если резервирование выполнено; иначе <c>false</c>.</returns>
-        Task<bool> TryReserveSeats(Guid id, int count);
+        Task<bool> TryReserveSeats(Guid id, int count, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Освобождает указанное количество мест для мероприятия.
         /// </summary>
         /// <param name="id">Идентификатор мероприятия.</param>
         /// <param name="count">Количество мест для освобождения.</param>
-        Task ReleaseSeats(Guid id, int count);
+        /// <param name="cancellationToken">Токен отмены операции.</param>
+        Task ReleaseSeats(Guid id, int count, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Проверяет существование мероприятия по идентификатору.

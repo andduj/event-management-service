@@ -47,7 +47,8 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
                 BookingId = booking.Id,
                 EventId = booking.EventId,
                 UserId = booking.UserId,
-                SeatsCount = DefaultSeatsPerBooking
+                SeatsCount = DefaultSeatsPerBooking,
+                ConfirmedAt = booking.ProcessedAt ?? DateTime.UtcNow
             };
 
             string payload = KafkaJsonSerializer.Serialize(message);
