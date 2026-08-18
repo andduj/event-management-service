@@ -4,12 +4,11 @@ using EventManagement.Events.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NLog.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
-builder.Host.UseNLog();
+builder.Logging.AddConsole();
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApplicationServices();

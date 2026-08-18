@@ -22,7 +22,7 @@
 - **C#**, **.NET 9**
 - **ASP.NET Core Web API**
 - **Swagger / Swashbuckle**
-- **NLog** (через проект `EventManagement.Logging`)
+- **Microsoft.Extensions.Logging** (консольный провайдер; Serilog — позже)
 - **Dependency Injection**
 - **AutoMapper**
 - **FluentValidation**
@@ -67,7 +67,6 @@
 ### Общие проекты
 
 - `src/EventManagement.Contracts` — DTO сообщений Kafka и имена топиков
-- `src/EventManagement.Logging` — обёртка над NLog
 
 Зависимости в каждом сервисе: `Domain` ← `Application` ← `Infrastructure` ← `Presentation`. **Application не ссылается на Infrastructure.**
 

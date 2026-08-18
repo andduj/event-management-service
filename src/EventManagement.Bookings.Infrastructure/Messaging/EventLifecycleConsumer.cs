@@ -4,7 +4,7 @@ using EventManagement.Bookings.Domain.Models;
 using EventManagement.Contracts.Events;
 using EventManagement.Contracts.Kafka;
 using EventManagement.Bookings.Infrastructure.Kafka;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -57,7 +57,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
                 KafkaTopics.EventDeleted
             });
 
-            _logger.Info(
+            _logger.LogInformation(
                 "Kafka consumer запущен. GroupId={0}, Topics={1}",
                 _options.GroupId,
                 string.Join(", ", KafkaTopics.EventCreated, KafkaTopics.EventUpdated, KafkaTopics.EventDeleted));
@@ -74,7 +74,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
                     }
                     catch (ConsumeException exception)
                     {
-                        _logger.Error(exception, "Ошибка чтения сообщения из Kafka");
+                        _logger.LogError(exception, "Ошибка чтения сообщения из Kafka");
                     }
                 }
             }
@@ -84,7 +84,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
             finally
             {
                 consumer.Close();
-                _logger.Info("Kafka consumer остановлен");
+                _logger.LogInformation("Kafka consumer остановлен");
             }
         }
 
@@ -105,7 +105,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
                     await HandleDeletedAsync(consumeResult.Message.Value, repository, cancellationToken);
                     break;
                 default:
-                    _logger.Warn("Получено сообщение из неизвестного топика {0}", consumeResult.Topic);
+                    _logger.LogWarning("Получено сообщение из неизвестного топика {0}", consumeResult.Topic);
                     break;
             }
         }
@@ -115,13 +115,13 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
             var message = KafkaJsonSerializer.Deserialize<EventCreatedMessage>(payload);
             if (message == null)
             {
-                _logger.Warn("Не удалось десериализовать EventCreatedMessage");
+                _logger.LogWarning("Не удалось десериализовать EventCreatedMessage");
                 return;
             }
 
             var bookableEvent = MapToBookableEvent(message);
             await bookableEventRepository.UpsertAsync(bookableEvent, cancellationToken);
-            _logger.Debug("Синхронизировано создание мероприятия EventId={0}", message.EventId);
+            _logger.LogDebug("Синхронизировано создание мероприятия EventId={0}", message.EventId);
         }
 
         private async Task HandleUpdatedAsync(string payload, IBookableEventRepository bookableEventRepository, CancellationToken cancellationToken)
@@ -129,13 +129,13 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
             var message = KafkaJsonSerializer.Deserialize<EventUpdatedMessage>(payload);
             if (message == null)
             {
-                _logger.Warn("Не удалось десериализовать EventUpdatedMessage");
+                _logger.LogWarning("Не удалось десериализовать EventUpdatedMessage");
                 return;
             }
 
             var bookableEvent = MapToBookableEvent(message);
             await bookableEventRepository.UpsertAsync(bookableEvent, cancellationToken);
-            _logger.Debug("Синхронизировано обновление мероприятия EventId={0}", message.EventId);
+            _logger.LogDebug("Синхронизировано обновление мероприятия EventId={0}", message.EventId);
         }
 
         private async Task HandleDeletedAsync(string payload, IBookableEventRepository bookableEventRepository, CancellationToken cancellationToken)
@@ -143,12 +143,12 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
             var message = KafkaJsonSerializer.Deserialize<EventDeletedMessage>(payload);
             if (message == null)
             {
-                _logger.Warn("Не удалось десериализовать EventDeletedMessage");
+                _logger.LogWarning("Не удалось десериализовать EventDeletedMessage");
                 return;
             }
 
             await bookableEventRepository.DeleteAsync(message.EventId, cancellationToken);
-            _logger.Debug("Синхронизировано удаление мероприятия EventId={0}", message.EventId);
+            _logger.LogDebug("Синхронизировано удаление мероприятия EventId={0}", message.EventId);
         }
 
         private static BookableEvent MapToBookableEvent(EventCreatedMessage message)

@@ -1,5 +1,5 @@
-﻿using EventManagement.Events.Domain.Exceptions;
-using EventManagement.Logging;
+using EventManagement.Events.Domain.Exceptions;
+using Microsoft.Extensions.Logging;
 using FluentValidation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -52,7 +52,7 @@ namespace EventManagement.Events.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            _logger.Error(
+            _logger.LogError(
                 exception,
                 "Необработанное исключение. Метод={0}, Путь={1}",
                 context.Request.Method,

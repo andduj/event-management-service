@@ -1,5 +1,5 @@
 using EventManagement.Events.Application.Interfaces;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using System;
 using System.Text.Json;
@@ -52,7 +52,7 @@ namespace EventManagement.Events.Infrastructure.Redis
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
-                _logger.Error(exception, "Ошибка чтения из Redis. Key={0}", key);
+                _logger.LogError(exception, "Ошибка чтения из Redis. Key={0}", key);
                 return default;
             }
         }
@@ -69,7 +69,7 @@ namespace EventManagement.Events.Infrastructure.Redis
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
-                _logger.Error(exception, "Ошибка записи в Redis. Key={0}", key);
+                _logger.LogError(exception, "Ошибка записи в Redis. Key={0}", key);
             }
         }
 
@@ -84,7 +84,7 @@ namespace EventManagement.Events.Infrastructure.Redis
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
-                _logger.Error(exception, "Ошибка удаления из Redis. Key={0}", key);
+                _logger.LogError(exception, "Ошибка удаления из Redis. Key={0}", key);
             }
         }
     }

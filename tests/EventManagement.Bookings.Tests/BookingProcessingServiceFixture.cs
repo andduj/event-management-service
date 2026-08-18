@@ -1,10 +1,10 @@
-﻿using AutoFixture;
+using AutoFixture;
 using AutoMapper;
 using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Domain.Models;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace EventManagement.Bookings.Tests

@@ -4,7 +4,7 @@ using EventManagement.Contracts.Kafka;
 using EventManagement.Events.Application.Interfaces;
 using EventManagement.Events.Domain.Models;
 using EventManagement.Events.Infrastructure.Kafka;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
@@ -76,7 +76,7 @@ namespace EventManagement.Events.Infrastructure.Messaging
             try
             {
                 var deliveryResult = await _producer.ProduceAsync(topic, kafkaMessage, cancellationToken);
-                _logger.Debug(
+                _logger.LogDebug(
                     "Сообщение опубликовано в Kafka. Topic={0}, Key={1}, Partition={2}, Offset={3}",
                     deliveryResult.Topic,
                     deliveryResult.Message.Key,
@@ -85,7 +85,7 @@ namespace EventManagement.Events.Infrastructure.Messaging
             }
             catch (ProduceException<string, string> exception)
             {
-                _logger.Error(exception, "Не удалось опубликовать сообщение в Kafka. Topic={0}, Key={1}", topic, key);
+                _logger.LogError(exception, "Не удалось опубликовать сообщение в Kafka. Topic={0}, Key={1}", topic, key);
                 throw;
             }
         }

@@ -1,4 +1,4 @@
-﻿using AutoFixture;
+using AutoFixture;
 using EventManagement.Events.Application;
 using EventManagement.Events.Application.Caching;
 using EventManagement.Events.Application.Interfaces;
@@ -8,7 +8,7 @@ using EventManagement.Events.Application.Validators;
 using EventManagement.Events.Domain.Models;
 using EventManagement.Events.Infrastructure.Data.Repositories;
 using EventManagement.Events.Infrastructure.DataAccess;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

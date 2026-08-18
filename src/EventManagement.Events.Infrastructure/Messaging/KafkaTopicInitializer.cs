@@ -2,7 +2,7 @@ using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using EventManagement.Contracts.Kafka;
 using EventManagement.Events.Infrastructure.Kafka;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
@@ -54,7 +54,7 @@ namespace EventManagement.Events.Infrastructure.Messaging
                         }
                     });
 
-                _logger.Info("Kafka-топики инициализированы");
+                _logger.LogInformation("Kafka-топики инициализированы");
             }
             catch (CreateTopicsException exception)
             {
@@ -70,15 +70,15 @@ namespace EventManagement.Events.Infrastructure.Messaging
 
                 if (onlyAlreadyExists)
                 {
-                    _logger.Info("Kafka-топики уже существуют");
+                    _logger.LogInformation("Kafka-топики уже существуют");
                     return;
                 }
 
-                _logger.Error(exception, "Не удалось создать Kafka-топики");
+                _logger.LogError(exception, "Не удалось создать Kafka-топики");
             }
             catch (Exception exception)
             {
-                _logger.Error(exception, "Ошибка инициализации Kafka-топиков");
+                _logger.LogError(exception, "Ошибка инициализации Kafka-топиков");
             }
         }
 

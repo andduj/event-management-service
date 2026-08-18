@@ -4,7 +4,7 @@ using EventManagement.Bookings.Domain.Models;
 using EventManagement.Bookings.Infrastructure.Kafka;
 using EventManagement.Contracts.Bookings;
 using EventManagement.Contracts.Kafka;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
@@ -64,7 +64,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
                     KafkaTopics.BookingConfirmed,
                     kafkaMessage,
                     cancellationToken);
-                _logger.Debug(
+                _logger.LogDebug(
                     "Сообщение booking-confirmed опубликовано. BookingId={0}, Partition={1}, Offset={2}",
                     booking.Id,
                     deliveryResult.Partition.Value,
@@ -72,7 +72,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
             }
             catch (ProduceException<string, string> exception)
             {
-                _logger.Error(exception, "Не удалось опубликовать booking-confirmed. BookingId={0}", booking.Id);
+                _logger.LogError(exception, "Не удалось опубликовать booking-confirmed. BookingId={0}", booking.Id);
                 throw;
             }
         }
@@ -103,7 +103,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
                     KafkaTopics.BookingCancelled,
                     kafkaMessage,
                     cancellationToken);
-                _logger.Debug(
+                _logger.LogDebug(
                     "Сообщение booking-cancelled опубликовано. BookingId={0}, Partition={1}, Offset={2}",
                     booking.Id,
                     deliveryResult.Partition.Value,
@@ -111,7 +111,7 @@ namespace EventManagement.Bookings.Infrastructure.Messaging
             }
             catch (ProduceException<string, string> exception)
             {
-                _logger.Error(exception, "Не удалось опубликовать booking-cancelled. BookingId={0}", booking.Id);
+                _logger.LogError(exception, "Не удалось опубликовать booking-cancelled. BookingId={0}", booking.Id);
                 throw;
             }
         }

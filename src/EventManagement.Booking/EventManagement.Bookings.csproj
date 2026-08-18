@@ -16,7 +16,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="NLog.Web.AspNetCore" Version="6.1.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
@@ -24,7 +23,6 @@
     <ProjectReference Include="..\EventManagement.Bookings.Application\EventManagement.Bookings.Application.csproj" />
     <ProjectReference Include="..\EventManagement.Bookings.Domain\EventManagement.Bookings.Domain.csproj" />
     <ProjectReference Include="..\EventManagement.Bookings.Infrastructure\EventManagement.Bookings.Infrastructure.csproj" />
-    <ProjectReference Include="..\EventManagement.Logging\EventManagement.Logging.csproj" />
   </ItemGroup>
 
 </Project>

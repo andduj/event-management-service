@@ -1,9 +1,9 @@
-﻿using AutoMapper;
+using AutoMapper;
 using EventManagement.Bookings.Application.DTOs;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Domain.Exceptions;
 using EventManagement.Bookings.Domain.Models;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +39,7 @@ namespace EventManagement.Bookings.Application.Services
         /// <inheritdoc/>
         public async Task<BookingInfo> CreateBookingAsync(Guid eventId, Guid userId)
         {
-            _logger.Info("Создание новой брони. EventId={0}, UserId={1}", eventId, userId);
+            _logger.LogInformation("Создание новой брони. EventId={0}, UserId={1}", eventId, userId);
 
             var bookableEvent = await _bookableEventRepository.TryGetByIdAsync(eventId)
                 ?? throw new EventNotFoundException($"Мероприятие с id={eventId} не найдено.");
@@ -85,14 +85,14 @@ namespace EventManagement.Bookings.Application.Services
                 _semaphoreSlim.Release();
             }
 
-            _logger.Info("Бронь успешно создана. BookingId={0}", addedBooking.Id);
+            _logger.LogInformation("Бронь успешно создана. BookingId={0}", addedBooking.Id);
             return _mapper.Map<BookingInfo>(addedBooking);
         }
 
         /// <inheritdoc/>
         public async Task<BookingDto> GetBookingByIdAsync(Guid bookingId)
         {
-            _logger.Debug("Получение брони по Id={0}", bookingId);
+            _logger.LogDebug("Получение брони по Id={0}", bookingId);
             var booking = await _bookingRepository.GetBookingByIdAsync(bookingId);
             return _mapper.Map<BookingDto>(booking);
         }
@@ -100,7 +100,7 @@ namespace EventManagement.Bookings.Application.Services
         /// <inheritdoc/>
         public async Task CancelBookingAsync(Guid bookingId, Guid userId, UserRole role)
         {
-            _logger.Info("Отмена брони. BookingId={0}, UserId={1}, Role={2}", bookingId, userId, role);
+            _logger.LogInformation("Отмена брони. BookingId={0}, UserId={1}, Role={2}", bookingId, userId, role);
 
             var booking = await _bookingRepository.GetBookingByIdAsync(bookingId);
             if (booking.UserId != userId && role != UserRole.Admin)
@@ -132,7 +132,7 @@ namespace EventManagement.Bookings.Application.Services
             }
             catch (Exception exception)
             {
-                _logger.Error(exception, "Не удалось освободить место для EventId={0}", eventId);
+                _logger.LogError(exception, "Не удалось освободить место для EventId={0}", eventId);
             }
         }
     }

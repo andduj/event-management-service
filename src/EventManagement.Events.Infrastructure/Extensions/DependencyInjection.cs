@@ -3,7 +3,6 @@ using EventManagement.Events.Infrastructure.Data.Repositories;
 using EventManagement.Events.Infrastructure.DataAccess;
 using EventManagement.Events.Infrastructure.Kafka;
 using EventManagement.Events.Infrastructure.Messaging;
-using EventManagement.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +27,6 @@ namespace EventManagement.Events.Infrastructure.Extensions
                 ?? throw new InvalidOperationException("Строка подключения 'DefaultConnection' не настроена.");
             services.AddDbContext<EventsDbContext>(options => options.UseNpgsql(connectionString));
             services.AddScoped<IEventRepository, EventRepository>();
-            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
             services.Configure<KafkaOptions>(configuration.GetSection(KafkaOptions.SectionName));
             services.AddSingleton<IEventLifecyclePublisher, KafkaEventLifecyclePublisher>();
             services.AddHostedService<KafkaTopicInitializer>();

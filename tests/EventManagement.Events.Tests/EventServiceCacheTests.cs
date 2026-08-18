@@ -7,7 +7,7 @@ using EventManagement.Events.Application.Requests;
 using EventManagement.Events.Application.Services;
 using EventManagement.Events.Application.Validators;
 using EventManagement.Events.Domain.Models;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Moq;
