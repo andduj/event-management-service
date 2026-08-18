@@ -34,6 +34,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandling();
+app.UseCors(CorsExtensions.FrontendPolicyName);
 app.UseHttpsRedirection();
 app.MapControllers();
 

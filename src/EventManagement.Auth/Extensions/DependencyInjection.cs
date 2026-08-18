@@ -19,6 +19,7 @@ namespace EventManagement.Auth.Extensions
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerDocumentation();
+            services.AddFrontendCors(configuration);
             return services;
         }
     }

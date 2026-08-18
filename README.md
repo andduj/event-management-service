@@ -248,6 +248,8 @@ dotnet run --project src/EventManagement.Booking/EventManagement.Bookings.csproj
 Для синхронизации событий и подтверждения/отмены броней нужен **Kafka** (`Kafka:BootstrapServers` — по умолчанию `localhost:9092`).
 Для кеша Events API нужен **Redis** (`Redis:ConnectionString` — по умолчанию `localhost:6379`).
 
+CORS для фронтенда настроен во всех трёх API (политика `Frontend`, секция `Cors:Origins`). По умолчанию разрешены `http://localhost:5173` и `http://localhost:5174`.
+
 ### Схема базы и миграции EF Core
 
 Три контекста и три набора миграций:

@@ -20,6 +20,7 @@ namespace EventManagement.Bookings.Extensions
             services.AddEndpointsApiExplorer();
             services.AddSwaggerDocumentation();
             services.AddJwtAuthentication(configuration);
+            services.AddFrontendCors(configuration);
 
             return services;
         }
