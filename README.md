@@ -22,7 +22,7 @@
 - **C#**, **.NET 9**
 - **ASP.NET Core Web API**
 - **Swagger / Swashbuckle**
-- **Microsoft.Extensions.Logging** (консольный провайдер; Serilog — позже)
+- **Microsoft.Extensions.Logging** + **Serilog** (структурированный JSON в консоль, `CompactJsonFormatter`)
 - **Dependency Injection**
 - **AutoMapper**
 - **FluentValidation**
