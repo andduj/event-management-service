@@ -20,6 +20,7 @@ namespace EventManagement.Auth.Extensions
             services.AddEndpointsApiExplorer();
             services.AddSwaggerDocumentation();
             services.AddFrontendCors(configuration);
+            services.AddOpenTelemetryTracing(configuration);
             return services;
         }
     }
