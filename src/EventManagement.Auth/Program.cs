@@ -39,5 +39,6 @@ app.UseExceptionHandling();
 app.UseCors(CorsExtensions.FrontendPolicyName);
 app.UseHttpsRedirection();
 app.MapControllers();
+app.MapPrometheusScrapingEndpoint();
 
 app.Run();

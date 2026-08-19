@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System;
@@ -7,14 +8,14 @@ using System;
 namespace EventManagement.Bookings.Extensions
 {
     /// <summary>
-    /// Регистрация OpenTelemetry tracing.
+    /// Регистрация OpenTelemetry tracing и metrics.
     /// </summary>
     public static class OpenTelemetryTracingExtensions
     {
         public const string ServiceName = "bookings-api";
 
         /// <summary>
-        /// Подключает сбор трейсов (ASP.NET Core, HttpClient, EF Core) и экспорт в Jaeger через OTLP.
+        /// Подключает трейсы (OTLP → Jaeger) и метрики (экспорт Prometheus на /metrics).
         /// </summary>
         public static IServiceCollection AddOpenTelemetryTracing(
             this IServiceCollection services,
@@ -28,7 +29,11 @@ namespace EventManagement.Bookings.Extensions
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation()
-                    .AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint)));
+                    .AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint)))
+                .WithMetrics(metrics => metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddPrometheusExporter());
 
             return services;
         }
