@@ -22,9 +22,10 @@ namespace EventManagement.Events.Extensions
             IConfiguration configuration)
         {
             var otlpEndpoint = configuration["Otlp:Endpoint"] ?? "http://localhost:4317";
+            var serviceName = configuration["Otlp:ServiceName"] ?? ServiceName;
 
             services.AddOpenTelemetry()
-                .ConfigureResource(resource => resource.AddService(serviceName: ServiceName))
+                .ConfigureResource(resource => resource.AddService(serviceName: serviceName))
                 .WithTracing(tracing => tracing
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
