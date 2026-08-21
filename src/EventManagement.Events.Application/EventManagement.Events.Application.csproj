@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -12,12 +12,12 @@
     <PackageReference Include="FluentValidation" Version="11.11.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.15" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.15" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EventManagement.Events.Domain\EventManagement.Events.Domain.csproj" />
-    <ProjectReference Include="..\EventManagement.Logging\EventManagement.Logging.csproj" />
   </ItemGroup>
 
 </Project>

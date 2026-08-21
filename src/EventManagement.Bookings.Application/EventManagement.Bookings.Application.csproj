@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -10,11 +10,11 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.15" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EventManagement.Bookings.Domain\EventManagement.Bookings.Domain.csproj" />
-    <ProjectReference Include="..\EventManagement.Logging\EventManagement.Logging.csproj" />
   </ItemGroup>
 
 </Project>

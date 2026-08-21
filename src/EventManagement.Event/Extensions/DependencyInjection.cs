@@ -21,6 +21,7 @@ namespace EventManagement.Events.Extensions
             services.AddSwaggerDocumentation();
             services.AddJwtAuthentication(configuration);
             services.AddFrontendCors(configuration);
+            services.AddOpenTelemetryTracing(configuration);
 
             return services;
         }

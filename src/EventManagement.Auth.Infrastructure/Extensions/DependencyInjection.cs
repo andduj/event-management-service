@@ -3,7 +3,6 @@ using EventManagement.Auth.Application.Options;
 using EventManagement.Auth.Infrastructure.Data.Repositories;
 using EventManagement.Auth.Infrastructure.DataAccess;
 using EventManagement.Auth.Infrastructure.Security;
-using EventManagement.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +28,6 @@ namespace EventManagement.Auth.Infrastructure.Extensions
             services.AddSingleton<IPasswordHasher, PasswordHasher>();
             services.AddSingleton<IJwtTokenService, JwtTokenService>();
             services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
-            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
 
             return services;
         }

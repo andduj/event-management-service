@@ -1,11 +1,11 @@
-﻿using AutoFixture;
+using AutoFixture;
 using EventManagement.Bookings.Application;
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Application.Services;
 using EventManagement.Bookings.Domain.Models;
 using EventManagement.Bookings.Infrastructure.Data.Repositories;
 using EventManagement.Bookings.Infrastructure.DataAccess;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

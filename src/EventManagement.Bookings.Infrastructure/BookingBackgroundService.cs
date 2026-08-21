@@ -1,5 +1,5 @@
 using EventManagement.Bookings.Application.Interfaces;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -45,7 +45,7 @@ namespace EventManagement.Bookings.Infrastructure
         /// <returns>Задача выполнения фонового сервиса.</returns>
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            _logger.Info("Сервис обработки бронирований начал работу (интервал опроса: {PollingIntervalSeconds} с)", _pollingInterval.TotalSeconds);
+            _logger.LogInformation("Сервис обработки бронирований начал работу (интервал опроса: {PollingIntervalSeconds} с)", _pollingInterval.TotalSeconds);
 
             using var timer = new PeriodicTimer(_pollingInterval);
 
@@ -63,7 +63,7 @@ namespace EventManagement.Bookings.Infrastructure
             }
             finally
             {
-                _logger.Info("Сервис обработки бронирований завершает работу");
+                _logger.LogInformation("Сервис обработки бронирований завершает работу");
             }
         }
 
@@ -80,7 +80,7 @@ namespace EventManagement.Bookings.Infrastructure
             }
             catch (Exception exception)
             {
-                _logger.Error(exception, "Не удалось получить список ожидающих бронирований");
+                _logger.LogError(exception, "Не удалось получить список ожидающих бронирований");
                 return;
             }
 
@@ -106,7 +106,7 @@ namespace EventManagement.Bookings.Infrastructure
             var processingLock = _processingLocks.GetOrAdd(bookingId, _ => new SemaphoreSlim(1, 1));
             if (!await processingLock.WaitAsync(0, cancellationToken))
             {
-                _logger.Debug("Бронирование {0} уже обрабатывается в текущем экземпляре сервиса", bookingId);
+                _logger.LogDebug("Бронирование {0} уже обрабатывается в текущем экземпляре сервиса", bookingId);
                 return;
             }
 
@@ -122,7 +122,7 @@ namespace EventManagement.Bookings.Infrastructure
             }
             catch (Exception exception)
             {
-                _logger.Error(exception, "Ошибка при обработке бронирования {0}", bookingId);
+                _logger.LogError(exception, "Ошибка при обработке бронирования {0}", bookingId);
             }
             finally
             {

@@ -1,6 +1,6 @@
 using EventManagement.Bookings.Application.Interfaces;
 using EventManagement.Bookings.Domain.Models;
-using EventManagement.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,7 +65,7 @@ namespace EventManagement.Bookings.Application.Services
                 return;
             }
 
-            _logger.Debug("Начало обработки бронирования. BookingId={0}, EventId={1}", booking.Id, booking.EventId);
+            _logger.LogDebug("Начало обработки бронирования. BookingId={0}, EventId={1}", booking.Id, booking.EventId);
             try
             {
                 bool exists = await _bookableEventRepository.ExistsAsync(booking.EventId, cancellationToken);
@@ -81,7 +81,7 @@ namespace EventManagement.Bookings.Application.Services
                 }
                 else
                 {
-                    _logger.Warn("Мероприятия с id={0} не существует", booking.EventId);
+                    _logger.LogWarning("Мероприятия с id={0} не существует", booking.EventId);
                     await RejectAndReleaseSeatsAsync(booking, cancellationToken);
                 }
             }
@@ -92,11 +92,11 @@ namespace EventManagement.Bookings.Application.Services
             catch (Exception exception)
             {
                 await RejectAndReleaseSeatsAsync(booking, cancellationToken);
-                _logger.Error(exception, "Ошибка при обработке бронирования {0}", booking.Id);
+                _logger.LogError(exception, "Ошибка при обработке бронирования {0}", booking.Id);
             }
             finally
             {
-                _logger.Debug("Завершена обработка бронирования. BookingId={0}, Status={1}", booking.Id, booking.Status);
+                _logger.LogDebug("Завершена обработка бронирования. BookingId={0}, Status={1}", booking.Id, booking.Status);
             }
         }
 
@@ -105,7 +105,7 @@ namespace EventManagement.Bookings.Application.Services
             bool wasUpdated = await _bookingRepository.TryUpdateBookingAsync(booking, BookingStatus.Pending, cancellationToken);
             if (!wasUpdated)
             {
-                _logger.Debug("Бронирование {0} уже обработано другим процессом", booking.Id);
+                _logger.LogDebug("Бронирование {0} уже обработано другим процессом", booking.Id);
             }
 
             return wasUpdated;
@@ -123,7 +123,7 @@ namespace EventManagement.Bookings.Application.Services
             }
             catch (Exception exception)
             {
-                _logger.Error(
+                _logger.LogError(
                     exception,
                     "Не удалось опубликовать booking-confirmed. BookingId={0}",
                     booking.Id);
@@ -170,7 +170,7 @@ namespace EventManagement.Bookings.Application.Services
             }
             catch (Exception exception)
             {
-                _logger.Error(exception, "Не удалось освободить место для EventId={0}", booking.EventId);
+                _logger.LogError(exception, "Не удалось освободить место для EventId={0}", booking.EventId);
             }
         }
     }

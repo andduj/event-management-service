@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -26,7 +26,6 @@
     <ProjectReference Include="..\EventManagement.Bookings.Application\EventManagement.Bookings.Application.csproj" />
     <ProjectReference Include="..\EventManagement.Bookings.Domain\EventManagement.Bookings.Domain.csproj" />
     <ProjectReference Include="..\EventManagement.Contracts\EventManagement.Contracts.csproj" />
-    <ProjectReference Include="..\EventManagement.Logging\EventManagement.Logging.csproj" />
   </ItemGroup>
 
 </Project>

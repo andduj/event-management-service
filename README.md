@@ -15,14 +15,17 @@
 - отложенная обработка бронирований в фоне через `BackgroundService`;
 - подтверждение брони и резервирование мест в Events через Kafka (`booking-confirmed`);
 - отмена подтверждённой брони и освобождение мест в Events через Kafka (`booking-cancelled`);
-- компенсация при сбое публикации в Kafka (откат `Confirmed` → `Cancelled` и освобождение места в Bookings).
+- компенсация при сбое публикации в Kafka (откат `Confirmed` → `Cancelled` и освобождение места в Bookings);
+- наблюдаемость: OpenTelemetry (трейсы/метрики), Prometheus, Jaeger, Grafana; логи в JSON (Serilog).
 
 ## Технологии
 
 - **C#**, **.NET 9**
 - **ASP.NET Core Web API**
 - **Swagger / Swashbuckle**
-- **NLog** (через проект `EventManagement.Logging`)
+- **Microsoft.Extensions.Logging** + **Serilog** (структурированный JSON в консоль, `CompactJsonFormatter`)
+- **OpenTelemetry** (трейсы и метрики HTTP / EF Core / runtime)
+- **Prometheus**, **Jaeger**, **Grafana** — стек наблюдаемости в Docker Compose
 - **Dependency Injection**
 - **AutoMapper**
 - **FluentValidation**
@@ -44,7 +47,7 @@
 | Domain | `src/EventManagement.Auth.Domain` | `User`, `UserRole`, доменные исключения |
 | Application | `src/EventManagement.Auth.Application` | `AuthService`, DTO, порты `IUserRepository`, `IJwtTokenService` |
 | Infrastructure | `src/EventManagement.Auth.Infrastructure` | EF Core, репозитории, миграции, `PasswordHasher`, `JwtTokenService` |
-| Presentation | `src/EventManagement.Auth` | Web API, `AuthController`, Swagger, composition root |
+| Presentation | `src/EventManagement.Auth` | Web API, `AuthController`, Swagger, CORS, OpenTelemetry, Serilog, `/metrics` |
 
 ### Events API
 
@@ -53,7 +56,7 @@
 | Domain | `src/EventManagement.Events.Domain` | `Event`, доменные исключения |
 | Application | `src/EventManagement.Events.Application` | use cases, DTO, порты (`IEventRepository`, `IEventLifecyclePublisher`, `ICacheService`) |
 | Infrastructure | `src/EventManagement.Events.Infrastructure` | EF Core, репозитории, миграции, Redis (`RedisCacheService`), Kafka publisher/consumer, `KafkaTopicInitializer` |
-| Presentation | `src/EventManagement.Event` (`EventManagement.Events`) | Web API, контроллеры, Swagger, JWT-валидация |
+| Presentation | `src/EventManagement.Event` (`EventManagement.Events`) | Web API, контроллеры, Swagger, JWT, CORS, OpenTelemetry, Serilog, `/metrics` |
 
 ### Bookings API
 
@@ -62,12 +65,11 @@
 | Domain | `src/EventManagement.Bookings.Domain` | `Booking`, `BookableEvent`, `BookingStatus`, доменные исключения |
 | Application | `src/EventManagement.Bookings.Application` | `BookingService`, `BookingProcessingService`, DTO, порты репозиториев |
 | Infrastructure | `src/EventManagement.Bookings.Infrastructure` | EF Core, репозитории, миграции, Kafka consumer/publisher (`booking-confirmed`, `booking-cancelled`), `BookingBackgroundService` |
-| Presentation | `src/EventManagement.Booking` (`EventManagement.Bookings`) | Web API, `BookingsController`, JWT, Swagger |
+| Presentation | `src/EventManagement.Booking` (`EventManagement.Bookings`) | Web API, `BookingsController`, JWT, Swagger, CORS, OpenTelemetry, Serilog, `/metrics` |
 
 ### Общие проекты
 
 - `src/EventManagement.Contracts` — DTO сообщений Kafka и имена топиков
-- `src/EventManagement.Logging` — обёртка над NLog
 
 Зависимости в каждом сервисе: `Domain` ← `Application` ← `Infrastructure` ← `Presentation`. **Application не ссылается на Infrastructure.**
 
@@ -169,7 +171,7 @@ Bookings ──booking-cancelled────────────► Events (
 
 Требуется:
 - **.NET SDK 9.0+**
-- **Docker** (для PostgreSQL, Kafka, Redis и/или полного стека)
+- **Docker** (PostgreSQL, Kafka, Redis, полный стек API и/или Prometheus / Jaeger / Grafana)
 
 ```bash
 dotnet restore
@@ -178,7 +180,7 @@ dotnet build EventManagement.sln
 
 ### Вариант 1: полный стек в Docker (рекомендуется)
 
-Поднимает Kafka в режиме **KRaft** (без отдельного Zookeeper — в отличие от классического примера с Zookeeper в некоторых ТЗ), три PostgreSQL, Redis и три API. Для каждого API свой Dockerfile: `docker/Dockerfile.auth`, `docker/Dockerfile.events`, `docker/Dockerfile.bookings`.
+Поднимает Kafka в режиме **KRaft** (без Zookeeper), три PostgreSQL, Redis, три API, а также **Prometheus**, **Jaeger** и **Grafana**. Для каждого API свой Dockerfile: `docker/Dockerfile.auth`, `docker/Dockerfile.events`, `docker/Dockerfile.bookings`.
 
 ```bash
 docker compose -f docker/docker-compose.yml up -d --build
@@ -194,6 +196,9 @@ docker compose -f docker/docker-compose.yml up -d --build
 | Auth API | `auth-api` | `15238` |
 | Events API | `events-api` | `15167` |
 | Bookings API | `bookings-api` | `15237` |
+| Prometheus | `eventapi-prometheus` | `9090` |
+| Jaeger UI / OTLP | `eventapi-jaeger` | `16686` / `4317` |
+| Grafana | `eventapi-grafana` | `3000` |
 
 Порты Docker сдвинуты (`15xxx`), чтобы не пересекаться с локальным `dotnet run` / IDE (`5238` / `5167` / `5237`).
 
@@ -215,11 +220,19 @@ docker compose -f docker/docker-compose.yml down -v
 
 Для локальной разработки можно поднять PostgreSQL, Kafka и Redis из compose и запускать API через `dotnet run`. Строки подключения, Kafka и Redis задаются в `appsettings.json` / User Secrets.
 
-Только инфраструктура:
+Только инфраструктура данных:
 
 ```bash
 docker compose -f docker/docker-compose.yml up -d kafka postgres-events postgres-bookings postgres-auth redis
 ```
+
+Для трейсов/метрик при локальном `dotnet run` дополнительно:
+
+```bash
+docker compose -f docker/docker-compose.yml up -d prometheus jaeger grafana
+```
+
+`Otlp:Endpoint` по умолчанию `http://localhost:4317`. Prometheus в compose скрейпит контейнеры API (`events-api:8080` и т.д.); у процессов `dotnet run` метрики смотри на `http://localhost:5238/metrics`, `:5167/metrics`, `:5237/metrics`.
 
 PostgreSQL в compose:
 
@@ -249,6 +262,51 @@ dotnet run --project src/EventManagement.Booking/EventManagement.Bookings.csproj
 Для кеша Events API нужен **Redis** (`Redis:ConnectionString` — по умолчанию `localhost:6379`).
 
 CORS для фронтенда настроен во всех трёх API (политика `Frontend`, секция `Cors:Origins`). По умолчанию разрешены `http://localhost:5173` и `http://localhost:5174`.
+
+### Наблюдаемость (OpenTelemetry, Prometheus, Jaeger, Grafana)
+
+Во всех трёх API подключены:
+
+- **OpenTelemetry** — трейсы (ASP.NET Core, HttpClient, EF Core) и метрики (ASP.NET Core, .NET runtime);
+- экспорт трейсов в **Jaeger** по OTLP (`Otlp:Endpoint`, в Docker — `http://jaeger:4317`);
+- экспорт метрик на эндпоинт **`/metrics`** (формат Prometheus);
+- **Serilog** — структурированные JSON-логи в консоль (`CompactJsonFormatter`).
+
+Имена сервисов в телеметрии задаются в `Otlp:ServiceName`: `auth-api`, `events-api`, `bookings-api`.
+
+#### Запуск стека мониторинга
+
+Вместе с полным стеком:
+
+```bash
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+Только мониторинг (если API уже запущены в compose):
+
+```bash
+docker compose -f docker/docker-compose.yml up -d prometheus jaeger grafana
+```
+
+Конфиг scrape: `docker/prometheus.yml`.  
+Дашборд Grafana (provisioning): `docker/grafana/dashboards/events-api-overview.json`.
+
+#### UI и порты
+
+| Инструмент | URL | Доступ |
+|------------|-----|--------|
+| Prometheus | http://localhost:9090 | Status → Targets — scrape `auth-api`, `events-api`, `bookings-api` |
+| Jaeger | http://localhost:16686 | поиск трейсов по сервису |
+| Grafana | http://localhost:3000 | логин `admin` / `admin`; datasource Prometheus уже в provisioning |
+| Метрики API (локально) | http://localhost:5238/metrics, `:5167/metrics`, `:5237/metrics` | |
+| Метрики API (Docker) | http://localhost:15238/metrics, `:15167/metrics`, `:15237/metrics` | |
+
+На дашборде **Events API — latency / throughput / errors** отображаются:
+
+- `http_server_request_duration_seconds` (latency p50 / p95 / p99);
+- `http_server_request_duration_seconds_count` (throughput / RPS);
+- `http_server_active_requests`;
+- error rate по ответам 5xx.
 
 ### Схема базы и миграции EF Core
 
@@ -393,6 +451,10 @@ Swagger UI доступен в режиме Development для всех трёх
 - `POST /api/v1/events/{id}/book` — создать бронь (`202 Accepted`)
 - `GET /api/v1/bookings/{id}` — статус брони
 - `DELETE /api/v1/bookings/{id}` — отмена брони
+
+### Операционные эндпоинты (все API)
+
+- `GET /metrics` — метрики Prometheus (OpenTelemetry)
 
 ## Отложенная фоновая обработка
 
