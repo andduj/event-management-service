@@ -1,4 +1,4 @@
-# Полный стек: Kafka + PostgreSQL (database per service) + три API.
+# Полный стек: Kafka + PostgreSQL + Redis + три API + Prometheus/Jaeger/Grafana.
 # docker compose -f docker/docker-compose.yml up -d --build
 # docker compose -f docker/docker-compose.yml down -v
 
